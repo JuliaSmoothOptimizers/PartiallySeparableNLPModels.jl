@@ -1,3 +1,5 @@
 using Test
+using PartiallySeparableNLPModel
 
- @test true
+@test true
+include("premier_test.jl")
