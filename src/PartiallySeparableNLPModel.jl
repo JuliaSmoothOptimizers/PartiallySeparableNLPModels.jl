@@ -8,7 +8,7 @@ fonction_test2(e :: Any) = CalculusTreeTools.transform_to_expr_tree(e)
 greet() = print("Hello World!")
 
 
-include("PartiallySeparablestructure.jl")
+include("PartiallySeparableStructure.jl")
 
 export function_test, function_test2
 
