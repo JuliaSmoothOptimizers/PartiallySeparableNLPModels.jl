@@ -162,7 +162,7 @@ function evaluate_SPS_gradient!(sps :: SPS{T}, x :: AbstractVector{Y}, g :: grad
 end
 
 """
-element_gradient!(compil_tape, x, g)
+    element_gradient!(compil_tape, x, g)
 Compute the element grandient from the compil_tape compiled before according to the vector x, and store the result in the vector g
 Use of ReverseDiff
 """
@@ -383,7 +383,10 @@ function product_vector_sps(sps :: SPS{T}, g :: grad_vector{Y}, x :: Vector{Z}) 
     return sum(res)
 end
 
-
+"""
+    check_Inf_Nan(B)
+function that check if an Hess_matrix is not full of Nan.
+"""
 function check_Inf_Nan( B :: Hess_matrix{Y}) where Y <: Number
     res = []
     for i in 1:length(B.arr)
