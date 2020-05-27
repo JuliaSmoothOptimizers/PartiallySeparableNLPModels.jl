@@ -166,7 +166,7 @@ end
 Compute the element grandient from the compil_tape compiled before according to the vector x, and store the result in the vector g
 Use of ReverseDiff
 """
-function element_gradient!( compiled_tape :: ReverseDiff.CompiledTape, x :: AbstractVector{T}, g :: element_gradient{T} ) where T <: Number where Y
+function element_gradient!(compiled_tape :: ReverseDiff.CompiledTape, x :: AbstractVector{T}, g :: element_gradient{T} ) where T <: Number where Y
     ReverseDiff.gradient!(g.g_i, compiled_tape, x)
 end
 
@@ -190,7 +190,7 @@ end
 Compute the element grandient of the function represents by expr_tree according to the vector x, and store the result in the vector g.
 This was the previous version using ForwardDiff. The actual version using ReverseDiff is more efficient.
 """
-function element_gradient2!( expr_tree :: Y, x :: AbstractVector{T}, g :: element_gradient{T} ) where T <: Number where Y
+function element_gradient2!(expr_tree :: Y, x :: AbstractVector{T}, g :: element_gradient{T} ) where T <: Number where Y
     ForwardDiff.gradient!(g.g_i, CalculusTreeTools.evaluate_expr_tree(expr_tree), x  )
 end
 
