@@ -1,5 +1,4 @@
 using JuMP, MathOptInterface, LinearAlgebra, SparseArrays
-using Test, BenchmarkTools, InteractiveUtils
 
 using CalculusTreeTools
 
