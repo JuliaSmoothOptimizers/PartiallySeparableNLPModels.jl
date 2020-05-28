@@ -57,7 +57,6 @@ ones_ = ones(n)
 println("fin des initialisations")
 
 """ EVALUATION DES FONCTIONS """
-x_test = [ x[1], x[2], x[1], x[2], x[1], x[2], x[1], x[2], x[1], x[2]]
 @testset "evaluation des fonctions par divers moyens" begin
 
     obj_SPS_x = PartiallySeparableNLPModel.evaluate_SPS( SPS1, x)
@@ -89,7 +88,6 @@ end
 
 
 """ EVALUATION DES GRADIENTS """
-
 @testset " evaluation du gradient par divers moyer" begin
     #fonction pour allouer un grad_vector facilement à partir d'une structure partiellement séparable
     f = (y :: PartiallySeparableNLPModel.element_function{} -> PartiallySeparableNLPModel.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
