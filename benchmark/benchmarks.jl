@@ -11,8 +11,8 @@ using PartiallySeparableNLPModel
 const SUITE = BenchmarkGroup()
 
 
-# n = [100,200,500,1000,2000,5000]
-n = [10,20,30]
+n = [100,200,500,1000,2000,5000]
+# n = [10,20,30]
 
 function create_initial_point_Rosenbrock(n)
     point_initial = Vector{Float64}(undef, n)
