@@ -7,4 +7,5 @@ commit = benchmarkpkg("PartiallySeparableStructure")  #dernier commit sur la bra
 master = benchmarkpkg("PartiallySeparableStructure", "master") # branche master
 judgement = judge(master, commit)
 # judgement = judge("PartiallySeparableStructure", "master")
+#commentaire initile
 export_markdown("benchmark/judgement.md", judgement)
