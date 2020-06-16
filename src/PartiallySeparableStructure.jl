@@ -15,6 +15,7 @@ mutable struct element_function{T}
     type :: CalculusTreeTools.type_calculus_tree
     used_variable :: Vector{Int}
     U :: SparseMatrixCSC{Int,Int}
+    convexity_status :: CalculusTreeTools.convexity_wrapper
     index :: Int
 end
 
@@ -42,6 +43,10 @@ mutable struct grad_vector{ T <: Number}
 end
 
 
+get_structure(sps :: SPS{T}) where T = sps.structure
+get_convexity_status(elmt_fun :: element_function{T}) where T = elmt_fun.convexity_status
+
+
 """
     deduct_partially_separable_structure(expr_tree, n)
 
@@ -55,6 +60,7 @@ At the end, we get the partially separable structure of f, f(x) = ∑fᵢ(xᵢ)
 deduct_partially_separable_structure(a :: Any, n :: Int) = _deduct_partially_separable_structure(a, n)
 function _deduct_partially_separable_structure(expr_tree :: T , n :: Int) where T
     work_expr_tree = copy(expr_tree)
+
     # elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree) :: Vector{T}
     elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree)
     m_i = length(elmt_fun)
@@ -87,15 +93,67 @@ function _deduct_partially_separable_structure(expr_tree :: T , n :: Int) where 
     end
 
     Sps = Vector{element_function{T}}(undef,m_i)
+    convexity_wrapper = CalculusTreeTools.convexity_wrapper(CalculusTreeTools.unknown_type())
     # Threads.@threads for i in 1:m_i
     for i in 1:m_i
-        Sps[i] = element_function{T}(elmt_fun[i], type_i[i], elmt_var_i[i], U_i[i], i )
+        Sps[i] = element_function{T}(elmt_fun[i], type_i[i], elmt_var_i[i], U_i[i], convexity_wrapper, i)
     end
 
     compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), Sps)
 
-
     return SPS{T}(Sps, length_vec[], n, compiled_gradients)
+end
+
+
+
+
+function _deduct_partially_separable_structure(expr_tree :: CalculusTreeTools.complete_expr_tree, n :: Int)
+    work_expr_tree = copy(expr_tree)
+
+    # elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree) :: Vector{T}
+    elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree)
+    CalculusTreeTools.set_bounds!.(elmt_fun)
+    CalculusTreeTools.set_convexity!.(elmt_fun)
+    m_i = length(elmt_fun)
+
+
+    # type_i = Vector{implementation_type_expr.t_type_expr_basic}(undef, m_i)
+    type_i = Vector{CalculusTreeTools.type_calculus_tree}(undef, m_i)
+    for i in 1:m_i
+        type_i[i] = CalculusTreeTools.get_type_tree(elmt_fun[i])
+    end
+
+    # elmt_var_i = CalculusTreeTools.get_elemental_variable.(elmt_fun) :: Vector{ Vector{Int}}
+    elmt_var_i =  Vector{ Vector{Int}}(undef,m_i)
+    length_vec = Threads.Atomic{Int}(0)
+    Threads.@threads for i in 1:m_i
+        elmt_var_i[i] = CalculusTreeTools.get_elemental_variable(elmt_fun[i])
+        atomic_add!(length_vec, length(elmt_var_i[i]))
+    end
+    sort!.(elmt_var_i) #ligne importante, met dans l'ordre les variables élémentaires. Utile pour les U_i et le N_to_Ni
+
+    # U_i = CalculusTreeTools.get_Ui.(elmt_var_i, n) :: Vector{SparseMatrixCSC{Int,Int}}
+    U_i = Vector{SparseMatrixCSC{Int,Int}}(undef,m_i)
+    Threads.@threads for i in 1:m_i
+        U_i[i] = CalculusTreeTools.get_Ui(elmt_var_i[i], n)
+    end
+
+    # CalculusTreeTools.element_fun_from_N_to_Ni!.(elmt_fun,elmt_var_i)
+    # Threads.@threads for i in 1:m_i
+    for i in 1:m_i
+        CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i],elmt_var_i[i])
+    end
+
+    Sps = Vector{element_function{CalculusTreeTools.complete_expr_tree}}(undef,m_i)
+    # Threads.@threads for i in 1:m_i
+    for i in 1:m_i
+        convexity_wrapper = CalculusTreeTools.convexity_wrapper(CalculusTreeTools.get_convexity_status(elmt_fun[i]))
+        Sps[i] = element_function{CalculusTreeTools.complete_expr_tree}(elmt_fun[i], type_i[i], elmt_var_i[i], U_i[i], convexity_wrapper, i)
+    end
+
+    compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), Sps)
+
+    return SPS{CalculusTreeTools.complete_expr_tree}(Sps, length_vec[], n, compiled_gradients)
 end
 
 
@@ -260,7 +318,7 @@ end
 
 """
     evaluate_element_hessian(fᵢ,xᵢ)
-Compute the Hessian of the elemental function fᵢ : Gᵢ a n × n matrix. So xᵢ a vector of size nᵢ.
+Compute the Hessian of the elemental function fᵢ : Gᵢ a nᵢ × nᵢ matrix. So xᵢ a vector of size nᵢ.
 The result of the function is the triplet of the sparse matrix Gᵢ.
 """
 function evaluate_element_hessian(elmt_fun :: element_function{T}, x :: AbstractVector{Y}) where T where Y <: Number
@@ -406,14 +464,3 @@ function check_Inf_Nan(Bi :: Array{Y,2}) where Y <: Number
         end
     end
 end
-    #
-    # using JuMP, MathOptInterface
-    #
-    # function get_obj_n( model_JUMP :: T; x :: AbstractVector=copy(model_JUMP.meta.x0)) where T <: AbstractNLPModel
-    #     model = model_JUMP.eval.m
-    #     evaluator = JuMP.NLPEvaluator(model)
-    #     MathOptInterface.initialize(evaluator, [:ExprGraph])
-    #     obj_Expr = MathOptInterface.objective_expr(evaluator) :: Expr
-    #     n = model.moi_backend.model_cache.model.num_variables_created
-    #     return (obj_Expr,x, n)
-    # end
