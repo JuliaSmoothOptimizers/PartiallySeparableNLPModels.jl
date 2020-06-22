@@ -91,7 +91,7 @@ end
 #     return (different_calculus_tree, different_calculus_tree_index)
 # end
 
-n = 10
+n = 25000
 (m, evaluator,obj) = create_Rosenbrock_JuMP_Model(n)
 
 x = ones(n)
@@ -101,11 +101,11 @@ rdm = rand(n)
 expr_tree_obj = CalculusTreeTools.transform_to_expr_tree(obj)
 comp_ext = CalculusTreeTools.create_complete_tree(expr_tree_obj)
 
-# détection de la structure partiellement séparable
-SPS1 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj, n)
-
-obj2 = CalculusTreeTools.transform_to_expr_tree(obj)
-SPS2 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj2, n)
+# # détection de la structure partiellement séparable
+# SPS1 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj, n)
+#
+# obj2 = CalculusTreeTools.transform_to_expr_tree(obj)
+# SPS2 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj2, n)
 
 SPS3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(comp_ext, n)
 
@@ -122,33 +122,40 @@ SPS3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(comp_ext,
 #     end
 # end
 # @show cpt1, cpt2
-@show sizeof(SPS1), sizeof(SPS2), sizeof(SPS3)
-@show Base.summarysize(SPS1), Base.summarysize(SPS2), Base.summarysize(SPS3)
-
+# @show sizeof(SPS1), sizeof(SPS2), sizeof(SPS3)
+# @show Base.summarysize(SPS1), Base.summarysize(SPS2), Base.summarysize(SPS3)
+@show Base.summarysize(SPS3)
 # get_different_CalculusTree(SPS2)
 # get_different_CalculusTree(SPS3)
 
-
-println("\n\n\n\n\n\n\n test sur chained_wood \n\n\n\n\n\n\n ")
-
-
-n = 10
-(m, evaluator,obj) = create_chained_wood_JuMP_Model(n)
-
-x = ones(n)
-y = zeros(n)
-rdm = rand(n)
-
-expr_tree_obj = CalculusTreeTools.transform_to_expr_tree(obj)
-comp_ext = CalculusTreeTools.create_complete_tree(expr_tree_obj)
-
-# détection de la structure partiellement séparable
-SPS1 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj, n)
-
-obj2 = CalculusTreeTools.transform_to_expr_tree(obj)
-SPS2 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj2, n)
-
-SPS3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(comp_ext, n)
-
-# get_different_CalculusTree(SPS2)
-# get_different_CalculusTree(SPS3)
+#
+# println("\n\n\n\n\n\n\n test sur chained_wood \n\n\n\n\n\n\n ")
+#
+#
+# n = 10
+# (m, evaluator,obj) = create_chained_wood_JuMP_Model(n)
+#
+# x = ones(n)
+# y = zeros(n)
+# rdm = rand(n)
+#
+# expr_tree_obj = CalculusTreeTools.transform_to_expr_tree(obj)
+# comp_ext = CalculusTreeTools.create_complete_tree(expr_tree_obj)
+#
+# # détection de la structure partiellement séparable
+# SPS1 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj, n)
+#
+# obj2 = CalculusTreeTools.transform_to_expr_tree(obj)
+# SPS2 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj2, n)
+#
+# SPS3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(comp_ext, n)
+#
+# # get_different_CalculusTree(SPS2)
+# # get_different_CalculusTree(SPS3)
+#
+# @show Base.summarysize(SPS1), Base.summarysize(SPS2), Base.summarysize(SPS3)
+@show Base.summarysize(SPS3)
+@show Base.summarysize(SPS3.structure)
+@show Base.summarysize(SPS3.structure[1])
+@show Base.summarysize(SPS3.different_element_tree)
+@show Base.summarysize(SPS3.compiled_gradients)

@@ -117,7 +117,7 @@ end
 println(" EVALUATION DES GRADIENTS ")
 @testset " evaluation du gradient par divers moyer" begin
     #fonction pour allouer un grad_vector facilement à partir d'une structure partiellement séparable
-    f = (y :: PartiallySeparableNLPModel.element_function{} -> PartiallySeparableNLPModel.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
+    f = (y :: PartiallySeparableNLPModel.element_function -> PartiallySeparableNLPModel.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
     #fonction pour comparer les norms des gradient elements
     nrm_grad_elem = (g_elem :: PartiallySeparableNLPModel.element_gradient{} -> norm(g_elem.g_i) )
 
@@ -186,7 +186,7 @@ println(" EVALUATION DES HESSIANS ")
     column = [x[1] for x in MOI_pattern]
     row = [x[2]  for x in MOI_pattern]
 
-    f = ( elm_fun :: PartiallySeparableNLPModel.element_function{} -> PartiallySeparableNLPModel.element_hessian{Float64}( Array{Float64,2}(undef, length(elm_fun.used_variable), length(elm_fun.used_variable) )) )
+    f = ( elm_fun :: PartiallySeparableNLPModel.element_function -> PartiallySeparableNLPModel.element_hessian{Float64}( Array{Float64,2}(undef, length(elm_fun.used_variable), length(elm_fun.used_variable) )) )
     t = f.(SPS1.structure) :: Vector{PartiallySeparableNLPModel.element_hessian{Float64}}
     H = PartiallySeparableNLPModel.Hess_matrix{Float64}(t)
     H2 = PartiallySeparableNLPModel.Hess_matrix{Float64}(t)
