@@ -23,16 +23,9 @@ sps3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(complete_
 
 bench_original = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
 bench_new = @benchmark PartiallySeparableNLPModel.evaluate_SPS2(sps3, x)
-# bench_related_function = @benchmark PartiallySeparableNLPModel.get_related_function(sps3)
-# rl_fun = PartiallySeparableNLPModel.get_related_function(sps3)
-# bench_xs = @benchmark PartiallySeparableNLPModel.create_empty_3dim_array(rl_fun, Float64)
-# xs = PartiallySeparableNLPModel.create_empty_3dim_array(rl_fun, Float64)
-# bench_set_xs = @benchmark PartiallySeparableNLPModel.set_different_xs!(sps3,rl_fun,xs,x)
-# PartiallySeparableNLPModel.set_different_xs!(sps3,rl_fun,xs,x)
-
-
 # @code_warntype PartiallySeparableNLPModel.evaluate_SPS2(sps3, x)
-# @benchmark PartiallySeparableNLPModel.get_related_vars(sps3)
+# @code_warntype PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
+
 
 res_new = PartiallySeparableNLPModel.evaluate_SPS2(sps3, x)
 res_original = PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
@@ -46,3 +39,7 @@ res_original = PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
 # view_test2 = view(test, [25555:25558;])
 # @benchmark Array(view_test)
 # @benchmark Array(view_test2)
+
+
+# @show (Array{SubArray{T,1,Array{T,1},Tuple{UnitRange{Int64}},true},1} where T <: Number <: Array{SubArray{T,1,Array{T,1},N,true},1} where N where T <: Number)
+# @show Array{SubArray{T,1,Array{T,1},Tuple{Array{Int64,1}},false},1} <: Array{SubArray{T,1,Array{T,1},N,true},1} where N

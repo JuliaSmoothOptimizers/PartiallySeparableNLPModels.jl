@@ -259,9 +259,8 @@ function evaluate_SPS2(sps :: SPS{T}, x :: AbstractVector{Y} ) where T where Y <
     res = Vector{Y}(undef, k)
     for i in 1:k
         vars = related_vars[i]
-        calculus_tree = diff_calculus_tree[i]
-        # On travaille ici
-        res[i] = sum(CalculusTreeTools.evaluate_expr_tree(calculus_tree, map( (y -> Array(view(x,y))), vars) ))
+        calculus_tree = diff_calculus_tree[i] :: T
+        res[i] = sum(CalculusTreeTools.evaluate_expr_tree_multiple_points(calculus_tree :: T , map( (y -> view(x,y)), vars) ))
     end
     return sum(res)
 end
@@ -279,7 +278,7 @@ function evaluate_gradient(sps :: SPS{T}, x :: Vector{Y} ) where T where Y <: Nu
         U = CalculusTreeTools.get_Ui(get_used_variable(sps.structure[i]), sps.n_var)
         if isempty(U) == false
             (row, column, value) = findnz(U)
-            temp = ForwardDiff.gradient(CalculusTreeTools.evaluate_expr_tree(get_fun_from_elmt_fun(sps.structure[i],sps)), Array(view(x, sps.structure[i].used_variable))  )
+            temp = ForwardDiff.gradient(CalculusTreeTools.evaluate_expr_tree(get_fun_from_elmt_fun(sps.structure[i],sps)), view(x, sps.structure[i].used_variable)  )
             atomic_add!.(gradient_prl[column], temp)
         end
     end
