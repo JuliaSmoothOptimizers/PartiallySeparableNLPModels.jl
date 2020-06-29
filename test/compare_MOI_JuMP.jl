@@ -49,7 +49,7 @@ end
 
 # n = 1000
 # (m, evaluator,obj) = create_Rosenbrock_JuMP_Model(n)
-n = 5
+n = 100
 (m, evaluator,obj) = create_Rosenbrock_JuMP_Model(n)
 
 x = ones(n)
@@ -80,32 +80,32 @@ println("fin des initialisations")
 println(" EVALUATION DES FONCTIONS ")
 @testset "evaluation des fonctions par divers moyens" begin
 
-    obj_SPS_x = PartiallySeparableNLPModel.evaluate_SPS( SPS1, x)
+    # obj_SPS_x = PartiallySeparableNLPModel.evaluate_SPS( SPS1, x)
     obj_SPS2_x = PartiallySeparableNLPModel.evaluate_SPS( SPS2, x)
     obj_SPS3_x = PartiallySeparableNLPModel.evaluate_SPS( SPS3, x)
     obj_MOI_x = MathOptInterface.eval_objective( evaluator, x)
 
-    @test abs(obj_SPS_x - obj_MOI_x) < σ
+    # @test abs(obj_SPS_x - obj_MOI_x) < σ
     @test abs(obj_SPS2_x - obj_MOI_x) < σ
     @test abs(obj_SPS3_x - obj_MOI_x) < σ
 
 
-    obj_SPS_y = PartiallySeparableNLPModel.evaluate_SPS(SPS1, y)
+    # obj_SPS_y = PartiallySeparableNLPModel.evaluate_SPS(SPS1, y)
     obj_SPS2_y = PartiallySeparableNLPModel.evaluate_SPS(SPS2, y)
     obj_SPS3_y = PartiallySeparableNLPModel.evaluate_SPS(SPS2, y)
     obj_MOI_y = MathOptInterface.eval_objective(evaluator, y)
 
-    @test abs(obj_SPS_y - obj_MOI_y) < σ
+    # @test abs(obj_SPS_y - obj_MOI_y) < σ
     @test abs(obj_SPS2_y - obj_MOI_y) < σ
     @test abs(obj_SPS3_y - obj_MOI_y) < σ
 
 
-    obj_SPS_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS1, rdm)
+    # obj_SPS_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS1, rdm)
     obj_SPS2_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS2, rdm)
     obj_SPS3_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS3, rdm)
     obj_MOI_rdm = MathOptInterface.eval_objective(evaluator, rdm)
 
-    @test abs(obj_SPS_rdm - obj_MOI_rdm) < σ
+    # @test abs(obj_SPS_rdm - obj_MOI_rdm) < σ
     @test abs(obj_SPS2_rdm - obj_MOI_rdm) < σ
     @test abs(obj_SPS3_rdm - obj_MOI_rdm) < σ
 
