@@ -6,7 +6,7 @@ using BenchmarkTools
 using Base.Threads
 
 m = Model()
-n = 1000
+n = 10
 @variable(m, x[1:n])
 @NLobjective(m, Min, sum( 100 * (x[j-1]^2 - x[j])^2 + (x[j-1] - 1)^2  for j in 2:n)) #rosenbrock function
 evaluator = JuMP.NLPEvaluator(m)
@@ -34,7 +34,7 @@ res = CalculusTreeTools.cast_type_of_constant(expr_Expr, Float32)
 sps3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(complete_expr_tree, n)
 # time_deduct = @elapsed (sps3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(complete_expr_tree, n))
 # @show time_deduct
-
+error("fin")
 res_original = PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
 res_new = PartiallySeparableNLPModel.evaluate_SPS2(sps3, x)
 # res_view = PartiallySeparableNLPModel.evaluate_SPS3(sps3, x)
