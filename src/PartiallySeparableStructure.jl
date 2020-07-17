@@ -395,7 +395,7 @@ end
 
 
 
-
+Hv(sps :: SPS{T,Y}, v :: AbstractVector{Y}) where T where Y <: Number = Hv(sps, sps.x, v) 
 Hv(sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number = begin hv = similar(x); Hv!(hv,sps,x,v); return hv end
 function Hv!(hv :: AbstractVector{Y}, sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number
     f = (y :: PartiallySeparableNLPModel.element_function -> PartiallySeparableNLPModel.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
@@ -404,10 +404,10 @@ function Hv!(hv :: AbstractVector{Y}, sps :: SPS{T,Y}, x :: AbstractVector{Y}, v
     l_elmt_fun = length(sps.structure)
     diff_element_tree = get_different_element_tree(sps)
     structure = get_structure(sps)
-    x_views = get_x_views(sps)
-    v_views = get_v_views(sps)
     set_x_sps(sps, x)
     set_v_sps(sps, v)
+    x_views = get_x_views(sps)
+    v_views = get_v_views(sps)
     for i in 1:l_elmt_fun
         if isempty(structure[i].used_variable) == false  #fonction element ayant au moins une variable
             index_fun = get_index_fun(structure[i])
