@@ -1,13 +1,15 @@
 using Revise
 using JuMP, MathOptInterface, LinearAlgebra
 using CalculusTreeTools, PartiallySeparableNLPModel
-using Test, BenchmarkTools
+using Test, BenchmarkTools, ProfileView
 
 using ReverseDiff
 
 using BenchmarkTools
 
 using Base.Threads
+
+
 
 m = Model()
 n = 10000
@@ -22,7 +24,7 @@ x = ones(n)
 
 sps = PartiallySeparableNLPModel.deduct_partially_separable_structure(complete_expr_tree, n)
 
-
+sps_Float32 = PartiallySeparableNLPModel.deduct_partially_separable_structure(complete_expr_tree, n, Float32)
 
 
 
@@ -31,25 +33,44 @@ x = (x -> 3*x).(ones(n))
 f = (y :: PartiallySeparableNLPModel.element_function -> PartiallySeparableNLPModel.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
 p_grad = PartiallySeparableNLPModel.grad_vector{typeof(x[1])}( f.(sps.structure) )
 v = (x -> 2*x).(ones(n))
-v = zeros(n)
+# v = zeros(n)
 # v = (y -> 5 * y).(ones(n))
 v[1] = 1
 
+x_Float32 = (x -> 3*x).(ones(Float32,n))
+v_Float32 = (x -> 2*x).(ones(Float32,n))
+obj_Float32 = PartiallySeparableNLPModel.evaluate_SPS(sps_Float32, x_Float32)
+obj_Float64 = PartiallySeparableNLPModel.evaluate_SPS(sps, x)
+
+# bench_obj_Float32 = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps_Float32, x_Float32)
+# benchh_obj_Float64 = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps, x)
 
 
+res_total_Float32 = PartiallySeparableNLPModel.Hv(sps_Float32, x_Float32, v_Float32)
+res_total1 = PartiallySeparableNLPModel.Hv(sps,x,v)
+res_total2 = PartiallySeparableNLPModel.Hv2(sps,x,v)
+# res_total3 = PartiallySeparableNLPModel.Hv3(sps,x,v)
 
-res_total = PartiallySeparableNLPModel.Hv(sps,x,v)
 x_MOI_Hessian_y = similar(x)
 MathOptInterface.eval_hessian_lagrangian_product(evaluator, x_MOI_Hessian_y, x, v, 1.0, zeros(0))
 
-@show norm( res_total - x_MOI_Hessian_y)
+@show norm( res_total1 - x_MOI_Hessian_y)
+@show norm( res_total2 - x_MOI_Hessian_y)
+# @show norm( res_total3 - x_MOI_Hessian_y)
+
+
+error("pause")
 
 bench_jump = @benchmark MathOptInterface.eval_hessian_lagrangian_product(evaluator, x_MOI_Hessian_y, x, v, 1.0, zeros(0))
 hv = similar(x)
+bench_grad = @benchmark PartiallySeparableNLPModel.evaluate_SPS_gradient(sps,x)
+@profview @benchmark PartiallySeparableNLPModel.Hv2!(hv, sps, x, v)
+
 bench_sps =  @benchmark PartiallySeparableNLPModel.Hv!(hv, sps, x, v)
+bench_sps2 =  @benchmark PartiallySeparableNLPModel.Hv2!(hv, sps, x, v)
+# bench_sps3 =  @benchmark PartiallySeparableNLPModel.Hv3!(hv, sps, x, v)
 # # bench_elemental = @benchmark ∇²fv!(tree1, x, v, res)
 #
-error("pause")
 #
 # hess_mat = PartiallySeparableNLPModel.hess(sps, x)
 # @show hess_mat

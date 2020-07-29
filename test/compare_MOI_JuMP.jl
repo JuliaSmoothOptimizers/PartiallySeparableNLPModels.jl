@@ -1,6 +1,7 @@
 using JuMP, MathOptInterface, LinearAlgebra, SparseArrays
 
 using CalculusTreeTools
+using PartiallySeparableNLPModel
 
 
 println("\n\nCompare_With_MOI_JUMP\n\n")
@@ -53,11 +54,18 @@ n = 100
 (m, evaluator,obj) = create_Rosenbrock_JuMP_Model(n)
 
 x = ones(n)
-y = zeros(n)
+x_Float32 = ones(Float32,n)
+
+y = (x-> 2*x).(ones(n))
+y_Float32 = (x-> 2*x).( ones(Float32,n))
+
 rdm = rand(n)
+rdm_Float32 = similar(y_Float32)
+map!( x -> Float32(x), rdm_Float32, rdm)
 
 expr_tree_obj = CalculusTreeTools.transform_to_expr_tree(obj)
 comp_ext = CalculusTreeTools.create_complete_tree(expr_tree_obj)
+comp_ext2 = CalculusTreeTools.transform_to_expr_tree(obj)
 
 # détection de la structure partiellement séparable
 SPS1 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj, n)
@@ -67,10 +75,13 @@ SPS2 = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj2, n)
 
 SPS3 = PartiallySeparableNLPModel.deduct_partially_separable_structure(comp_ext, n)
 
+SPS_Float32 = PartiallySeparableNLPModel.deduct_partially_separable_structure(comp_ext2, n, Float32)
+
 
 
 
 σ = 1e-5
+σ_Float32 = 1e-3
 
 ones_ = ones(n)
 println("fin des initialisations")
@@ -83,31 +94,45 @@ println(" EVALUATION DES FONCTIONS ")
     # obj_SPS_x = PartiallySeparableNLPModel.evaluate_SPS( SPS1, x)
     obj_SPS2_x = PartiallySeparableNLPModel.evaluate_SPS( SPS2, x)
     obj_SPS3_x = PartiallySeparableNLPModel.evaluate_SPS( SPS3, x)
+    obj_SPS4_x = PartiallySeparableNLPModel.evaluate_SPS( SPS_Float32, x_Float32)
     obj_MOI_x = MathOptInterface.eval_objective( evaluator, x)
 
     # @test abs(obj_SPS_x - obj_MOI_x) < σ
     @test abs(obj_SPS2_x - obj_MOI_x) < σ
     @test abs(obj_SPS3_x - obj_MOI_x) < σ
+    @test abs(obj_SPS4_x - obj_MOI_x) < σ_Float32
+
+    @test typeof(obj_SPS4_x) == Float32
 
 
     # obj_SPS_y = PartiallySeparableNLPModel.evaluate_SPS(SPS1, y)
     obj_SPS2_y = PartiallySeparableNLPModel.evaluate_SPS(SPS2, y)
-    obj_SPS3_y = PartiallySeparableNLPModel.evaluate_SPS(SPS2, y)
+    obj_SPS3_y = PartiallySeparableNLPModel.evaluate_SPS(SPS3, y)
+    obj_SPS4_y = PartiallySeparableNLPModel.evaluate_SPS(SPS_Float32, y_Float32)
     obj_MOI_y = MathOptInterface.eval_objective(evaluator, y)
 
     # @test abs(obj_SPS_y - obj_MOI_y) < σ
     @test abs(obj_SPS2_y - obj_MOI_y) < σ
     @test abs(obj_SPS3_y - obj_MOI_y) < σ
+    @test abs(obj_SPS4_y - obj_MOI_y) < σ_Float32
+
+    @test typeof(obj_SPS4_y) == Float32
+
 
 
     # obj_SPS_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS1, rdm)
     obj_SPS2_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS2, rdm)
     obj_SPS3_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS3, rdm)
+    obj_SPS4_rdm = PartiallySeparableNLPModel.evaluate_SPS(SPS_Float32, rdm_Float32)
+
     obj_MOI_rdm = MathOptInterface.eval_objective(evaluator, rdm)
 
     # @test abs(obj_SPS_rdm - obj_MOI_rdm) < σ
     @test abs(obj_SPS2_rdm - obj_MOI_rdm) < σ
     @test abs(obj_SPS3_rdm - obj_MOI_rdm) < σ
+    @test abs(obj_SPS4_rdm - obj_MOI_rdm) < σ_Float32
+
+    @test typeof(obj_SPS4_rdm) == Float32
 
 
 end
@@ -142,12 +167,19 @@ println(" EVALUATION DES GRADIENTS ")
     PartiallySeparableNLPModel.build_gradient!(SPS2, p_grad2, p_grad_build2)
     PartiallySeparableNLPModel.build_gradient!(SPS3, p_grad3, p_grad_build3)
 
+    grad_Float32 = PartiallySeparableNLPModel.evaluate_SPS_gradient(SPS_Float32, x_Float32)
+
+
+
     @test norm(MOI_gradient - grad) < σ
     @test norm(MOI_gradient - grad2) < σ
     @test norm(MOI_gradient - grad3) < σ
     @test norm(MOI_gradient - p_grad_build) < σ
     @test norm(MOI_gradient - p_grad_build2) < σ
     @test norm(MOI_gradient - p_grad_build3) < σ
+
+    @test norm(MOI_gradient - grad_Float32) < σ_Float32
+    @test typeof(grad_Float32) == Vector{Float32}
 
     @test sum(nrm_grad_elem.(p_grad.arr)) - sum(nrm_grad_elem.(p_grad2.arr)) < σ
     @test sum(nrm_grad_elem.(p_grad.arr)) - sum(nrm_grad_elem.(p_grad3.arr)) < σ
@@ -157,10 +189,13 @@ println(" EVALUATION DES GRADIENTS ")
     PartiallySeparableNLPModel.evaluate_SPS_gradient!(SPS1, y, p_grad)
     PartiallySeparableNLPModel.evaluate_SPS_gradient!(SPS2, y, p_grad2)
     PartiallySeparableNLPModel.evaluate_SPS_gradient!(SPS3, y, p_grad3)
+    grad_Float32_2 = PartiallySeparableNLPModel.evaluate_SPS_gradient(SPS_Float32, y_Float32)
+
 
     grad = PartiallySeparableNLPModel.build_gradient(SPS1, p_grad)
     grad2 = PartiallySeparableNLPModel.build_gradient(SPS2, p_grad2)
     grad3 = PartiallySeparableNLPModel.build_gradient(SPS3, p_grad3)
+    grad4 = PartiallySeparableNLPModel.evaluate_SPS_gradient(SPS3, y)
     PartiallySeparableNLPModel.build_gradient!(SPS1, p_grad, p_grad_build)
     PartiallySeparableNLPModel.build_gradient!(SPS2, p_grad2, p_grad_build2)
     PartiallySeparableNLPModel.build_gradient!(SPS3, p_grad3, p_grad_build3)
@@ -169,9 +204,13 @@ println(" EVALUATION DES GRADIENTS ")
     @test norm(MOI_gradient - grad) < σ
     @test norm(MOI_gradient - grad2) < σ
     @test norm(MOI_gradient - grad3) < σ
+    @test norm(MOI_gradient - grad4) < σ
     @test norm(MOI_gradient - p_grad_build) < σ
     @test norm(MOI_gradient - p_grad_build2) < σ
     @test norm(MOI_gradient - p_grad_build3) < σ
+
+    @test norm(MOI_gradient - grad_Float32_2) < σ_Float32
+    @test typeof(grad_Float32_2) == Vector{Float32}
 
     @test sum(nrm_grad_elem.(p_grad.arr)) - sum(nrm_grad_elem.(p_grad2.arr)) < σ
     @test sum(nrm_grad_elem.(p_grad.arr)) - sum(nrm_grad_elem.(p_grad3.arr)) < σ
@@ -216,8 +255,8 @@ println(" EVALUATION DES HESSIANS ")
     # #Ensuite on calcul le produit entre le structure de donnée SPS_Structured_Hessian_en_x et y
     @testset "test du produit" begin
         x_H_y = PartiallySeparableNLPModel.product_matrix_sps(SPS1, H, y)
-        x_H_y2 = PartiallySeparableNLPModel.product_matrix_sps(SPS1, H2, y)
-        x_H_y3 = PartiallySeparableNLPModel.product_matrix_sps(SPS1, H3, y)
+        x_H_y2 = PartiallySeparableNLPModel.product_matrix_sps(SPS2, H2, y)
+        x_H_y3 = PartiallySeparableNLPModel.product_matrix_sps(SPS3, H3, y)
 
 
         v_tmp = Vector{ Float64 }(undef, length(MOI_pattern))
@@ -232,6 +271,31 @@ println(" EVALUATION DES HESSIANS ")
         @test norm(x_H_y3 - MOI_hessian_en_x*y, 2) < σ
 
     end
+
+    @testset "test du produit2" begin
+        x_H_y = PartiallySeparableNLPModel.Hv(SPS1, x, y)
+        x_H_y2 = PartiallySeparableNLPModel.Hv(SPS2, x, y)
+        x_H_y3 = PartiallySeparableNLPModel.Hv(SPS3, x, y)
+        x_H_y4 = PartiallySeparableNLPModel.Hv(SPS_Float32, x_Float32, y_Float32)
+
+
+        v_tmp = Vector{ Float64 }(undef, length(MOI_pattern))
+        x_MOI_Hessian_y = Vector{ typeof(y[1]) }(undef,n)
+        MathOptInterface.eval_hessian_lagrangian_product(evaluator, x_MOI_Hessian_y, x, y, 1.0, zeros(0))
+        #
+        @test norm(x_MOI_Hessian_y - x_H_y, 2) < σ
+        @test norm(x_MOI_Hessian_y - x_H_y2, 2) < σ
+        @test norm(x_MOI_Hessian_y - x_H_y3, 2) < σ
+        @test norm(x_H_y - MOI_hessian_en_x*y, 2) < σ
+        @test norm(x_H_y2 - MOI_hessian_en_x*y, 2) < σ
+        @test norm(x_H_y3 - MOI_hessian_en_x*y, 2) < σ
+        @test norm(x_H_y4 - MOI_hessian_en_x*y, 2) < σ_Float32
+
+        @test typeof(x_H_y4) == Vector{Float32}
+
+    end
+
+
 
 end
 
