@@ -192,7 +192,7 @@ function evaluate_obj_pre_compiled(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) whe
     res_distrinct_elmt_fun = Vector{Y}(undef,n)
 
     set_x_sps(sps, x)
-    
+
     for i in 1:n
         @inbounds res_distrinct_elmt_fun[i] = CalculusTreeTools.evaluate_expr_tree_multiple_points(different_element_tree[i])
     end
@@ -327,29 +327,16 @@ end
 
 
 
-evaluate_SPS(sps :: SPS{T,Y}) where T where Y <: Number = (x :: AbstractVector{Y} -> evaluate_SPS(sps,x) )
+
 """
     evaluate_SPS(sps,x)
 Evaluate the structure sps on the point x ∈ Rⁿ. Since we work on subarray of x, we allocate x to the structure sps in a first time.
 Once this step is done we select the calculus tree needed as well as the view of x needed.
 Then we evaluate the different calculus tree on the needed point (since the same function appear a lot of time). At the end we sum the result
 """
-function evaluate_SPS(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) where T where Y <: Number
-    sps.x .= x
-    related_vars = get_related_vars(sps)
-    diff_calculus_tree = get_different_element_tree(sps)
-    x_views = get_x_views(sps)
-    (length(diff_calculus_tree) == length(related_vars) && length(related_vars) == length(x_views))|| error("mismatch evaluate SPS")
-    nb_elem_fun = length(diff_calculus_tree)
-    res = Vector{Y}(undef, nb_elem_fun)
-    for i in 1:nb_elem_fun
-        vars = related_vars[i]
-        calculus_tree = diff_calculus_tree[i] :: T
-        selected_vars = x_views[i]
-        res[i] = sum(CalculusTreeTools.evaluate_expr_tree_multiple_points(calculus_tree :: T , selected_vars))
-    end
-    return sum(res)
-end
+@inline evaluate_SPS(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) where T where Y <: Number = evaluate_obj_pre_compiled(sps, x)
+@inline evaluate_SPS(sps :: SPS{T,Y}) where T where Y <: Number = (x :: AbstractVector{Y} -> evaluate_SPS(sps,x) )
+
 
 
 """
@@ -871,6 +858,23 @@ f(x) = ∑fᵢ(xᵢ), so we compute independently each fᵢ(xᵢ) and we return 
 #     #les solutions à base de boucle for sont plus lente même avec @Thread.thread
 # end
 
+
+# function evaluate_SPS2(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) where T where Y <: Number
+#     sps.x .= x
+#     related_vars = get_related_vars(sps)
+#     diff_calculus_tree = get_different_element_tree(sps)
+#     x_views = get_x_views(sps)
+#     (length(diff_calculus_tree) == length(related_vars) && length(related_vars) == length(x_views))|| error("mismatch evaluate SPS")
+#     nb_elem_fun = length(diff_calculus_tree)
+#     res = Vector{Y}(undef, nb_elem_fun)
+#     for i in 1:nb_elem_fun
+#         vars = related_vars[i]
+#         calculus_tree = diff_calculus_tree[i] :: T
+#         selected_vars = x_views[i]
+#         res[i] = sum(CalculusTreeTools.evaluate_expr_tree_multiple_points(calculus_tree :: T , selected_vars))
+#     end
+#     return sum(res)
+# end
 
 
 

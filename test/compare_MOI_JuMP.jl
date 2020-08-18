@@ -89,9 +89,9 @@ println("fin des initialisations")
 
 
 println(" EVALUATION DES FONCTIONS ")
-@testset "evaluation des fonctions par divers moyens" begin
+# @testset "evaluation des fonctions par divers moyens" begin
 
-    # obj_SPS_x = PartiallySeparableNLPModel.evaluate_SPS( SPS1, x)
+    obj_SPS_x = PartiallySeparableNLPModel.evaluate_SPS( SPS1, x)
     obj_SPS2_x = PartiallySeparableNLPModel.evaluate_SPS( SPS2, x)
     obj_SPS3_x = PartiallySeparableNLPModel.evaluate_SPS( SPS3, x)
     obj_SPS4_x = PartiallySeparableNLPModel.evaluate_SPS( SPS_Float32, x_Float32)
@@ -135,7 +135,7 @@ println(" EVALUATION DES FONCTIONS ")
     @test typeof(obj_SPS4_rdm) == Float32
 
 
-end
+# end
 
 
 
