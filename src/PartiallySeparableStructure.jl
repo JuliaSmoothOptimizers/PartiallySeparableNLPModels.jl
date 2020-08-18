@@ -30,6 +30,8 @@ mutable struct SPS{T, N <: Number}
     index_element_tree :: Vector{Vector{Int}}
     related_vars :: Vector{Vector{Vector{Int}}}
 
+    obj_pre_compiled_trees :: Vector{CalculusTreeTools.pre_n_compiled_tree{N}}
+
     x :: Vector{N}
     x_views :: Vector{Vector{SubArray{N,1,Array{N,1},Tuple{Array{Int64,1}},false}}}
 
@@ -41,7 +43,7 @@ mutable struct SPS{T, N <: Number}
     compiled_gradients :: Vector{ReverseDiff.CompiledTape}
 end
 
-
+@inline get_obj_pre_compiled_trees(sps :: SPS{T,N}) where T where N <: Number = sps.obj_pre_compiled_trees
 @inline get_fun_from_elmt_fun( elmt_fun :: element_function, sps :: SPS{T}) where T = sps.different_element_tree[elmt_fun.index_fun]
 @inline get_var_from_elmt_fun( elmt_fun :: element_function, sps :: SPS{T}) where T = sps.x_views[get_index_fun(elmt_fun)][get_index_element_tree_position(elmt_fun)]
 @inline get_element_function( sps :: SPS{T}, index :: Int) where T = get_structure(sps)[index]
@@ -85,122 +87,125 @@ Find the partially separable structure of a function f stored as an expression t
 To define properly the size of sparse matrix we need the size of the problem : n.
 At the end, we get the partially separable structure of f, f(x) = ∑fᵢ(xᵢ)
 """
-# deduct_partially_separable_structure(a :: Any, n :: Int) = _deduct_partially_separable_structure(a, trait_expr_tree.is_expr_tree(a), n)
-# _deduct_partially_separable_structure(a, :: trait_expr_tree.type_not_expr_tree, n :: Int) = error("l'entrée de la fonction n'est pas un arbre d'expression")
-# _deduct_partially_separable_structure(a, :: trait_expr_tree.type_expr_tree, n :: Int) = _deduct_partially_separable_structure(a, n )
 deduct_partially_separable_structure(a :: Any, n :: Int, type=Float64 :: DataType) = _deduct_partially_separable_structure(a, n, type)
-function _deduct_partially_separable_structure(expr_tree :: T , n :: Int, type=Float64 :: DataType) where T
-    work_expr_tree = copy(expr_tree)
-    if isa(expr_tree, Expr) == false
-        CalculusTreeTools.cast_type_of_constant(work_expr_tree, type)
-    end
 
-    elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree)
+function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float64 :: DataType) where T
+    # transformation of the tree of type T into an expr tree of type t_expr_tree (the standard type used by my algorithms)
+    expr_tree = CalculusTreeTools.transform_to_expr_tree(tree) :: CalculusTreeTools.t_expr_tree
+    work_tree = copy(expr_tree) # peut être non nécessaire
+    elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_tree) :: Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
     m_i = length(elmt_fun)
 
-    type_i = Vector{CalculusTreeTools.type_calculus_tree}(undef, m_i)
-    for i in 1:m_i
-        type_i[i] = CalculusTreeTools.get_type_tree(elmt_fun[i])
-    end
-
+    #récupération des variables élémentaires
     elmt_var_i =  Vector{ Vector{Int}}(undef,m_i)
-    length_vec = Threads.Atomic{Int}(0)
-    for i in 1:m_i
-        elmt_var_i[i] = CalculusTreeTools.get_elemental_variable(elmt_fun[i])
-        atomic_add!(length_vec, length(elmt_var_i[i]))
-    end
-    sort!.(elmt_var_i) #ligne importante, met dans l'ordre les variables élémentaires. Utile pour les U_i et le N_to_Ni
-
-    for i in 1:m_i
-        CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i],elmt_var_i[i])
-    end
-
-    structure = Vector{element_function}(undef,m_i)
-    convexity_wrapper = CalculusTreeTools.convexity_wrapper(CalculusTreeTools.unknown_type())
-
-
-    (different_calculus_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun)
-
-    for i in 1:m_i
-        undefined_index = 0
-        structure[i] = element_function(different_calculus_tree_index[i], undefined_index, type_i[i], elmt_var_i[i], convexity_wrapper, i)
-    end
-    construct_set_index_element_view!(structure, different_calculus_tree)
-
-    index_element_tree = get_related_function(structure, different_calculus_tree)
-
-    related_vars = get_related_var(structure, index_element_tree)
-
-    compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), different_calculus_tree)
-
-    x = Vector{type}(undef,n)
-    x_views = construct_views(x, related_vars)
-
-    v = Vector{type}(undef,n)
-    v_views = construct_views(v, related_vars)
-
-
-    return SPS{T, type}(structure, different_calculus_tree, index_element_tree, related_vars, x, x_views, v, v_views, length_vec[], n, compiled_gradients)
-end
-
-
-
-
-function _deduct_partially_separable_structure(expr_tree :: CalculusTreeTools.complete_expr_tree, n :: Int, type=Float64 :: DataType)
-    work_expr_tree = copy(expr_tree)
-    CalculusTreeTools.cast_type_of_constant(work_expr_tree, type)
-
-    # elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree) :: Vector{T}
-    elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree)
-    m_i = length(elmt_fun)
-
-
-    # type_i = Vector{implementation_type_expr.t_type_expr_basic}(undef, m_i)
-    type_i = Vector{CalculusTreeTools.type_calculus_tree}(undef, m_i)
-    for i in 1:m_i
-        type_i[i] = CalculusTreeTools.get_type_tree(elmt_fun[i])
-    end
-
-    elmt_var_i =  Vector{ Vector{Int}}(undef,m_i)
-    length_vec = 0
+    length_vec = (Int)(0)
     for i in 1:m_i
         elmt_var_i[i] = CalculusTreeTools.get_elemental_variable(elmt_fun[i])
         length_vec += length(elmt_var_i[i])
     end
     sort!.(elmt_var_i) #ligne importante, met dans l'ordre les variables élémentaires. Utile pour les U_i et le N_to_Ni
 
+    # renumérotation des variables des fonctions éléments en variables internes
     for i in 1:m_i
         CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i],elmt_var_i[i])
     end
 
-    (different_calculus_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun)
-    CalculusTreeTools.set_bounds!.(different_calculus_tree)
-    CalculusTreeTools.set_convexity!.(different_calculus_tree)
-    convexity_wrapper = map( (x -> CalculusTreeTools.convexity_wrapper(CalculusTreeTools.get_convexity_status(x)) ), different_calculus_tree)
+    # à partir des fonctions éléments renumérotées factorisation en fonction éléments distinctes
+    (different_calculus_expr_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun)
+    # creation d'arbres complets à partir des ces fonctions éléments distinctes
+    temp_complete_trees = CalculusTreeTools.create_complete_tree.(different_calculus_expr_tree)
 
+    # cast des ces arbres aux types voulus
+    different_calculus_complete_trees = map(tree -> CalculusTreeTools.cast_type_of_constant(tree, type), temp_complete_trees)
+
+    #calcul des bornes et de la convexité de ces arbres complets distincts
+    CalculusTreeTools.set_bounds!.(different_calculus_complete_trees)
+    CalculusTreeTools.set_convexity!.(different_calculus_complete_trees)
+    # information concernant la convexité des arbres complets distincts
+    convexity_wrapper = map( (x -> CalculusTreeTools.convexity_wrapper(CalculusTreeTools.get_convexity_status(x)) ), different_calculus_complete_trees)
+
+    # récupération des types des fonctions éléments
+    m_diff_element_fun = length(different_calculus_complete_trees)
+    type_i = Vector{CalculusTreeTools.type_calculus_tree}(undef, m_diff_element_fun)
+    for i in 1:m_diff_element_fun
+        type_i[i] = CalculusTreeTools.get_type_tree(different_calculus_complete_trees[i])
+    end
+
+    #création des fonctions éléments
     structure = Vector{element_function}(undef,m_i)
     for i in 1:m_i
+        index_distinct_element_tree = different_calculus_tree_index[i]
         undefined_index = 0
-        structure[i] = element_function(different_calculus_tree_index[i], undefined_index, type_i[i], elmt_var_i[i], convexity_wrapper[different_calculus_tree_index[i]], i)
+        structure[i] = element_function(index_distinct_element_tree, undefined_index, type_i[index_distinct_element_tree], elmt_var_i[i], convexity_wrapper[index_distinct_element_tree], i)
     end
-    construct_set_index_element_view!(structure, different_calculus_tree)
 
-    index_element_tree = get_related_function(structure, different_calculus_tree)
-
+    # on donne une valeur au champs index_element_tree_position de chaque fonction élément
+    construct_set_index_element_view!(structure, different_calculus_complete_trees)
+    # récupère pour chaque arbre complet distinct l'ensemble des fonctions éléments qui lui sont affectées.
+    index_element_tree = get_related_function(structure, different_calculus_complete_trees)
+    # récupère les indices assoxiés aux fonctions éléménts associées à chaque arbre complet distinct
     related_vars = get_related_var(structure, index_element_tree)
 
-    compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), different_calculus_tree)
+    # pré compilation du gradient.
+    compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), different_calculus_complete_trees)
 
     x = Vector{type}(undef,n)
     x_views = construct_views(x, related_vars)
 
+    distinct_casted_expr_tree = map(tree -> CalculusTreeTools.cast_type_of_constant(tree, type), different_calculus_expr_tree)
+    obj_pre_compiled_trees = create_pre_compiled_tree(distinct_casted_expr_tree, x_views)
+
+
     v = Vector{type}(undef,n)
     v_views = construct_views(v, related_vars)
 
-    return SPS{CalculusTreeTools.complete_expr_tree, type}(structure, different_calculus_tree, index_element_tree, related_vars, x, x_views, v, v_views, length_vec[], n, compiled_gradients)
+    sps = SPS{CalculusTreeTools.complete_expr_tree, type}(structure,
+                                                          different_calculus_complete_trees,
+                                                          index_element_tree,
+                                                          related_vars,
+                                                          obj_pre_compiled_trees,
+                                                          x,
+                                                          x_views,
+                                                          v,
+                                                          v_views,
+                                                          length_vec,
+                                                          n,
+                                                          compiled_gradients)
+    return sps
 end
 
 
+
+function create_pre_compiled_tree(different_calculus_expr_tree :: Vector{CalculusTreeTools.t_expr_tree}, x_views :: Vector{Vector{SubArray{N,1,Array{N,1},Tuple{Array{Int64,1}},false}}} ) where N <: Number
+    n = length(different_calculus_expr_tree)
+    n == length(x_views) || error("error in  create_pre_compiled_tree, distinct element function does not match x_views")
+    res = Vector{CalculusTreeTools.pre_n_compiled_tree{N}}(undef, n)
+    for i in 1:n
+        res[i] = CalculusTreeTools.create_pre_n_compiled_tree(different_calculus_expr_tree[i], x_views[i])
+    end
+    return res
+end
+
+function evaluate_obj_pre_compiled(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) where T where Y <: Number
+    different_element_tree = get_obj_pre_compiled_trees(sps)
+    n = length(different_element_tree)
+    res_distrinct_elmt_fun = Vector{Y}(undef,n)
+
+    set_x_sps(sps, x)
+    
+    for i in 1:n
+        @inbounds res_distrinct_elmt_fun[i] = CalculusTreeTools.evaluate_expr_tree_multiple_points(different_element_tree[i])
+    end
+    @inbounds res = sum(res_distrinct_elmt_fun)
+    return res
+end
+
+
+"""
+    construct_set_index_element_view(elmt_fun_vector, diff_elmt_tree)
+For each elmt_fun ∈ elmt_fun_vector we set the attribute index_element_tree_position. For doing this we use the function get_elmnt_fun_index_view(elmt_fun_vector, diff_elmt_tree)
+that builds a vector of size length(elmt_fun_vector) with the right indexes.
+"""
 construct_set_index_element_view!(structure :: Vector{element_function}, different_element_tree :: Vector{T}) where T = set_index_element_view!(structure, get_elmnt_fun_index_view(structure, different_element_tree))
 
 function set_index_element_view!(structure :: Vector{element_function}, vector_index_view :: Vector{Int})
@@ -214,8 +219,8 @@ end
 
 """
     get_elmnt_fun_index_view(vector_element_fun, different_element_tree)
-For each element_fun ∈ vector_element_fun return the position of the linked with the element tree corresponding in different_element_tree,
-wich correspond  after with the index of the view variables for element_function.
+For each element_fun ∈ vector_element_fun, returns the position of the linked element tree corresponding in different_element_tree.
+It will be use later for retrieve a view of the variable used by each element function.
 """
 function get_elmnt_fun_index_view(structure :: Vector{element_function}, different_element_tree :: Vector{T}) where T
     length_det = length(different_element_tree)
@@ -229,6 +234,7 @@ function get_elmnt_fun_index_view(structure :: Vector{element_function}, differe
         vector_index_view[index_elmt_fun] = vector_count[index_element_tree]
         vector_count[index_element_tree] +=1
     end
+
     return vector_index_view
 end
 
@@ -277,10 +283,11 @@ function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
 end
 
 """
-    get_related_var(sps)
-Renvoie un tableau à 3 dimensions. Un tableau à 2 dimension pour chaque arbre de calcul.
-Pour chaque arbre de calcul nous partons des indices associés correspondant à l'indice de la fonction élément.
-Pour chaque indice de fonction élément on retourner les variables utilisés dans ladite fonction élément. Ce qui nous donne un vecteur de vecteur.
+    get_related_var(vec_elmt_fun, index_elmt_tree)
+Renvoie un tableau d'entier de 3 dimensions. La première dimension de taille length(index_elmt_tree) correspond au nombre de fonctions éléments distinctes (arbre de calcul).
+Pour chaque fonction éléments distinctes e nous avons un vecteur vₑ :: Vector{Vector{Int}} tel que length(vₑ) == length(index_elmt_tree[e])
+index_elmt_tree[e] contient les indices des fonctions éléments rattachés à la fonction élément e.
+Le résultat de la fonction renverra pour chaque indice de fonctions éléments les variables utilisées ( :: Vector{Int}) par celle-ci ce qui nous donne un tableau 3 dimensions.
 """
 function get_related_var(v_element_function :: Vector{element_function}, index_elmt_tree :: Vector{Vector{Int}})
     new_needed_var(index) = Vector{Int}(v_element_function[index].used_variable)
@@ -862,4 +869,127 @@ f(x) = ∑fᵢ(xᵢ), so we compute independently each fᵢ(xᵢ) and we return 
 #     # @inbounds @fastmath mapreduce(elmt_fun :: element_function{T} -> CalculusTreeTools.evaluate_expr_tree(elmt_fun.fun, view(x, elmt_fun.used_variable)) :: Y, + , sps.structure :: Vector{element_function{T}})
 #     @inbounds @fastmath mapreduce(elmt_fun :: element_function -> CalculusTreeTools.evaluate_expr_tree(get_fun_from_elmt_fun(elmt_fun,sps), view(x, elmt_fun.used_variable)) :: Y, + , sps.structure :: Vector{element_function})
 #     #les solutions à base de boucle for sont plus lente même avec @Thread.thread
+# end
+
+
+
+
+
+#=
+Previous deduct_partially_separable_structure
+=#
+
+# deduct_partially_separable_structure(a :: Any, n :: Int) = _deduct_partially_separable_structure(a, trait_expr_tree.is_expr_tree(a), n)
+# _deduct_partially_separable_structure(a, :: trait_expr_tree.type_not_expr_tree, n :: Int) = error("l'entrée de la fonction n'est pas un arbre d'expression")
+# _deduct_partially_separable_structure(a, :: trait_expr_tree.type_expr_tree, n :: Int) = _deduct_partially_separable_structure(a, n )
+
+# function _deduct_partially_separable_structure(expr_tree :: T , n :: Int, type=Float64 :: DataType) where T
+#     work_expr_tree = copy(expr_tree)
+#     if isa(expr_tree, Expr) == false
+#         CalculusTreeTools.cast_type_of_constant(work_expr_tree, type)
+#     end
+#
+#     elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree)
+#     m_i = length(elmt_fun)
+#
+#     type_i = Vector{CalculusTreeTools.type_calculus_tree}(undef, m_i)
+#     for i in 1:m_i
+#         type_i[i] = CalculusTreeTools.get_type_tree(elmt_fun[i])
+#     end
+#
+#     elmt_var_i =  Vector{ Vector{Int}}(undef,m_i)
+#     length_vec = Threads.Atomic{Int}(0)
+#     for i in 1:m_i
+#         elmt_var_i[i] = CalculusTreeTools.get_elemental_variable(elmt_fun[i])
+#         atomic_add!(length_vec, length(elmt_var_i[i]))
+#     end
+#     sort!.(elmt_var_i) #ligne importante, met dans l'ordre les variables élémentaires. Utile pour les U_i et le N_to_Ni
+#
+#     for i in 1:m_i
+#         CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i],elmt_var_i[i])
+#     end
+#
+#     structure = Vector{element_function}(undef,m_i)
+#     convexity_wrapper = CalculusTreeTools.convexity_wrapper(CalculusTreeTools.unknown_type())
+#
+#
+#     (different_calculus_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun)
+#
+#     for i in 1:m_i
+#         undefined_index = 0
+#         structure[i] = element_function(different_calculus_tree_index[i], undefined_index, type_i[i], elmt_var_i[i], convexity_wrapper, i)
+#     end
+#     construct_set_index_element_view!(structure, different_calculus_tree)
+#
+#     index_element_tree = get_related_function(structure, different_calculus_tree)
+#
+#     related_vars = get_related_var(structure, index_element_tree)
+#
+#     compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), different_calculus_tree)
+#
+#     x = Vector{type}(undef,n)
+#     x_views = construct_views(x, related_vars)
+#
+#     v = Vector{type}(undef,n)
+#     v_views = construct_views(v, related_vars)
+#
+#
+#     return SPS{T, type}(structure, different_calculus_tree, index_element_tree, related_vars, x, x_views, v, v_views, length_vec[], n, compiled_gradients)
+# end
+
+
+
+
+# function _deduct_partially_separable_structure(expr_tree :: CalculusTreeTools.complete_expr_tree, n :: Int, type=Float64 :: DataType)
+#     work_expr_tree = copy(expr_tree)
+#     CalculusTreeTools.cast_type_of_constant(work_expr_tree, type)
+#
+#     # elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree) :: Vector{T}
+#     elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_expr_tree)
+#     m_i = length(elmt_fun)
+#
+#
+#     # type_i = Vector{implementation_type_expr.t_type_expr_basic}(undef, m_i)
+#     type_i = Vector{CalculusTreeTools.type_calculus_tree}(undef, m_i)
+#     for i in 1:m_i
+#         type_i[i] = CalculusTreeTools.get_type_tree(elmt_fun[i])
+#     end
+#
+#     elmt_var_i =  Vector{ Vector{Int}}(undef,m_i)
+#     length_vec = 0
+#     for i in 1:m_i
+#         elmt_var_i[i] = CalculusTreeTools.get_elemental_variable(elmt_fun[i])
+#         length_vec += length(elmt_var_i[i])
+#     end
+#     sort!.(elmt_var_i) #ligne importante, met dans l'ordre les variables élémentaires. Utile pour les U_i et le N_to_Ni
+#
+#     for i in 1:m_i
+#         CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i],elmt_var_i[i])
+#     end
+#
+#     (different_calculus_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun)
+#     CalculusTreeTools.set_bounds!.(different_calculus_tree)
+#     CalculusTreeTools.set_convexity!.(different_calculus_tree)
+#     convexity_wrapper = map( (x -> CalculusTreeTools.convexity_wrapper(CalculusTreeTools.get_convexity_status(x)) ), different_calculus_tree)
+#
+#     structure = Vector{element_function}(undef,m_i)
+#     for i in 1:m_i
+#         undefined_index = 0
+#         structure[i] = element_function(different_calculus_tree_index[i], undefined_index, type_i[i], elmt_var_i[i], convexity_wrapper[different_calculus_tree_index[i]], i)
+#     end
+#     construct_set_index_element_view!(structure, different_calculus_tree)
+#
+#     index_element_tree = get_related_function(structure, different_calculus_tree)
+#
+#     related_vars = get_related_var(structure, index_element_tree)
+#
+#     compiled_gradients = map(x -> compiled_grad_of_elmt_fun(x), different_calculus_tree)
+#
+#     x = Vector{type}(undef,n)
+#     x_views = construct_views(x, related_vars)
+#
+#     v = Vector{type}(undef,n)
+#     v_views = construct_views(v, related_vars)
+#
+#     return SPS{CalculusTreeTools.complete_expr_tree, type}(structure, different_calculus_tree, index_element_tree, related_vars, x, x_views, v, v_views, length_vec[], n, compiled_gradients)
 # end
