@@ -59,7 +59,7 @@ version = "0.5.1"
 
 [[CalculusTreeTools]]
 deps = ["Documenter", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "ReverseDiff", "Revise", "SparseArrays", "Test"]
-git-tree-sha1 = "4c87b1370fed38700f9c0d301813bf7f3be86b88"
+git-tree-sha1 = "f36283a363d1d446ed638c5c7ca48f09cf049157"
 repo-rev = "master"
 repo-url = "https://github.com/paraynaud/CalculusTreeTools.jl.git"
 uuid = "995bfbc1-c62b-4971-a5e3-ef0aad32e8da"
@@ -262,9 +262,9 @@ version = "1.0.3"
 
 [[HDF5]]
 deps = ["Blosc", "HDF5_jll", "Libdl", "Mmap", "Random"]
-git-tree-sha1 = "0aae244a57aadaddd0e1735bdcf5cba626d5a2d7"
+git-tree-sha1 = "227fa9ba563a85a79519d7ac486c8df2e08fb851"
 uuid = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
-version = "0.13.4"
+version = "0.13.5"
 
 [[HDF5_jll]]
 deps = ["Libdl", "Pkg", "Zlib_jll"]
