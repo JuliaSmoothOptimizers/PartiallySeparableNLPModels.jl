@@ -44,10 +44,10 @@ obj4 = PartiallySeparableNLPModel.evaluate_obj_pre_compiled(sps1, x)
     # sps1.obj_pre_compiled_trees[1].multiple_x[1] .= [1.0,2.0]
 
 
-bench_new = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps1, x)
-bench_old = @benchmark PartiallySeparableNLPModel.evaluate_SPS2(sps1, x)
+# bench_new = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps1, x)
+# bench_old = @benchmark PartiallySeparableNLPModel.evaluate_SPS2(sps1, x)
 # @profview (@benchmark PartiallySeparableNLPModel.evaluate_obj_pre_compiled(sps1, x))
-error("stop")
+# error("stop")
 
 grad1 =  PartiallySeparableNLPModel.evaluate_gradient(sps1, x)
 grad2 =  PartiallySeparableNLPModel.evaluate_gradient(sps2, x)

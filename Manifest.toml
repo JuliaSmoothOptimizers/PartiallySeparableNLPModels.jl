@@ -59,7 +59,7 @@ version = "0.5.1"
 
 [[CalculusTreeTools]]
 deps = ["Documenter", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "ReverseDiff", "Revise", "SparseArrays", "Test"]
-git-tree-sha1 = "d6ee271fbf57baffe4c3122dabc4ac043720ca17"
+git-tree-sha1 = "af8b41735279a5bb81d1a06f3402ff7cb42f956c"
 repo-rev = "master"
 repo-url = "https://github.com/paraynaud/CalculusTreeTools.jl.git"
 uuid = "995bfbc1-c62b-4971-a5e3-ef0aad32e8da"

@@ -92,8 +92,7 @@ deduct_partially_separable_structure(a :: Any, n :: Int, type=Float64 :: DataTyp
 function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float64 :: DataType) where T
     # transformation of the tree of type T into an expr tree of type t_expr_tree (the standard type used by my algorithms)
     expr_tree = CalculusTreeTools.transform_to_expr_tree(tree) :: CalculusTreeTools.t_expr_tree
-    # work_tree = copy(expr_tree) # peut être non nécessaire
-    elmt_fun = CalculusTreeTools.delete_imbricated_plus(work_tree) :: Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
+    elmt_fun = CalculusTreeTools.delete_imbricated_plus(expr_tree) :: Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
     m_i = length(elmt_fun)
 
     #récupération des variables élémentaires
