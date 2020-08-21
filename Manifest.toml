@@ -59,7 +59,7 @@ version = "0.5.1"
 
 [[CalculusTreeTools]]
 deps = ["Documenter", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "ReverseDiff", "Revise", "SparseArrays", "Test"]
-git-tree-sha1 = "f36283a363d1d446ed638c5c7ca48f09cf049157"
+git-tree-sha1 = "d6ee271fbf57baffe4c3122dabc4ac043720ca17"
 repo-rev = "master"
 repo-url = "https://github.com/paraynaud/CalculusTreeTools.jl.git"
 uuid = "995bfbc1-c62b-4971-a5e3-ef0aad32e8da"
@@ -67,9 +67,9 @@ version = "0.1.0"
 
 [[CodeTracking]]
 deps = ["InteractiveUtils", "UUIDs"]
-git-tree-sha1 = "cab4da992adc0a64f63fa30d2db2fd8bec40cab4"
+git-tree-sha1 = "ccc043a0df446cac279dca29d13e2827b40aceb5"
 uuid = "da1fd8a2-8d9e-5ec2-8556-3022fb5608a2"
-version = "0.5.11"
+version = "0.5.12"
 
 [[CodecBzip2]]
 deps = ["Bzip2_jll", "Libdl", "TranscodingStreams"]
@@ -91,9 +91,9 @@ version = "0.10.8"
 
 [[Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "InteractiveUtils", "Reexport"]
-git-tree-sha1 = "5639e44833cfcf78c6a73fbceb4da75611d312cd"
+git-tree-sha1 = "008d6bc68dea6beb6303fdc37188cb557391ebf2"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
-version = "0.12.3"
+version = "0.12.4"
 
 [[CommonSubexpressions]]
 deps = ["Test"]
@@ -337,9 +337,9 @@ version = "0.21.3"
 
 [[JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
-git-tree-sha1 = "79e4496b79e8af45198f8c291f26d4514d6b06d6"
+git-tree-sha1 = "e4057be815219e5a5878c5c95a25de9d488d376a"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
-version = "0.7.24"
+version = "0.7.25"
 
 [[LZO_jll]]
 deps = ["Libdl", "Pkg"]
@@ -422,9 +422,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[LoweredCodeUtils]]
 deps = ["JuliaInterpreter"]
-git-tree-sha1 = "5bca4f43cb522596be4496d849de670090af3a55"
+git-tree-sha1 = "41b448dcb53258645cd5e4f9447409e1928ad4eb"
 uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
-version = "0.4.7"
+version = "0.4.8"
 
 [[Lz4_jll]]
 deps = ["Libdl", "Pkg"]

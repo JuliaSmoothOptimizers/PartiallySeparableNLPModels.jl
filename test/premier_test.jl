@@ -8,7 +8,7 @@ m = Model()
 n = 500
 @variable(m, x[1:n])
 # @NLobjective(m, Min, sum( x[j] * x[j+1] + tan(x[j+1]) for j in 1:n-1 ) + (sin(x[1]))^2 + x[n-1]^3 )
-@NLobjective(m, Min, sum( x[j] * x[j+1] + (x[j+1])^2 for j in 1:n-1 ) + (sin(x[1]))^2 + x[n-1]^3 )
+@NLobjective(m, Min, sum( x[j] * x[j+1] + (x[j+1]+5*x[j])^2 for j in 1:n-1 ) + (sin(x[1]))^2 + x[n-1]^3 )
 evaluator = JuMP.NLPEvaluator(m)
 MathOptInterface.initialize(evaluator, [:ExprGraph])
 Expr_ = MathOptInterface.objective_expr(evaluator)
@@ -44,10 +44,10 @@ obj4 = PartiallySeparableNLPModel.evaluate_obj_pre_compiled(sps1, x)
     # sps1.obj_pre_compiled_trees[1].multiple_x[1] .= [1.0,2.0]
 
 
-# bench_old = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps1, x)
-# bench_new = @benchmark PartiallySeparableNLPModel.evaluate_obj_pre_compiled(sps1, x)
+bench_new = @benchmark PartiallySeparableNLPModel.evaluate_SPS(sps1, x)
+bench_old = @benchmark PartiallySeparableNLPModel.evaluate_SPS2(sps1, x)
 # @profview (@benchmark PartiallySeparableNLPModel.evaluate_obj_pre_compiled(sps1, x))
-
+error("stop")
 
 grad1 =  PartiallySeparableNLPModel.evaluate_gradient(sps1, x)
 grad2 =  PartiallySeparableNLPModel.evaluate_gradient(sps2, x)
