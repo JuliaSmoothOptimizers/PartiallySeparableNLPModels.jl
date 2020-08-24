@@ -106,7 +106,7 @@ function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float6
 
     # renumérotation des variables des fonctions éléments en variables internes
     for i in 1:m_i
-        CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i],elmt_var_i[i])
+        CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i], elmt_var_i[i])
     end
 
     # à partir des fonctions éléments renumérotées factorisation en fonction éléments distinctes
@@ -265,6 +265,41 @@ function construct_views(x :: Vector{N}, related_vars :: Vector{Vector{Vector{In
 end
 
 
+# """
+#     get_different_CalculusTree( element_functions)
+# Return a vector diffferent_elmt_fun of calculus tree from the vector of calculus tree element_function. diffferent_elmt_fun delete the
+# """
+# function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
+#     work_elmt_fun = copy(all_elemt_fun)
+#     different_calculus_tree = Vector{T}(undef,0)
+#
+#     while isempty(work_elmt_fun) == false
+#         current_tree = work_elmt_fun[1]
+#         push!(different_calculus_tree, current_tree)
+#         work_elmt_fun = filter( (x -> x != current_tree), work_elmt_fun)
+#     end
+#
+#     different_calculus_tree_index = Vector{Int}(undef, length(all_elemt_fun))
+#     for i in 1:length(all_elemt_fun)
+#         for j in 1:length(different_calculus_tree)
+#             if all_elemt_fun[i] == different_calculus_tree[j]
+#                 different_calculus_tree_index[i] = j
+#                 break
+#             end
+#         end
+#     end
+#     return (different_calculus_tree, different_calculus_tree_index)
+# end
+
+function get_index_deleted( all_element_tree  :: Vector{T}, tree :: T ) where T
+    res = Vector{Int}(undef,0)
+    for i in 1:length(all_element_tree)
+        all_element_tree[i] == tree ? push!(res,i) : continue
+    end
+
+    return res
+end
+
 """
     get_different_CalculusTree( element_functions)
 Return a vector diffferent_elmt_fun of calculus tree from the vector of calculus tree element_function. diffferent_elmt_fun delete the
@@ -272,22 +307,22 @@ Return a vector diffferent_elmt_fun of calculus tree from the vector of calculus
 function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
     work_elmt_fun = copy(all_elemt_fun)
     different_calculus_tree = Vector{T}(undef,0)
+    different_calculus_tree_index = Vector{Int}(undef, length(all_elemt_fun))
+    initial_indexes = [1:length(all_elemt_fun);]
 
+    cpt = 1
     while isempty(work_elmt_fun) == false
         current_tree = work_elmt_fun[1]
         push!(different_calculus_tree, current_tree)
-        work_elmt_fun = filter( (x -> x != current_tree), work_elmt_fun)
+        current_tree_indexes = get_index_deleted(work_elmt_fun, current_tree)
+        for i in current_tree_indexes
+            different_calculus_tree_index[initial_indexes[i]] = cpt
+        end
+        deleteat!(initial_indexes, current_tree_indexes)
+        deleteat!(work_elmt_fun, current_tree_indexes)
+        cpt += 1
     end
 
-    different_calculus_tree_index = Vector{Int}(undef, length(all_elemt_fun))
-    for i in 1:length(all_elemt_fun)
-        for j in 1:length(different_calculus_tree)
-            if all_elemt_fun[i] == different_calculus_tree[j]
-                different_calculus_tree_index[i] = j
-                break
-            end
-        end
-    end
     return (different_calculus_tree, different_calculus_tree_index)
 end
 

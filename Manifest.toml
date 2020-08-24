@@ -319,9 +319,9 @@ version = "0.21.0"
 
 [[JSONSchema]]
 deps = ["HTTP", "JSON", "ZipFile"]
-git-tree-sha1 = "2646fb3efdb60f35a8c053250a2647358ae0629f"
+git-tree-sha1 = "a9ecdbc90be216912a2e3e8a8e38dc4c93f0d065"
 uuid = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
-version = "0.3.1"
+version = "0.3.2"
 
 [[JpegTurbo_jll]]
 deps = ["Libdl", "Pkg"]
@@ -337,9 +337,9 @@ version = "0.21.3"
 
 [[JuliaInterpreter]]
 deps = ["CodeTracking", "InteractiveUtils", "Random", "UUIDs"]
-git-tree-sha1 = "e4057be815219e5a5878c5c95a25de9d488d376a"
+git-tree-sha1 = "7b2a1b650cec61a7d8cd8ee9ee7a818b5764d502"
 uuid = "aa1ae85d-cabe-5617-a682-6adf51b2e16a"
-version = "0.7.25"
+version = "0.7.26"
 
 [[LZO_jll]]
 deps = ["Libdl", "Pkg"]
@@ -422,9 +422,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[LoweredCodeUtils]]
 deps = ["JuliaInterpreter"]
-git-tree-sha1 = "41b448dcb53258645cd5e4f9447409e1928ad4eb"
+git-tree-sha1 = "dbd9336b43c2d6fa492efa09ba3bb10fbdbeeb64"
 uuid = "6f1432cf-f94c-5a45-995e-cdbf5db27b0b"
-version = "0.4.8"
+version = "0.4.9"
 
 [[Lz4_jll]]
 deps = ["Libdl", "Pkg"]
@@ -479,6 +479,12 @@ deps = ["CompilerSupportLibraries_jll", "Libdl", "Pkg"]
 git-tree-sha1 = "d51c416559217d974a1113522d5919235ae67a87"
 uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
 version = "0.5.3+3"
+
+[[OptimizationProblems]]
+deps = ["JuMP"]
+git-tree-sha1 = "66de7b33a556e7cc3c13ca8f7255e1a68e9f98d3"
+uuid = "5049e819-d29b-5fba-b941-0eee7e64c1c6"
+version = "0.3.0"
 
 [[OrderedCollections]]
 git-tree-sha1 = "293b70ac1780f9584c89268a6e2a560d938a7065"
