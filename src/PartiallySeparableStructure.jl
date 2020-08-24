@@ -110,7 +110,7 @@ function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float6
     end
 
     # à partir des fonctions éléments renumérotées factorisation en fonction éléments distinctes
-    (different_calculus_expr_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun)
+    (different_calculus_expr_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun, elmt_var_i)
     # creation d'arbres complets à partir des ces fonctions éléments distinctes
     temp_complete_trees = CalculusTreeTools.create_complete_tree.(different_calculus_expr_tree)
 
@@ -265,27 +265,31 @@ function construct_views(x :: Vector{N}, related_vars :: Vector{Vector{Vector{In
 end
 
 """
-    get_index_deleted(tree_vector, tree)
-retrieve the indexes of tree_vector such that for all i ∈ indexes tree_vector[i] == tree
+    get_index_deleted(tree_vector, tree, numbervar, vector_numbervar)
+retrieve the indexes of tree_vector such that for all i ∈ indexes tree_vector[i] == tree.
+This function used numbervar and vector_numbervar to speed up the comparison by avoiding equality between trees.
 """
-function get_index_deleted( all_element_tree  :: Vector{T}, tree :: T ) where T
+function get_index_deleted( all_element_tree  :: Vector{T}, tree :: T, current_number_var :: Int, vector_number_var :: Vector{Int} ) where T
     res = Vector{Int}(undef,0)
     for i in 1:length(all_element_tree)
-        all_element_tree[i] == tree ? push!(res,i) : continue
+        (vector_number_var[i] == current_number_var) && (all_element_tree[i] == tree) ? push!(res,i) : continue
     end
 
     return res
 end
 
+
 """
-    get_different_CalculusTree( all_element_tree)
+    get_different_CalculusTree( all_element_tree, element_vars)
 Selects the distinct tree from the all_element_tree to create a Vector of distinct element tree: different_calculus_tree.
 In addition to that create a Vector of index to linked the tree from all_element_tree to different_calculus_tree : different_calculus_tree_index.
-length(different_calculus_tree_index) == length(all_element_tree)
+element_vars is used to count the numbers of variables used in a tree, if the number of variables is different we don't test the tree and avoid to test the equality between trees.
+length(different_calculus_tree_index) == length(all_element_tree) == length(element_vars)
 return (different_calculus_tree, different_calculus_tree_index)
 """
-function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
+function get_different_CalculusTree(all_elemt_fun :: Vector{T}, element_var :: Vector{Vector{Int}}) where T
     work_elmt_fun = copy(all_elemt_fun)
+    work_number_var_vector = map(element_vars -> length(element_vars), element_var)
     different_calculus_tree = Vector{T}(undef,0)
     different_calculus_tree_index = Vector{Int}(undef, length(all_elemt_fun))
     initial_indexes = [1:length(all_elemt_fun);]
@@ -293,13 +297,15 @@ function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
     cpt = 1
     while isempty(work_elmt_fun) == false
         current_tree = work_elmt_fun[1]
+        current_number_var = work_number_var_vector[1]
         push!(different_calculus_tree, current_tree)
-        current_tree_indexes = get_index_deleted(work_elmt_fun, current_tree)
+        current_tree_indexes = get_index_deleted(work_elmt_fun, current_tree, current_number_var, work_number_var_vector)
         for i in current_tree_indexes
             different_calculus_tree_index[initial_indexes[i]] = cpt
         end
         deleteat!(initial_indexes, current_tree_indexes)
         deleteat!(work_elmt_fun, current_tree_indexes)
+        deleteat!(work_number_var_vector, current_tree_indexes)
         cpt += 1
     end
 
