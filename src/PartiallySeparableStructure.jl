@@ -264,33 +264,10 @@ function construct_views(x :: Vector{N}, related_vars :: Vector{Vector{Vector{In
     return res
 end
 
-
-# """
-#     get_different_CalculusTree( element_functions)
-# Return a vector diffferent_elmt_fun of calculus tree from the vector of calculus tree element_function. diffferent_elmt_fun delete the
-# """
-# function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
-#     work_elmt_fun = copy(all_elemt_fun)
-#     different_calculus_tree = Vector{T}(undef,0)
-#
-#     while isempty(work_elmt_fun) == false
-#         current_tree = work_elmt_fun[1]
-#         push!(different_calculus_tree, current_tree)
-#         work_elmt_fun = filter( (x -> x != current_tree), work_elmt_fun)
-#     end
-#
-#     different_calculus_tree_index = Vector{Int}(undef, length(all_elemt_fun))
-#     for i in 1:length(all_elemt_fun)
-#         for j in 1:length(different_calculus_tree)
-#             if all_elemt_fun[i] == different_calculus_tree[j]
-#                 different_calculus_tree_index[i] = j
-#                 break
-#             end
-#         end
-#     end
-#     return (different_calculus_tree, different_calculus_tree_index)
-# end
-
+"""
+    get_index_deleted(tree_vector, tree)
+retrieve the indexes of tree_vector such that for all i ∈ indexes tree_vector[i] == tree
+"""
 function get_index_deleted( all_element_tree  :: Vector{T}, tree :: T ) where T
     res = Vector{Int}(undef,0)
     for i in 1:length(all_element_tree)
@@ -301,8 +278,11 @@ function get_index_deleted( all_element_tree  :: Vector{T}, tree :: T ) where T
 end
 
 """
-    get_different_CalculusTree( element_functions)
-Return a vector diffferent_elmt_fun of calculus tree from the vector of calculus tree element_function. diffferent_elmt_fun delete the
+    get_different_CalculusTree( all_element_tree)
+Selects the distinct tree from the all_element_tree to create a Vector of distinct element tree: different_calculus_tree.
+In addition to that create a Vector of index to linked the tree from all_element_tree to different_calculus_tree : different_calculus_tree_index.
+length(different_calculus_tree_index) == length(all_element_tree)
+return (different_calculus_tree, different_calculus_tree_index)
 """
 function get_different_CalculusTree(all_elemt_fun :: Vector{T}) where T
     work_elmt_fun = copy(all_elemt_fun)
