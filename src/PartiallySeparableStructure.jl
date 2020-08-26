@@ -421,27 +421,6 @@ Then we evaluate the different calculus tree on the needed point (since the same
 @inline evaluate_SPS(sps :: SPS{T,Y}) where T where Y <: Number = (x :: AbstractVector{Y} -> evaluate_SPS(sps,x) )
 
 
-"""
-    evaluate_gradient(sps,x)
-evalutate the gradient of the partially separable function f = ∑ fι, stored in the sps structure
-at the point x, return a vector of size n (the number of variable) which is the gradient.
-Première version de la fonction inutile car inefficace.
-"""
-function evaluate_gradient(sps :: SPS{T}, x :: Vector{Y} ) where T where Y <: Number
-    l_elmt_fun = length(sps.structure)
-    gradient_prl = Vector{Threads.Atomic{Y}}((x-> Threads.Atomic{Y}(0)).([1:sps.n_var;]) )
-     for i in 1:l_elmt_fun
-        U = CalculusTreeTools.get_Ui(get_used_variable(sps.structure[i]), sps.n_var)
-        if isempty(U) == false
-            (row, column, value) = findnz(U)
-            temp = ForwardDiff.gradient(CalculusTreeTools.evaluate_expr_tree(get_fun_from_elmt_fun(sps.structure[i],sps)), view(x, sps.structure[i].used_variable)  )
-            atomic_add!.(gradient_prl[column], temp)
-        end
-    end
-    gradient = (x -> x[]).(gradient_prl) :: Vector{Y}
-    return gradient
-end
-
 
 """
     evaluate_SPS_gradient(sps,x)
@@ -467,9 +446,16 @@ Noted that we use the previously compiled GradientTape in element_gradient! that
 """
 function evaluate_SPS_gradient!(sps :: SPS{T}, x :: AbstractVector{Y}, g :: grad_vector{Y} ) where T where Y <: Number
     l_elmt_fun = length(sps.structure)
+    set_x_sps!(sps, x)
+    x_views = get_x_views(sps)
     for i in 1:l_elmt_fun
-        if isempty(sps.structure[i].used_variable) == false  #fonction element ayant au moins une variable
-            element_gradient!(sps.compiled_gradients[sps.structure[i].index_fun], view(x, sps.structure[i].used_variable), g.arr[i] )
+        elmt_fun = sps.structure[i]
+        type_elmt_fun = get_type(elmt_fun)
+        used_var = get_used_variable(elmt_fun)
+        if isempty(used_var) == false  && !CalculusTreeTools.is_constant(type_elmt_fun) #fonction element ayant au moins une variable
+            index_fun = get_index_fun(elmt_fun)
+            index_position_x = get_index_element_tree_position(elmt_fun)
+            element_gradient!(sps.compiled_gradients[index_fun], x_views[index_fun][index_position_x], g.arr[i] )
         end
     end
 end
@@ -526,43 +512,6 @@ end
 
 
 
-"""
-    Hv2(sps, x, v)
-Compute the product hessian vector of the hessian at the point x dot the vector v.
-This version uses only ReverseDiff.
-"""
-Hv2(sps :: SPS{T,Y}, v :: AbstractVector{Y}) where T where Y <: Number = Hv2(sps, sps.x, v)
-Hv2(sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number = begin hv = similar(x); Hv2!(hv,sps,x,v); return hv end
-function Hv2!(hv :: AbstractVector{Y}, sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number
-    f = (y :: element_function -> element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
-    partitionned_hv = grad_vector{typeof(x[1])}( f.(sps.structure) )
-
-    l_elmt_fun = length(sps.structure)
-    diff_element_tree = get_different_element_tree(sps)
-    structure = get_structure(sps)
-    set_x_sps!(sps, x)
-    set_v_sps!(sps, v)
-    x_views = get_x_views(sps)
-    v_views = get_v_views(sps)
-    for i in 1:l_elmt_fun
-        if isempty(structure[i].used_variable) == false  #fonction element ayant au moins une variable
-            index_fun = get_index_fun(structure[i])
-            index_position_x = get_index_element_tree_position(structure[i])
-            Hv_elem2!(partitionned_hv.arr[i], diff_element_tree[index_fun], x_views[index_fun][index_position_x], v_views[index_fun][index_position_x])
-        else
-            partitionned_hv.arr[i].g_i .= zeros(length(partitionned_hv.arr[i].g_i))
-        end
-    end
-    build_gradient!(sps, partitionned_hv, hv) #use builds_gradient! function to construct the hv vector of size n for the partitionned element vectors each of them of size nᵢ
-end
-
-
-@inline SPS_ReverseDiff_grad2(tree, x :: AbstractVector{Y}) where Y <: Number = begin g = similar(x) ; SPS_ReverseDiff_grad2!(g, tree, x) end
-@inline SPS_ReverseDiff_grad2!(g :: AbstractVector{Y}, tree, x) where Y <: Number = ReverseDiff.gradient!(g, CalculusTreeTools.evaluate_expr_tree(tree), x)
-
-@inline ∇²fv2(tree, x, v) = ReverseDiff.gradient(x -> dot(SPS_ReverseDiff_grad2(tree, x), v), x)
-@inline ∇²fv2!(tree, x, v, hv) = (hv .= ∇²fv2(tree, x, v))
-@inline Hv_elem2!(elemental_hv :: element_gradient, tree :: T, x :: AbstractVector{Y}, v :: AbstractVector{Y} ) where Y <: Number where T = ∇²fv2!(tree, x, v, elemental_hv.g_i)
 
 
 
@@ -621,7 +570,6 @@ at the point x. Return the sparse matrix of the hessian of size n × n.
 function evaluate_hessian(sps :: SPS{T}, x :: AbstractVector{Y} ) where T where Y <: Number
     l_elmt_fun = length(sps.structure)
     elmt_hess = Vector{Tuple{Vector{Int},Vector{Int},Vector{Y}}}(undef, l_elmt_fun)
-    # @Threads.threads for i in 1:l_elmt_fun # déterminer l'impact sur les performances de array(view())
     for i in 1:l_elmt_fun
         elmt_hess[i] = evaluate_element_hessian(sps.structure[i], Array(view(x, sps.structure[i].used_variable)), sps) :: Tuple{Vector{Int},Vector{Int},Vector{Y}}
     end
@@ -737,7 +685,8 @@ end
 
 
 """
-
+    f_inter!
+similar to build_gradient!
 """
 function f_inter!(res :: AbstractVector{Z}, indices ::  AbstractVector{Int}, values :: AbstractVector{Z}) where Z <: Number
     l = length(indices)
@@ -777,9 +726,13 @@ end
 
 
 
-#= FIN Fonction de développement =#
+#= !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FIN Fonction de développement
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! =#
 
-#= FONCTIONS DE TESTS =#
+#= !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FONCTIONS DE TESTS
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! =#
 
 """
     product_vector_sps(sps, g, x)
@@ -842,7 +795,9 @@ function test_parcours(sps :: SPS{T, Y}, B :: Hess_matrix{Y} ) where T where Y <
 end
 
 
-#= Code non utilisé =#
+#= !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Code non utilisé
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! =#
 
 
 hess_full(sps :: SPS{T}, x :: AbstractVector{Y}) where T where Y <: Number = construct_full_Hessian(hess(sps,x))
@@ -882,9 +837,9 @@ end
 #= Fin Code non utilisé =#
 
 
-#=
+#= !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Ancien code
-=#
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! =#
 
 """
     evaluate_SPS_gradient2!(sps,x,g)
@@ -946,6 +901,66 @@ end
 
 
 
+"""
+    evaluate_gradient(sps,x)
+evalutate the gradient of the partially separable function f = ∑ fι, stored in the sps structure
+at the point x, return a vector of size n (the number of variable) which is the gradient.
+Première version de la fonction inutile car inefficace.
+"""
+function evaluate_gradient(sps :: SPS{T}, x :: Vector{Y} ) where T where Y <: Number
+    l_elmt_fun = length(sps.structure)
+    gradient_prl = Vector{Threads.Atomic{Y}}((x-> Threads.Atomic{Y}(0)).([1:sps.n_var;]) )
+     for i in 1:l_elmt_fun
+        U = CalculusTreeTools.get_Ui(get_used_variable(sps.structure[i]), sps.n_var)
+        if isempty(U) == false
+            (row, column, value) = findnz(U)
+            temp = ForwardDiff.gradient(CalculusTreeTools.evaluate_expr_tree(get_fun_from_elmt_fun(sps.structure[i],sps)), view(x, sps.structure[i].used_variable)  )
+            atomic_add!.(gradient_prl[column], temp)
+        end
+    end
+    gradient = (x -> x[]).(gradient_prl) :: Vector{Y}
+    return gradient
+end
+
+
+
+"""
+    Hv2(sps, x, v)
+Compute the product hessian vector of the hessian at the point x dot the vector v.
+This version uses only ReverseDiff.
+"""
+Hv2(sps :: SPS{T,Y}, v :: AbstractVector{Y}) where T where Y <: Number = Hv2(sps, sps.x, v)
+Hv2(sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number = begin hv = similar(x); Hv2!(hv,sps,x,v); return hv end
+function Hv2!(hv :: AbstractVector{Y}, sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number
+    f = (y :: element_function -> element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
+    partitionned_hv = grad_vector{typeof(x[1])}( f.(sps.structure) )
+
+    l_elmt_fun = length(sps.structure)
+    diff_element_tree = get_different_element_tree(sps)
+    structure = get_structure(sps)
+    set_x_sps!(sps, x)
+    set_v_sps!(sps, v)
+    x_views = get_x_views(sps)
+    v_views = get_v_views(sps)
+    for i in 1:l_elmt_fun
+        if isempty(structure[i].used_variable) == false  #fonction element ayant au moins une variable
+            index_fun = get_index_fun(structure[i])
+            index_position_x = get_index_element_tree_position(structure[i])
+            Hv_elem2!(partitionned_hv.arr[i], diff_element_tree[index_fun], x_views[index_fun][index_position_x], v_views[index_fun][index_position_x])
+        else
+            partitionned_hv.arr[i].g_i .= zeros(length(partitionned_hv.arr[i].g_i))
+        end
+    end
+    build_gradient!(sps, partitionned_hv, hv) #use builds_gradient! function to construct the hv vector of size n for the partitionned element vectors each of them of size nᵢ
+end
+
+
+@inline SPS_ReverseDiff_grad2(tree, x :: AbstractVector{Y}) where Y <: Number = begin g = similar(x) ; SPS_ReverseDiff_grad2!(g, tree, x) end
+@inline SPS_ReverseDiff_grad2!(g :: AbstractVector{Y}, tree, x) where Y <: Number = ReverseDiff.gradient!(g, CalculusTreeTools.evaluate_expr_tree(tree), x)
+
+@inline ∇²fv2(tree, x, v) = ReverseDiff.gradient(x -> dot(SPS_ReverseDiff_grad2(tree, x), v), x)
+@inline ∇²fv2!(tree, x, v, hv) = (hv .= ∇²fv2(tree, x, v))
+@inline Hv_elem2!(elemental_hv :: element_gradient, tree :: T, x :: AbstractVector{Y}, v :: AbstractVector{Y} ) where Y <: Number where T = ∇²fv2!(tree, x, v, elemental_hv.g_i)
 
 #=
 Previous deduct_partially_separable_structure
