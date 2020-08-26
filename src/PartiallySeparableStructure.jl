@@ -32,15 +32,22 @@ mutable struct SPS{T, N <: Number}
 
     obj_pre_compiled_trees :: Vector{CalculusTreeTools.pre_n_compiled_tree{N}}
 
+    # objective_functions :: Vector{Function}
+    # objective_functions :: Vector{CalculusTreeTools.algo_expr_tree.function_wrapper}
+
     x :: Vector{N}
     x_views :: Vector{Vector{SubArray{N,1,Array{N,1},Tuple{Array{Int64,1}},false}}}
 
     v :: Vector{N}
     v_views :: Vector{Vector{SubArray{N,1,Array{N,1},Tuple{Array{Int64,1}},false}}}
 
+
     vec_length :: Int
     n_var :: Int
     compiled_gradients :: Vector{ReverseDiff.CompiledTape}
+
+    # obj_Expr :: Function
+    obj_Expr :: CalculusTreeTools.algo_expr_tree.function_wrapper{N}
 end
 
 @inline get_obj_pre_compiled_trees(sps :: SPS{T,N}) where T where N <: Number = sps.obj_pre_compiled_trees
@@ -52,10 +59,12 @@ end
 @inline get_index_element_tree(sps :: SPS{T}) where T = sps.index_element_tree
 @inline get_related_vars(sps :: SPS{T}) where T = sps.related_vars
 @inline get_x_views(sps :: SPS{T,N}) where T where N <: Number = sps.x_views
-@inline set_x_sps(sps :: SPS{T,N}, v :: AbstractVector{N}) where T where N <: Number = sps.x .= v
+@inline set_x_sps!(sps :: SPS{T,N}, v :: AbstractVector{N}) where T where N <: Number = sps.x .= v
 @inline get_v_views(sps :: SPS{T,N}) where T where N <: Number = sps.v_views
-@inline set_v_sps(sps :: SPS{T,N}, vector :: AbstractVector{N}) where T where N <: Number = sps.v .= vector
+@inline set_v_sps!(sps :: SPS{T,N}, vector :: AbstractVector{N}) where T where N <: Number = sps.v .= vector
 @inline get_compiled_gradient(sps :: SPS{T,N}) where T where N <: Number = sps.compiled_gradients
+@inline get_vector_function(sps :: SPS{T,N}) where T where N <: Number = sps.objective_functions
+@inline get_obj_Expr(sps :: SPS{T,N}) where T where N <: Number = sps.obj_Expr
 
 
 mutable struct element_hessian{T <: Number}
@@ -92,6 +101,8 @@ deduct_partially_separable_structure(a :: Any, n :: Int, type=Float64 :: DataTyp
 function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float64 :: DataType) where T
     # transformation of the tree of type T into an expr tree of type t_expr_tree (the standard type used by my algorithms)
     expr_tree = CalculusTreeTools.transform_to_expr_tree(tree) :: CalculusTreeTools.t_expr_tree
+    # second_expr_tree = copy(expr_tree)
+    obj_Expr = CalculusTreeTools.algo_expr_tree._get_function_of_evaluation(expr_tree, type; n=n)
     elmt_fun = CalculusTreeTools.delete_imbricated_plus(expr_tree) :: Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
     m_i = length(elmt_fun)
 
@@ -151,27 +162,71 @@ function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float6
     x = Vector{type}(undef,n)
     x_views = construct_views(x, related_vars)
 
+
     distinct_casted_expr_tree = map(tree -> CalculusTreeTools.cast_type_of_constant(tree, type), different_calculus_expr_tree)
     obj_pre_compiled_trees = create_pre_compiled_tree(distinct_casted_expr_tree, x_views)
 
+    # objective_functions = map(tree -> let f = CalculusTreeTools.get_function_of_evaluation(tree); @show Base.invokelatest(f,ones(length(CalculusTreeTools.get_elemental_variable(tree)))...); return f end , different_calculus_expr_tree)
+    # objective_functions = map(tree -> CalculusTreeTools.algo_expr_tree._get_function_of_evaluation(tree, type), different_calculus_expr_tree)
 
     v = Vector{type}(undef,n)
     v_views = construct_views(v, related_vars)
+
+
 
     sps = SPS{CalculusTreeTools.complete_expr_tree, type}(structure,
                                                           different_calculus_complete_trees,
                                                           index_element_tree,
                                                           related_vars,
                                                           obj_pre_compiled_trees,
+                                                          # objective_functions,
                                                           x,
                                                           x_views,
                                                           v,
                                                           v_views,
                                                           length_vec,
                                                           n,
-                                                          compiled_gradients)
+                                                          compiled_gradients,
+                                                          obj_Expr)
     return sps
 end
+
+
+
+
+# evaluate_function(sps :: SPS{T, N}, x :: Vector{N}) where T where N <: Number = get_obj_Expr(sps)(x...)
+evaluate_function(sps :: SPS{T, N}, x :: Vector{N}) where T where N <: Number = CalculusTreeTools.algo_expr_tree.eval_function_wrapper(get_obj_Expr(sps), x)
+
+
+
+
+# @inline evaluate_one_function2(f :: Function, x :: AbstractVector{T})  where T <: Number = f(x...)
+function evaluate_function2(sps :: SPS{T, N}, x :: Vector{N}) where T where N <: Number
+    set_x_sps!(sps, x)
+    vector_function = get_vector_function(sps)
+    vector_x_views = get_x_views(sps)
+    n = length(vector_x_views)
+    n == length(vector_function) || error("mismatch between x_view and evaluation functions")
+    result = Vector{N}(undef, n)
+    for i in 1:n
+        current_function_wrapper = vector_function[i]
+        current_x_views = vector_x_views[i]
+        nᵢ = length(current_x_views)
+        res = (N)(0)
+        for j in 1:nᵢ
+            xᵢ = current_x_views[j]
+            res += CalculusTreeTools.algo_expr_tree.eval_function_wrapper(current_function_wrapper, xᵢ)
+        end
+        @show res
+        result[i] = res
+        # result[i] = mapreduce( x :: AbstractVector{N} -> Base.invokelatest(current_function, x...) :: N , +, current_x_views)
+    end
+    @show result
+    return sum(result)
+end
+
+
+
 
 
 """
@@ -199,12 +254,12 @@ function evaluate_obj_pre_compiled(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) whe
     n = length(different_element_tree)
     res_distrinct_elmt_fun = Vector{Y}(undef,n)
 
-    set_x_sps(sps, x) # set the vector x of the structure sps.
+    set_x_sps!(sps, x) # set the vector x of the structure sps.
 
     for i in 1:n # we evaluate each pre compiled element tree. No argument x because the variables of the tree is linked with the vector x of sps.
         @inbounds res_distrinct_elmt_fun[i] = CalculusTreeTools.evaluate_expr_tree_multiple_points(different_element_tree[i])
     end
-
+    # @show res_distrinct_elmt_fun
     @inbounds res = sum(res_distrinct_elmt_fun) # according to the sps structure we sum the results
     return res
 end
@@ -362,7 +417,7 @@ Evaluate the structure sps on the point x ∈ Rⁿ. Since we work on subarray of
 Once this step is done we select the calculus tree needed as well as the view of x needed.
 Then we evaluate the different calculus tree on the needed point (since the same function appear a lot of time). At the end we sum the result
 """
-@inline evaluate_SPS(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) where T where Y <: Number = evaluate_obj_pre_compiled(sps, x)
+@inline evaluate_SPS(sps :: SPS{T,Y}, x :: AbstractVector{Y} ) where T where Y <: Number = evaluate_function(sps, x)
 @inline evaluate_SPS(sps :: SPS{T,Y}) where T where Y <: Number = (x :: AbstractVector{Y} -> evaluate_SPS(sps,x) )
 
 
@@ -444,8 +499,8 @@ function Hv!(hv :: AbstractVector{Y}, sps :: SPS{T,Y}, x :: AbstractVector{Y}, v
     l_elmt_fun = length(sps.structure)
     diff_element_tree = get_different_element_tree(sps)
     structure = get_structure(sps)
-    set_x_sps(sps, x)
-    set_v_sps(sps, v)
+    set_x_sps!(sps, x)
+    set_v_sps!(sps, v)
     x_views = get_x_views(sps)
     v_views = get_v_views(sps)
     for i in 1:l_elmt_fun
@@ -485,8 +540,8 @@ function Hv2!(hv :: AbstractVector{Y}, sps :: SPS{T,Y}, x :: AbstractVector{Y}, 
     l_elmt_fun = length(sps.structure)
     diff_element_tree = get_different_element_tree(sps)
     structure = get_structure(sps)
-    set_x_sps(sps, x)
-    set_v_sps(sps, v)
+    set_x_sps!(sps, x)
+    set_v_sps!(sps, v)
     x_views = get_x_views(sps)
     v_views = get_v_views(sps)
     for i in 1:l_elmt_fun
