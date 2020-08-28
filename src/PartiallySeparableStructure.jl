@@ -324,10 +324,15 @@ end
 retrieve the indexes of tree_vector such that for all i ∈ indexes tree_vector[i] == tree.
 This function used numbervar and vector_numbervar to speed up the comparison by avoiding equality between trees.
 """
-function get_index_deleted( all_element_tree  :: Vector{T}, tree :: T, current_number_var :: Int, vector_number_var :: Vector{Int} ) where T
+function get_index_deleted( all_element_tree  :: Vector{T},
+                            tree :: T,
+                            current_number_var :: Int,
+                            current_eval_tree :: Float64,
+                            vector_number_var :: Vector{Int},
+                            vector_eval_elmt_tree :: Vector{Float64} ) where T
     res = Vector{Int}(undef,0)
     for i in 1:length(all_element_tree)
-        (vector_number_var[i] == current_number_var) && (all_element_tree[i] == tree) ? push!(res,i) : continue
+        (current_eval_tree == vector_eval_elmt_tree[i]) && (vector_number_var[i] == current_number_var) && (all_element_tree[i] == tree) ? push!(res,i) : continue
     end
 
     return res
@@ -342,9 +347,11 @@ element_vars is used to count the numbers of variables used in a tree, if the nu
 length(different_calculus_tree_index) == length(all_element_tree) == length(element_vars)
 return (different_calculus_tree, different_calculus_tree_index)
 """
+eval_ni_ones(elmt_fun :: T, n :: Int) where T = CalculusTreeTools.evaluate_expr_tree(elmt_fun, ones(Float64, n)) :: Float64
 function get_different_CalculusTree(all_elemt_fun :: Vector{T}, element_var :: Vector{Vector{Int}}) where T
     work_elmt_fun = copy(all_elemt_fun)
-    work_number_var_vector = map(element_vars -> length(element_vars), element_var)
+    work_number_var_vector = map(element_vars -> length(element_vars), element_var) :: Vector{Int}
+    work_elmt_fun_eval_to_one = map(eval_ni_ones, work_elmt_fun, work_number_var_vector) :: Vector{Float64}
     different_calculus_tree = Vector{T}(undef,0)
     different_calculus_tree_index = Vector{Int}(undef, length(all_elemt_fun))
     initial_indexes = [1:length(all_elemt_fun);]
@@ -353,14 +360,17 @@ function get_different_CalculusTree(all_elemt_fun :: Vector{T}, element_var :: V
     while isempty(work_elmt_fun) == false
         current_tree = work_elmt_fun[1]
         current_number_var = work_number_var_vector[1]
+        cureent_eval = work_elmt_fun_eval_to_one[1]
         push!(different_calculus_tree, current_tree)
-        current_tree_indexes = get_index_deleted(work_elmt_fun, current_tree, current_number_var, work_number_var_vector)
+        current_tree_indexes = get_index_deleted(work_elmt_fun, current_tree, current_number_var, cureent_eval, work_number_var_vector, work_elmt_fun_eval_to_one)
         for i in current_tree_indexes
             different_calculus_tree_index[initial_indexes[i]] = cpt
         end
         deleteat!(initial_indexes, current_tree_indexes)
         deleteat!(work_elmt_fun, current_tree_indexes)
         deleteat!(work_number_var_vector, current_tree_indexes)
+        deleteat!(work_elmt_fun_eval_to_one, current_tree_indexes)
+
         cpt += 1
     end
 
