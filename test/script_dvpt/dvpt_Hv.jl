@@ -59,6 +59,15 @@ MathOptInterface.eval_hessian_lagrangian_product(evaluator, x_MOI_Hessian_y, x, 
 # @show norm( res_total3 - x_MOI_Hessian_y)
 
 
+
+Hess_matrix_ones = PartiallySeparableNLPModel.struct_hessian(sps, x)
+
+res = similar(x)
+res2 = similar(x)
+bench1 = @benchmark PartiallySeparableNLPModel.product_matrix_sps!(sps, Hess_matrix_ones, x, res)
+bench2 = @benchmark PartiallySeparableNLPModel.Hv_only_product!(sps, Hess_matrix_ones, x, res2 )
+@test res == res2
+
 error("pause")
 
 bench_jump = @benchmark MathOptInterface.eval_hessian_lagrangian_product(evaluator, x_MOI_Hessian_y, x, v, 1.0, zeros(0))
@@ -91,7 +100,7 @@ bench_sps2 =  @benchmark PartiallySeparableNLPModel.Hv2!(hv, sps, x, v)
 
 
 
-# Hess_matrix_ones = PartiallySeparableNLPModel.struct_hessian(sps, x)
+
 # storage_matrix = PartiallySeparableNLPModel.struct_hessian(sps, x)
 # Bx1 = PartiallySeparableNLPModel.product_matrix_sps(sps, Hess_matrix_ones, x)
 # Bx2 = PartiallySeparableNLPModel.Hv_only_product(sps, Hess_matrix_ones, x )

@@ -655,7 +655,7 @@ function id_hessian!(sps :: SPS{T}, H :: Hess_matrix{Y} )  where Y <: Number whe
 end
 
 
-construct_full_Hessian(sps :: SPS{T,Y}, H :: Hess_matrix{Y} )  where Y <: Number where T =  Array(construct_Sparse_Hessian,H)
+construct_full_Hessian(sps :: SPS{T,Y}, H :: Hess_matrix{Y} )  where Y <: Number where T =  Array(construct_Sparse_Hessian(sps,H))
 
 """
     construct_Sparse_Hessian(sps, B)
@@ -698,12 +698,13 @@ end
     f_inter!
 similar to build_gradient!
 """
-function f_inter!(res :: AbstractVector{Z}, indices ::  AbstractVector{Int}, values :: AbstractVector{Z}) where Z <: Number
-    l = length(indices)
-    for i in 1:l
-        @inbounds res[indices[i]] += values[i]
-    end
-end
+# function f_inter!(res :: AbstractVector{Z}, indices ::  AbstractVector{Int}, values :: AbstractVector{Z}) where Z <: Number
+#     l = length(indices)
+#     for i in 1:l
+#         @inbounds res[indices[i]] += values[i]
+#     end
+# end
+@inline f_inter!(res :: AbstractVector{Z}, indices ::  AbstractVector{Int}, values :: AbstractVector{Z}) where Z <: Number = begin for (index,value) in enumerate(indices); res[value] += values[index]  end end 
 
 
 
