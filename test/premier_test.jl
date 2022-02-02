@@ -29,16 +29,16 @@ moi_grad = similar(x)
 MathOptInterface.eval_objective_gradient(evaluator, moi_grad, x)
 
 @testset "tests évaluation" begin
-    @test PartiallySeparableNLPModel.evaluate_SPS(sps1, x) == PartiallySeparableNLPModel.evaluate_SPS(sps2, x)
-    @test PartiallySeparableNLPModel.evaluate_SPS(sps2, x) == PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
-    @test PartiallySeparableNLPModel.evaluate_SPS(sps2, x) ≈ MathOptInterface.eval_objective(evaluator, x)
+	@test PartiallySeparableNLPModel.evaluate_SPS(sps1, x) == PartiallySeparableNLPModel.evaluate_SPS(sps2, x)
+	@test PartiallySeparableNLPModel.evaluate_SPS(sps2, x) == PartiallySeparableNLPModel.evaluate_SPS(sps3, x)
+	@test PartiallySeparableNLPModel.evaluate_SPS(sps2, x) ≈ MathOptInterface.eval_objective(evaluator, x)
 end
 
 @testset "tests gradient" begin
-    MOI_gradient = Vector{ eltype(x) }(undef,n)
-    MathOptInterface.eval_objective_gradient(evaluator, MOI_gradient, x)
+	MOI_gradient = Vector{ eltype(x) }(undef,n)
+	MathOptInterface.eval_objective_gradient(evaluator, MOI_gradient, x)
 
-    @test PartiallySeparableNLPModel.evaluate_gradient(sps1, x) == PartiallySeparableNLPModel.evaluate_gradient(sps2, x)
-    @test PartiallySeparableNLPModel.evaluate_gradient(sps2, x) == PartiallySeparableNLPModel.evaluate_gradient(sps3, x)
-    @test norm(PartiallySeparableNLPModel.evaluate_gradient(sps2, x)) ≈ MOI_gradient
+	@test PartiallySeparableNLPModel.evaluate_gradient(sps1, x) == PartiallySeparableNLPModel.evaluate_gradient(sps2, x)
+	@test PartiallySeparableNLPModel.evaluate_gradient(sps2, x) == PartiallySeparableNLPModel.evaluate_gradient(sps3, x)
+	@test PartiallySeparableNLPModel.evaluate_gradient(sps2, x) ≈ MOI_gradient
 end
