@@ -1,5 +1,19 @@
 # PartiallySeparableNLPModel
 
-[![Build Status](https://travis-ci.com/paraynaud/PartiallySeparableNLPModel.jl.svg?branch=master)](https://travis-ci.com/paraynaud/PartiallySeparableNLPModel.jl)
+| **Documentation** | **Linux/macOS/Windows/FreeBSD** | **Coverage** | **DOI** |
+|:-----------------:|:-------------------------------:|:------------:|:-------:|
+| [![docs-stable][docs-stable-img]][docs-stable-url] [![docs-dev][docs-dev-img]][docs-dev-url] | [![build-gh][build-gh-img]][build-gh-url] [![build-cirrus][build-cirrus-img]][build-cirrus-url] | [![codecov][codecov-img]][codecov-url] | [![doi][doi-img]][doi-url] |
 
-[![Coverage Status](https://coveralls.io/repos/github/paraynaud/PartiallySeparableNLPModel.jl/badge.svg?branch=master)](https://coveralls.io/github/paraynaud/PartiallySeparableNLPModel.jl?branch=master)
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://paraynaud.github.io/PartiallySeparableNLPModel.jl/stable
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-purple.svg
+[docs-dev-url]: https://paraynaud.github.io/PartiallySeparableNLPModel.jl/dev
+[build-gh-img]: https://github.com/paraynaud/PartiallySeparableNLPModel.jl/workflows/CI/badge.svg?branch=main
+[build-gh-url]: https://github.com/paraynaud/PartiallySeparableNLPModel.jl/actions
+[build-cirrus-img]: https://img.shields.io/cirrus/github/paraynaud/PartiallySeparableNLPModel.jl?logo=Cirrus%20CI
+[build-cirrus-url]: https://cirrus-ci.com/github/paraynaud/PartiallySeparableNLPModel.jl
+[codecov-img]: https://codecov.io/gh/paraynaud/PartiallySeparableNLPModel.jl/branch/main/graph/badge.svg
+[codecov-url]: https://app.codecov.io/gh/paraynaud/PartiallySeparableNLPModel.jl
+[doi-img]: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.822073-blue.svg
+[doi-url]: https://doi.org/10.5281/zenodo.822073
+

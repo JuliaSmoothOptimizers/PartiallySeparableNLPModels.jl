@@ -1,6 +1,7 @@
 using BenchmarkTools
 using JuMP, MathOptInterface
-# using PartiallySeparableStructure
+using PkgBenchmark
+
 
 using PartiallySeparableNLPModel
 using CalculusTreeTools
