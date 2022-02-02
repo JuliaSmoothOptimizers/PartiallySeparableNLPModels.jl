@@ -23,7 +23,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 BenchmarkTools = "0.5.0"
-CalculusTreeTools = "0.1.0"
 ForwardDiff = "0.10.25"
 JuMP = "0.21.5"
 MathOptInterface = "0.9.22"

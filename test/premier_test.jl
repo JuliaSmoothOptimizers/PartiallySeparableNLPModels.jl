@@ -1,5 +1,3 @@
-using JuMP, MathOptInterface, LinearAlgebra
-using CalculusTreeTools
 m = Model()
 n = 100
 @variable(m, x[1:n])
