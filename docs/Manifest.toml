@@ -91,7 +91,7 @@ version = "0.5.1"
 
 [[deps.CalculusTreeTools]]
 deps = ["ADNLPModels", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "ModelingToolkit", "ReverseDiff", "SparseArrays", "Test"]
-git-tree-sha1 = "a06d9ddb0c161efae32780cae3d4de4815962517"
+git-tree-sha1 = "ef6304bab68d2933f127ddf63d71321426cc4299"
 repo-rev = "master"
 repo-url = "https://github.com/paraynaud/CalculusTreeTools.jl.git"
 uuid = "995bfbc1-c62b-4971-a5e3-ef0aad32e8da"
@@ -930,7 +930,9 @@ version = "2.2.1"
 
 [[deps.PartiallySeparableNLPModels]]
 deps = ["BenchmarkTools", "CalculusTreeTools", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "OptimizationProblems", "PkgBenchmark", "Plots", "ProfileView", "ReverseDiff", "Revise", "SparseArrays", "SyntaxTree", "Test"]
-path = "C:\\Users\\raynaudp\\Desktop\\these\\code\\PartiallySeparableNLPModels.jl"
+git-tree-sha1 = "95c54e5289948f36e7161179077a891df610cab5"
+repo-rev = "master"
+repo-url = "https://github.com/paraynaud/PartiallySeparableNLPModels.jl.git"
 uuid = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 version = "0.1.0"
 
