@@ -1,5 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
+julia_version = "1.7.1"
 manifest_format = "2.0"
 
 [[deps.ADNLPModels]]
@@ -929,9 +930,7 @@ version = "2.2.1"
 
 [[deps.PartiallySeparableNLPModel]]
 deps = ["BenchmarkTools", "CalculusTreeTools", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "OptimizationProblems", "PkgBenchmark", "Plots", "ProfileView", "ReverseDiff", "Revise", "SparseArrays", "SyntaxTree", "Test"]
-git-tree-sha1 = "8f3dc0ff0f73548851537a4c6cc648cdbebaa317"
-repo-rev = "master"
-repo-url = "https://github.com/paraynaud/PartiallySeparableNLPModel.jl.git"
+path = "C:\\Users\\raynaudp\\Desktop\\these\\code\\PartiallySeparableNLPModel.jl"
 uuid = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 version = "0.1.0"
 
