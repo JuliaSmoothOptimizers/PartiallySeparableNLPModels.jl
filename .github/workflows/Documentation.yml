@@ -18,7 +18,8 @@ jobs:
         run: |
           using Pkg
           pkg1 = PackageSpec(url = "https://github.com/paraynaud/CalculusTreeTools.jl.git")
-          pkg_list = [pkg1]
+          pkg2 = PackageSpec(url = "https://github.com/paraynaud/PartiallySeparablesNLPModels.jl.git")
+          pkg_list = [pkg1, pkg2]
           Pkg.add(pkg_list)
         shell: julia --project=docs --color=yes {0}
       - name: Install dependencies
