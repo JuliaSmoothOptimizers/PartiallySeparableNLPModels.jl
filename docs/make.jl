@@ -1,8 +1,8 @@
 using Documenter
-using PartiallySeparableNLPModel
+using PartiallySeparableNLPModels
 
 makedocs(
-  modules = [PartiallySeparableNLPModel],
+  modules = [PartiallySeparableNLPModels],
   doctest = true,
   # linkcheck = true,
   strict = true,
@@ -10,8 +10,8 @@ makedocs(
     assets = ["assets/style.css"],
     prettyurls = get(ENV, "CI", nothing) == "true",
   ),
-  sitename = "PartiallySeparableNLPModel.jl",
+  sitename = "PartiallySeparableNLPModels.jl",
   pages = Any["Home" => "index.md", "Tutorial" => "tutorial.md", "Reference" => "reference.md"],
 )
 
-deploydocs(repo = "github.com/paraynaud/PartiallySeparableNLPModel.jl.git", devbranch = "master")
+deploydocs(repo = "github.com/paraynaud/PartiallySeparableNLPModels.jl.git", devbranch = "master")

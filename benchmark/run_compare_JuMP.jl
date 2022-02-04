@@ -3,7 +3,7 @@ using SolverBenchmark
 using Plots
 
 # perform benchmarks
-results = PkgBenchmark.benchmarkpkg("PartiallySeparableNLPModel", script="benchmark/compare_with_JuMP.jl")
+results = PkgBenchmark.benchmarkpkg("PartiallySeparableNLPModels", script="benchmark/compare_with_JuMP.jl")
 
 # process benchmark results and post gist
 ENV["GKSwstype"]=100

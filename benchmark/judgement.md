@@ -1,4 +1,4 @@
-# Benchmark Report for *PartiallySeparableNLPModel*
+# Benchmark Report for *PartiallySeparableNLPModels*
 
 ## Job Properties
 * Time of benchmarks:

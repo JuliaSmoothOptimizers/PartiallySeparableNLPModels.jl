@@ -1,1 +1,1 @@
-# PartiallySeparableNLPModel.jl Tutorial
+# PartiallySeparableNLPModels.jl Tutorial

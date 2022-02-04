@@ -1,1 +1,1 @@
-# PartiallySeparableNLPModel.jl
+# PartiallySeparableNLPModels.jl

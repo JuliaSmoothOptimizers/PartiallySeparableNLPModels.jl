@@ -24,4 +24,4 @@ jobs:
 
 
 # using DocumenterTools
-# DocumenterTools.genkeys(user="paraynaud", repo="PartiallySeparableNLPModel.jl")
+# DocumenterTools.genkeys(user="paraynaud", repo="PartiallySeparableNLPModels.jl")

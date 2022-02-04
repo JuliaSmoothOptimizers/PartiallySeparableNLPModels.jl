@@ -4,7 +4,7 @@ using NLPModelsJuMP
 using JuMP, MathOptInterface
 
 using CalculusTreeTools
-using PartiallySeparableNLPModel
+using PartiallySeparableNLPModels
 # using ..My_SPS_Model_Module
 
 
@@ -54,22 +54,22 @@ for p in problems
   obj_ros_expr_tree = CalculusTreeTools.transform_to_expr_tree(obj_ros)
 
   n = m_ros.moi_backend.model_cache.model.num_variables_created
-  SPS_ros = PartiallySeparableNLPModel.deduct_partially_separable_structure(obj_ros_expr_tree, n)
+  SPS_ros = PartiallySeparableNLPModels.deduct_partially_separable_structure(obj_ros_expr_tree, n)
   x = ones(n)
   #calcul de la fonction objectif
-  SUITE["SPS_function"]["OBJ ros $n var"] = @benchmarkable PartiallySeparableNLPModel.evaluate_SPS($SPS_ros, $x)
+  SUITE["SPS_function"]["OBJ ros $n var"] = @benchmarkable PartiallySeparableNLPModels.evaluate_SPS($SPS_ros, $x)
 
   #calcul du gradient sous format gradient élémentaire
-  f = (y :: PartiallySeparableNLPModel.element_function -> PartiallySeparableNLPModel.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
-  grad = PartiallySeparableNLPModel.grad_vector{typeof(x[1])}( f.(SPS_ros.structure) )
-  SUITE["SPS_function"]["grad ros $n var"] = @benchmarkable PartiallySeparableNLPModel.evaluate_SPS_gradient!($SPS_ros, $x, $grad)
+  f = (y :: PartiallySeparableNLPModels.element_function -> PartiallySeparableNLPModels.element_gradient{typeof(x[1])}(Vector{typeof(x[1])}(zeros(typeof(x[1]), length(y.used_variable)) )) )
+  grad = PartiallySeparableNLPModels.grad_vector{typeof(x[1])}( f.(SPS_ros.structure) )
+  SUITE["SPS_function"]["grad ros $n var"] = @benchmarkable PartiallySeparableNLPModels.evaluate_SPS_gradient!($SPS_ros, $x, $grad)
 
   #calcul du Hessien
-  f = ( elm_fun :: PartiallySeparableNLPModel.element_function -> PartiallySeparableNLPModel.element_hessian{Float64}( Array{Float64,2}(undef, length(elm_fun.used_variable), length(elm_fun.used_variable) )) )
-  t = f.(SPS_ros.structure) :: Vector{PartiallySeparableNLPModel.element_hessian{typeof(x[1])}}
-  H = PartiallySeparableNLPModel.Hess_matrix{typeof(x[1])}(t)
+  f = ( elm_fun :: PartiallySeparableNLPModels.element_function -> PartiallySeparableNLPModels.element_hessian{Float64}( Array{Float64,2}(undef, length(elm_fun.used_variable), length(elm_fun.used_variable) )) )
+  t = f.(SPS_ros.structure) :: Vector{PartiallySeparableNLPModels.element_hessian{typeof(x[1])}}
+  H = PartiallySeparableNLPModels.Hess_matrix{typeof(x[1])}(t)
 
-  SUITE["SPS_function"]["Hessien ros $n var"] = @benchmarkable PartiallySeparableNLPModel.struct_hessian!($SPS_ros, $x, $H)
+  SUITE["SPS_function"]["Hessien ros $n var"] = @benchmarkable PartiallySeparableNLPModels.struct_hessian!($SPS_ros, $x, $H)
 
 end
 

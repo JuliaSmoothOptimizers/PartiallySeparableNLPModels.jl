@@ -928,9 +928,9 @@ git-tree-sha1 = "0b5cfbb704034b5b4c1869e36634438a047df065"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.2.1"
 
-[[deps.PartiallySeparableNLPModel]]
+[[deps.PartiallySeparableNLPModels]]
 deps = ["BenchmarkTools", "CalculusTreeTools", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "OptimizationProblems", "PkgBenchmark", "Plots", "ProfileView", "ReverseDiff", "Revise", "SparseArrays", "SyntaxTree", "Test"]
-path = "C:\\Users\\raynaudp\\Desktop\\these\\code\\PartiallySeparableNLPModel.jl"
+path = "C:\\Users\\raynaudp\\Desktop\\these\\code\\PartiallySeparableNLPModels.jl"
 uuid = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 version = "0.1.0"
 

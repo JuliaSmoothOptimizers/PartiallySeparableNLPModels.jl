@@ -1,5 +1,5 @@
 using Test
-using CalculusTreeTools, PartiallySeparableNLPModel
+using CalculusTreeTools, PartiallySeparableNLPModels
 
 using JuMP, MathOptInterface, LinearAlgebra, SparseArrays
 
