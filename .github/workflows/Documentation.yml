@@ -15,7 +15,7 @@ jobs:
         with:
           version: '1.7'
       - name: Installing non-registered dependencies
-      run: |
+        run: |
           using Pkg
           pkg1 = PackageSpec(url = "https://github.com/paraynaud/CalculusTreeTools.jl.git")
           pkg_list = [pkg1]
