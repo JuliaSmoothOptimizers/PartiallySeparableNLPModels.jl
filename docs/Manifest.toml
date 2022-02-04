@@ -930,7 +930,8 @@ version = "2.2.1"
 
 [[deps.PartiallySeparableNLPModels]]
 deps = ["BenchmarkTools", "CalculusTreeTools", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "OptimizationProblems", "PkgBenchmark", "Plots", "ProfileView", "ReverseDiff", "Revise", "SparseArrays", "SyntaxTree", "Test"]
-path = "/home/alexis/Bureau/git/PartiallySeparableNLPModel.jl"
+repo-rev = "master"
+repo-url = "https://github.com/paraynaud/PartiallySeparableNLPModels.jl.git"
 uuid = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 version = "0.1.0"
 

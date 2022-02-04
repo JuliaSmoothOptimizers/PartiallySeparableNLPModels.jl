@@ -92,6 +92,7 @@ git-tree-sha1 = "ef6304bab68d2933f127ddf63d71321426cc4299"
 repo-rev = "master"
 repo-url = "https://github.com/paraynaud/CalculusTreeTools.jl.git"
 uuid = "995bfbc1-c62b-4971-a5e3-ef0aad32e8da"
+version = "0.1.0"
 
 [[CanonicalTraits]]
 deps = ["MLStyle"]
