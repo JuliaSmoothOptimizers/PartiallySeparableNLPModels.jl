@@ -930,6 +930,7 @@ version = "2.2.1"
 
 [[deps.PartiallySeparableNLPModels]]
 deps = ["BenchmarkTools", "CalculusTreeTools", "ForwardDiff", "JuMP", "LinearAlgebra", "MathOptInterface", "OptimizationProblems", "PkgBenchmark", "Plots", "ProfileView", "ReverseDiff", "Revise", "SparseArrays", "SyntaxTree", "Test"]
+git-tree-sha1 = "df18f9daf638028e9830f37d855b563e1f6b767a"
 repo-rev = "master"
 repo-url = "https://github.com/paraynaud/PartiallySeparableNLPModels.jl.git"
 uuid = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
