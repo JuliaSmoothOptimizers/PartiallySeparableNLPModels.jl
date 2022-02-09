@@ -942,10 +942,6 @@ Previous deduct_partially_separable_structure
 #
 #     return SPS{T, type}(structure, different_calculus_tree, index_element_tree, related_vars, x, x_views, v, v_views, length_vec[], n, compiled_gradients)
 # end
-
-
-
-
 # function _deduct_partially_separable_structure(expr_tree :: CalculusTreeTools.complete_expr_tree, n :: Int, type=Float64 :: DataType)
 #     work_expr_tree = copy(expr_tree)
 #     CalculusTreeTools.cast_type_of_constant(work_expr_tree, type)

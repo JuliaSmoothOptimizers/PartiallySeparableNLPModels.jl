@@ -50,10 +50,9 @@ jobs:
         run: |
           using Pkg
           pkg1 = PackageSpec(url = "https://github.com/paraynaud/CalculusTreeTools.jl.git")
-          pkg2 = PackageSpec(url = "https://github.com/paraynaud/PartiallySeparableNLPModels.jl.git")
-          pkg_list = [pkg1, pkg2]
+          pkg_list = [pkg1]
           Pkg.add(pkg_list)
-        shell: julia --project=docs --color=yes {0}
+        shell: julia --project=@. --color=yes {0}
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
