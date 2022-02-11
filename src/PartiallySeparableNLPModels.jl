@@ -1,15 +1,18 @@
 module PartiallySeparableNLPModels
 
-using CalculusTreeTools
-using PartitionedStructures
+	using CalculusTreeTools
+	using PartitionedStructures
 
-include("PartiallySeparableStructure.jl")
-include("partitioned_data/_include.jl")
+	include("old_version/PartiallySeparableStructure.jl")
+	include("partitioned_data/_include.jl")
 
-export deduct_partially_separable_structure, evaluate_SPS, untype_evaluate_SPS, evaluate_SPS2, evaluate_SPS_gradient!, build_gradient!, minus_grad_vec!, id_hessian!, product_matrix_sps
-export element_function, SPS, element_hessian, Hess_matrix, element_gradient, grad_vector #types
+	using .Mod_ab_partitioned_data, .Mod_PBFGS
 
-export PartitionedData_TR_BFGS
-export build_PartitionedData_TR_BFGS, evaluate_obj_pd_pbfgs, evaluate_obj_pd_pbfgs!, evaluate_grad_pd_pbfgs!, evaluate_grad_pd_pbfgs, update_PBFGS, update_PBFGS!, product_pd_pbfgs_x, product_pd_pbfgs_x!
+	export deduct_partially_separable_structure, evaluate_SPS, untype_evaluate_SPS, evaluate_SPS2, evaluate_SPS_gradient!, build_gradient!, minus_grad_vec!, id_hessian!, product_matrix_sps
+	export element_function, SPS, element_hessian, Hess_matrix, element_gradient, grad_vector #types
+
+	export PartitionedData_TR_PBFGS
+	export build_PartitionedData_TR_PBFGS
+	export product_part_data_x, product_part_data_x!, evaluate_obj_part_data, evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data, evaluate_grad_part_data!, update_PBFGS, update_PBFGS!
 
 end # module
