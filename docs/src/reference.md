@@ -13,5 +13,5 @@ Pages = ["reference.md"]
 ```
 ​
 ```@autodocs
-Modules = [PartiallySeparableNLPModels]
+Modules = [PartiallySeparableNLPModels,Mod_ab_partitioned_data, Mod_PBFGS, Mod_common]
 ```
