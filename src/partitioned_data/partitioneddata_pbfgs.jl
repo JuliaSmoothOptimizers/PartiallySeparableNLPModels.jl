@@ -75,20 +75,48 @@ end
 @inline set_fx!(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, fx::T) where {G,T} = pd_pbfgs.fx = fx
 
 
-function update!(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} 
-	x != get_x(pd_pbfgs) && set_x!(pd_pbfgs, x)
-	update!(pd_pbfgs,s)
+function product_pd_pbfgs_x(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, x :: Vector{T}) where {G,T} 
+	res = similar(x)
+	product_pd_pbfgs_x!(res, pd_pbfgs,x)
+	return res
 end 
 
-function update!(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, s :: Vector{T}) where {G,T} 
+function product_pd_pbfgs_x!(res::Vector{T}, pd_pbfgs::PartitionedData_TR_BFGS{G,T}, x :: Vector{T}) where {G,T} 
+	pB = get_pB(pd_pbfgs)
+	epvx = PartitionedStructures.epv_from_epm(pB)
+	epv_from_v!(epvx,x)
+	epv_res = similar(epvx)
+	product_pd_pbfgs_x!(epv_res, pB, epvx)
+	PartitionedStructures.build_v!(epv_res)
+	res .= PartitionedStructures.get_v(epv_res)
+end 
+
+function product_pd_pbfgs_x!(epv_res::PartitionedStructures.Elemental_pv{T}, pB::PartitionedStructures.Elemental_pm{T}, epv::PartitionedStructures.Elemental_pv{T}) where {G,T} 
+	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
+end 
+
+"""
+		update_PBFGS(pd_pbfgs,x,s)
+Perform the PBFGS update givent the two iterate x and s
+"""
+update_PBFGS(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} = begin update_PBFGS!(pd_pbfgs,x,s); return Matrix(get_pB(pd_pbfgs)) end
+function update_PBFGS!(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} 
+	x != get_x(pd_pbfgs) && set_x!(pd_pbfgs, x)
+	update_PBFGS!(pd_pbfgs,s)
+end 
+
+"""
+		update_PBFGS(pd_pbfgs,s)
+Perform the PBFGS update givent the current iterate x and the next iterate s
+"""
+function update_PBFGS!(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, s :: Vector{T}) where {G,T} 
 	evaluate_y_pd_pbfgs!(pd_pbfgs,s)
 	py = get_pv(pd_pbfgs)
-	set_ps(pd_pbfgs,s)
+	set_ps!(pd_pbfgs,s)
 	ps = get_ps(pd_pbfgs)
 	pB = get_pB(pd_pbfgs)
 	PartitionedStructures.PBFGS_update!(pB, py, ps)
 end 
-
 
 """
 		evaluate_y_pd_pbfgs!(pd_pbfgs,x,s)
@@ -104,9 +132,9 @@ function evaluate_y_pd_pbfgs!(pd_pbfgs::PartitionedData_TR_BFGS{G,T}, s :: Vecto
 	evaluate_grad_pd_pbfgs!(pd_pbfgs)	
 	set_pv!(pd_pbfgs, get_pg(pd_pbfgs))
 	PartitionedStructures.minus_epv!(get_pv(pd_pbfgs))
-	set_x!(pd_pbfgs, x+s)
+	set_x!(pd_pbfgs, get_x(pd_pbfgs)+s)
 	evaluate_grad_pd_pbfgs!(pd_pbfgs)
-	PartitionedStructures.add_epv!(get_px(pd_pbfgs), get_pv(pd_pbfgs))
+	PartitionedStructures.add_epv!(get_pg(pd_pbfgs), get_pv(pd_pbfgs))
 end 
 
 """
