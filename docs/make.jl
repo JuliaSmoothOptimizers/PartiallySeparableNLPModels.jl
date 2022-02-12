@@ -1,9 +1,9 @@
 using Documenter
 using PartiallySeparableNLPModels
-using PartiallySeparableNLPModels: Mod_ab_partitioned_data, Mod_PBFGS, Mod_common
+using PartiallySeparableNLPModels: Mod_ab_partitioned_data, Mod_PBFGS, Mod_PLBFGS, Mod_common
 
 makedocs(
-  modules = [PartiallySeparableNLPModels,Mod_ab_partitioned_data, Mod_PBFGS, Mod_common],
+  modules = [PartiallySeparableNLPModels,Mod_ab_partitioned_data, Mod_PBFGS, Mod_PLBFGS, Mod_common],
   doctest = true,
   # linkcheck = true,
   strict = true,

@@ -1,12 +1,12 @@
-module Mod_PBFGS
+module Mod_PLBFGS
 	using ReverseDiff
 	using PartitionedStructures, CalculusTreeTools
 	using ..Mod_ab_partitioned_data, ..Mod_common 
 
-	export PartitionedData_TR_PBFGS
-	export update_PBFGS, update_PBFGS!, build_PartitionedData_TR_PBFGS
+	export PartitionedData_TR_PLBFGS
+	export update_PLBFGS, update_PLBFGS!, build_PartitionedData_TR_PLBFGS
 
-	mutable struct PartitionedData_TR_PBFGS{G,T<:Number} <: Mod_ab_partitioned_data.PartitionedData
+	mutable struct PartitionedData_TR_PLBFGS{G,T<:Number} <: Mod_ab_partitioned_data.PartitionedData
 	  n :: Int 
 	  N :: Int
 	  vec_elt_fun :: Vector{Element_function} #length(vec_elt_fun) == N
@@ -26,7 +26,7 @@ module Mod_PBFGS
 	  pg :: PartitionedStructures.Elemental_pv{T} # partitioned gradient
 	  pv :: PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
 		ps :: PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
-	  pB :: PartitionedStructures.Elemental_pm{T} # partitioned B
+	  pB :: PartitionedStructures.Elemental_plom_bfgs{T} # partitioned B
 
 		fx :: T
 		# g is build directly from pg
@@ -34,35 +34,35 @@ module Mod_PBFGS
 	end
 
 	"""
-			update_PBFGS(pd_pbfgs,x,s)
+			update_PLBFGS(pd_pblfgs,x,s)
 	Perform the PBFGS update givent the two iterate x and s
 	"""
-	update_PBFGS(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} = begin update_PBFGS!(pd_pbfgs,x,s); return Matrix(get_pB(pd_pbfgs)) end
-	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} 
-		x != get_x(pd_pbfgs) && set_x!(pd_pbfgs, x)
-		update_PBFGS!(pd_pbfgs,s)
+	update_PLBFGS(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} = begin update_PLBFGS!(pd_pblfgs,x,s); return Matrix(get_pB(pd_pblfgs)) end
+	function update_PLBFGS!(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} 
+		x != get_x(pd_pblfgs) && set_x!(pd_pblfgs, x)
+		update_PLBFGS!(pd_pblfgs,s)
 	end 
 
 	"""
-			update_PBFGS(pd_pbfgs,s)
+			update_PLBFGS(pd_pblfgs,s)
 	Perform the PBFGS update givent the current iterate x and the next iterate s
 	"""
-	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}) where {G,T} 
-		evaluate_y_part_data!(pd_pbfgs,s)
-		py = get_pv(pd_pbfgs)
-		set_ps!(pd_pbfgs,s)
-		ps = get_ps(pd_pbfgs)
-		pB = get_pB(pd_pbfgs)
-		PartitionedStructures.PBFGS_update!(pB, py, ps)
+	function update_PLBFGS!(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}) where {G,T} 
+		evaluate_y_part_data!(pd_pblfgs,s)
+		py = get_pv(pd_pblfgs)
+		set_ps!(pd_pblfgs,s)
+		ps = get_ps(pd_pblfgs)
+		pB = get_pB(pd_pblfgs)
+		PartitionedStructures.PLBFGS_update!(pB, py, ps)
 	end 
 	
 	"""
-	    build_PartitionedData_TR_PBFGS(expr_tree, n)
+	    build_PartitionedData_TR_PLBFGS(expr_tree, n)
 	Find the partially separable structure of a function f stored as an expression tree expr_tree.
 	To define properly the size of sparse matrix we need the size of the problem : n.
 	At the end, we get the partially separable structure of f, f(x) = ∑fᵢ(xᵢ)
 	"""
-	function build_PartitionedData_TR_PBFGS(tree::G, n::Int; type::DataType=Float64, x0::Vector{T}=rand(type,n)) where {G,T}
+	function build_PartitionedData_TR_PLBFGS(tree::G, n::Int; type::DataType=Float64, x0::Vector{T}=rand(type,n)) where {G,T}
 		T != type && @error("confusion between type and the x0, abort")
 	  expr_tree = CalculusTreeTools.transform_to_expr_tree(tree) :: CalculusTreeTools.t_expr_tree # transform the expression tree of type G into an expr tree of type t_expr_tree (the standard type used by my algorithms)
 	  vec_element_function = CalculusTreeTools.delete_imbricated_plus(expr_tree) :: Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
@@ -98,16 +98,17 @@ module Mod_PBFGS
 	  x = x0
 	  v = similar(x)
 		s = similar(x)
+
 	  
 	  pg = PartitionedStructures.create_epv(element_variables, n, type=type)
 	  pv = similar(pg)
 		ps = similar(pg)
 	
-	  pB = identity_epm(element_variables, N, n; type=type)
+	  pB = identity_eplom_lbfgs(element_variables, N, n; type=type)
 		fx = -1
-	  pd_pbfgs = PartitionedData_TR_PBFGS{CalculusTreeTools.complete_expr_tree, type}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, ps, pB, fx)
+	  pd_pblfgs = PartitionedData_TR_PLBFGS{CalculusTreeTools.complete_expr_tree, type}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, ps, pB, fx)
 	
-	  return pd_pbfgs
+	  return pd_pblfgs
 	end
 
 end 

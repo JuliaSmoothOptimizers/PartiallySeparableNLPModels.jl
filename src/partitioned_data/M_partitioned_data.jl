@@ -58,6 +58,7 @@ module Mod_ab_partitioned_data
 		return res
 	end 
 
+	# on est là epv_from_eplom ou epv_from_epm
 	function product_part_data_x!(res::Vector{Y}, part_data::T, x::Vector{Y}) where {T<:PartitionedData,Y<:Number} 
 		pB = get_pB(part_data)
 		epvx = PartitionedStructures.epv_from_epm(pB)
@@ -68,7 +69,7 @@ module Mod_ab_partitioned_data
 		res .= PartitionedStructures.get_v(epv_res)
 	end 
 
-	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{T}, pB::PartitionedStructures.Elemental_pm{T}, epv::PartitionedStructures.Elemental_pv{T}) where T<:Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
+	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, pB::T, epv::PartitionedStructures.Elemental_pv{Y}) where T <: PartitionedStructures.Part_mat{Y} where Y<:Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
 
 	function evaluate_obj_part_data(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
 		x != get_x(part_data) && set_x!(part_data, x)

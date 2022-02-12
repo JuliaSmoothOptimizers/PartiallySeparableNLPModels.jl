@@ -4,7 +4,7 @@ module Mod_common
 
 	export Element_function
 	export distinct_element_expr_tree, compiled_grad_elmt_fun
-	export create_eev, create_id_eem, identity_epm
+	# export create_eev, create_id_eem, identity_epm, identity_eplom_lbfgs
 
 	mutable struct Element_function
 	  i :: Int # the index of the function 1 ≤ i ≤ N
@@ -56,30 +56,4 @@ module Mod_common
 	  return compiled_f_tape
 	end
 
-	function create_eev(elt_var::Vector{Int}; type=Float64)
-	  nie = length(elt_var)
-	  eev_value = rand(nie)
-	  eev = PartitionedStructures.Elemental_elt_vec{type}(eev_value, elt_var, nie)
-	  return eev
-	end 
-
-	function create_id_eem(elt_var::Vector{Int}; type=Float64)
-	  nie = length(elt_var)
-	  Bie = zeros(type,nie,nie)
-	  [Bie[i,i]=1 for i in 1:nie]  
-	  eem = PartitionedStructures.Elemental_em{type}(nie, elt_var, Symmetric(Bie))
-	  return eem
-	end
-
-	function identity_epm(element_variables::Vector{Vector{Int}}, N :: Int, n ::Int; type=Float64)
-	  eem_set = map( (elt_var -> create_id_eem(elt_var;type=type)), element_variables)
-	  spm = spzeros(type,n,n)
-	  L = spzeros(type,n,n)
-	  component_list = map(i -> Vector{Int}(undef,0), [1:n;])
-	  no_perm = [1:n;]
-	  epm = PartitionedStructures.Elemental_pm{type}(N,n,eem_set,spm,L,component_list,no_perm)
-	  PartitionedStructures.initialize_component_list!(epm)
-	  return epm
-	end 
-	
 end 
