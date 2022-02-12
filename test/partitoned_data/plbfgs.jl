@@ -27,13 +27,13 @@ function create_Rosenbrock_JuMP_Model(n :: Int)
 	return (m, evaluator,obj, x0)
 end
 
-@testset "PBFGS structure" begin
+@testset "PLBFGS structure" begin
 	n = 40
 	x = ones(n)
 	y = rand(n)
 	(m, evaluator, obj, x0) = create_Rosenbrock_JuMP_Model(n)
 
-	ps_data = build_PartitionedData_TR_PBFGS(obj, n;x0=x0)
+	ps_data = build_PartitionedData_TR_PLBFGS(obj, n;x0=x0)
 
 	objx = evaluate_obj_part_data(ps_data, x)
 	obj_MOI_x = MathOptInterface.eval_objective(evaluator, x)
@@ -58,7 +58,7 @@ end
 
 	x = (x->2*x).(ones(n))
 	s = (x->0.1*x).(ones(n))
-	update_PBFGS(ps_data,x,s)
+	update_PLBFGS(ps_data,x,s)
 	Bk1 = Matrix(ps_data.pB)
 	@test minimum(eigen(Bk1).values) > 0
 
