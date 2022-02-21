@@ -5,11 +5,13 @@ module Mod_ab_partitioned_data
 
 	export PartitionedData
 	export get_n, get_N, get_vec_elt_fun, get_M, get_vec_elt_complete_expr_tree, get_element_expr_tree_table, get_index_element_tree, get_vec_compiled_element_gradients
-	export get_x, get_v, get_s, get_pg, get_pv, get_ps, get_pB, get_fx
+	export get_x, get_v, get_s, get_pg, get_pv, get_py, get_ps, get_pB, get_fx
 	export set_n!, set_N!, set_vec_elt_fun!, set_M!, set_vec_elt_complete_expr_tree!, set_element_expr_tree_table!, set_index_element_tree!, set_vec_compiled_element_gradients!
-	export set_x!, set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_ps!, set_pB!, set_fx!
+	export set_x!, set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_py!, set_ps!, set_pB!, set_fx!
 
-	export product_part_data_x, product_part_data_x!, evaluate_obj_part_data, evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data, evaluate_grad_part_data!
+	export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
+	export product_part_data_x!, evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data!
+	export update!
 
 	abstract type PartitionedData end 	
 
@@ -28,6 +30,7 @@ module Mod_ab_partitioned_data
 	@inline get_s(part_data::T) where T <: PartitionedData = part_data.s
 	@inline get_pg(part_data::T) where T <: PartitionedData = part_data.pg
 	@inline get_pv(part_data::T) where T <: PartitionedData = part_data.pv
+	@inline get_py(part_data::T) where T <: PartitionedData = part_data.py
 	@inline get_ps(part_data::T) where T <: PartitionedData = part_data.ps
 	@inline get_pB(part_data::T) where T <: PartitionedData = part_data.pB
 	@inline get_fx(part_data::T) where T <: PartitionedData = part_data.fx
@@ -43,22 +46,30 @@ module Mod_ab_partitioned_data
 	@inline set_x!(part_data::T, x::Vector{Y}) where {T<:PartitionedData,Y<:Number} = part_data.x .= x
 	@inline set_v!(part_data::T, v::Vector{Y}) where {T<:PartitionedData,Y<:Number} = part_data.v .= v
 	@inline set_s!(part_data::T, s::Vector{Y}) where {T<:PartitionedData,Y<:Number} = part_data.s .= s
-	@inline set_pg!(part_data::T, pg::PartitionedStructures.Elemental_pm{Y}) where {T<:PartitionedData,Y<:Number} = part_data.pg = pg
-	@inline set_pv!(part_data::T, pv::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = part_data.pv = pv
-	@inline set_ps!(part_data::T, ps::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = part_data.ps = ps
+	
+	@inline set_pg!(part_data::T, pg::PartitionedStructures.Elemental_pm{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.pg, pg)
+	@inline set_pv!(part_data::T, pv::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.pv, pv)
+	@inline set_py!(part_data::T, py::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.py, py)
+	@inline set_ps!(part_data::T, ps::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.ps, ps)
 	@inline set_pg!(part_data::T, x::Vector{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_v!(part_data.px, x)
 	@inline set_pv!(part_data::T, v::Vector{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_v!(part_data.pv, v)
+	@inline set_py!(part_data::T, y::Vector{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_v!(part_data.py, y)
 	@inline set_ps!(part_data::T, s::Vector{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_v!(part_data.ps, s)
 	@inline set_pB!(part_data::T, pB::PartitionedStructures.Elemental_pm{Y}) where {T <: PartitionedData,Y<:Number} = part_data.pB = pB
 	@inline set_fx!(part_data::T, fx::Y) where {T<:PartitionedData,Y<:Number} = part_data.fx = fx
 
+	update!(part_data :: T) where T <: PartitionedData = @error("Should not be called")
+
+	"""
+			product_part_data_x!(part_data, x)
+	Return the product of the partitioned matrix `part_data*x`.
+	"""
 	function product_part_data_x(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
 		res = similar(x)
 		product_part_data_x!(res, part_data,x)
 		return res
 	end 
 
-	# on est là epv_from_eplom ou epv_from_epm
 	function product_part_data_x!(res::Vector{Y}, part_data::T, x::Vector{Y}) where {T<:PartitionedData,Y<:Number} 
 		pB = get_pB(part_data)
 		epvx = PartitionedStructures.epv_from_epm(pB)
@@ -72,7 +83,7 @@ module Mod_ab_partitioned_data
 	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, pB::T, epv::PartitionedStructures.Elemental_pv{Y}) where T <: PartitionedStructures.Part_mat{Y} where Y<:Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
 
 	function evaluate_obj_part_data(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
-		x != get_x(part_data) && set_x!(part_data, x)
+		set_x!(part_data, x)
 		evaluate_obj_part_data!(part_data)
 		return get_fx(part_data)
 	end
@@ -92,29 +103,31 @@ module Mod_ab_partitioned_data
 
 	"""
 			evaluate_y_part_data!(part_data,x,s)
+			evaluate_y_part_data!(part_data,s)
 	Compute the element gradients differences such as ∇̂fᵢ(x+s)-∇̂fᵢ(x) for each element functions. 
-	It stores the results in part_data.pv
+	It stores the results in part_data.pv.
+	evaluate_y_part_data!(part_data,s) consider that pg is alreagy the gradient of the point x
 	"""
 	function evaluate_y_part_data!(part_data::T, x :: Vector{Y}, s :: Vector{Y}) where {T<:PartitionedData,Y<:Number} 
-		x != get_x(part_data) && set_x!(part_data, x)
+		set_x!(part_data, x)
+		evaluate_grad_part_data!(part_data)
 		evaluate_y_part_data!(part_data,s)	
 	end
 	
-	function evaluate_y_part_data!(part_data::T, s :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
-		evaluate_grad_part_data!(part_data)	
-		set_pv!(part_data, get_pg(part_data))
-		PartitionedStructures.minus_epv!(get_pv(part_data))
+	function evaluate_y_part_data!(part_data::T, s :: Vector{Y}) where {T<:PartitionedData,Y<:Number}		
+		set_py!(part_data, get_pg(part_data))
+		PartitionedStructures.minus_epv!(get_py(part_data))
 		set_x!(part_data, get_x(part_data)+s)
-		evaluate_grad_part_data!(part_data)
-		PartitionedStructures.add_epv!(get_pg(part_data), get_pv(part_data))
+		evaluate_grad_part_data!(part_data)		
+		PartitionedStructures.add_epv!(get_pg(part_data), get_py(part_data))
 	end 
 
 	"""
 			evaluate_grad_part_data(part_data,x)
 	Build the gradient vector at the point x from the element gradient computed and stored in part_data.pg .
 	"""
-	evaluate_grad_part_data(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number} = begin g = similar(x); evaluate_grad_part_data!(part_data,x,g); g end 
-	function evaluate_grad_part_data!(part_data::T, x :: Vector{Y}, g::Vector{Y}) where {T<:PartitionedData,Y<:Number}
+	evaluate_grad_part_data(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number} = begin g = similar(x); evaluate_grad_part_data!(g, part_data, x); g end 
+	function evaluate_grad_part_data!(g::Vector{Y}, part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
 		x != get_x(part_data) && set_x!(part_data, x)
 		evaluate_grad_part_data!(part_data)
 		g .= PartitionedStructures.get_v(get_pg(part_data))

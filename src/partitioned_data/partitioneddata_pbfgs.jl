@@ -3,6 +3,8 @@ module Mod_PBFGS
 	using PartitionedStructures, CalculusTreeTools
 	using ..Mod_ab_partitioned_data, ..Mod_common 
 
+	import ..Mod_ab_partitioned_data.update!
+
 	export PartitionedData_TR_PBFGS
 	export update_PBFGS, update_PBFGS!, build_PartitionedData_TR_PBFGS
 
@@ -25,6 +27,7 @@ module Mod_PBFGS
 		s :: Vector{T} # length(v)==n
 	  pg :: PartitionedStructures.Elemental_pv{T} # partitioned gradient
 	  pv :: PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
+		py :: PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
 		ps :: PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
 	  pB :: PartitionedStructures.Elemental_pm{T} # partitioned B
 
@@ -33,23 +36,27 @@ module Mod_PBFGS
 		# the result of pB*v will be store and build from pv
 	end
 
+	update!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T} = update_PBFGS!(pd_pbfgs, get_x(pd_pbfgs)-s, s; kwargs...)
+
 	"""
 			update_PBFGS(pd_pbfgs,x,s)
 	Perform the PBFGS update givent the two iterate x and s
 	"""
 	update_PBFGS(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} = begin update_PBFGS!(pd_pbfgs,x,s); return Matrix(get_pB(pd_pbfgs)) end
-	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T} 
-		x != get_x(pd_pbfgs) && set_x!(pd_pbfgs, x)
-		update_PBFGS!(pd_pbfgs,s)
+	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T} 
+		set_x!(pd_pbfgs, x)
+		evaluate_grad_part_data!(pd_pbfgs)
+		update_PBFGS!(pd_pbfgs,s;kwargs...)
 	end 
 
 	"""
 			update_PBFGS(pd_pbfgs,s)
 	Perform the PBFGS update givent the current iterate x and the next iterate s
 	"""
-	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}) where {G,T} 
-		evaluate_y_part_data!(pd_pbfgs,s)
-		py = get_pv(pd_pbfgs)
+	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}; reset=0, kwargs...) where {G,T} 
+		# evaluate_y_part_data!(pd_pbfgs,s)
+		evaluate_y_part_data!(pd_pbfgs, get_x(pd_pbfgs),s)
+		py = get_py(pd_pbfgs)
 		set_ps!(pd_pbfgs,s)
 		ps = get_ps(pd_pbfgs)
 		pB = get_pB(pd_pbfgs)
@@ -101,11 +108,12 @@ module Mod_PBFGS
 	  
 	  pg = PartitionedStructures.create_epv(element_variables, n, type=type)
 	  pv = similar(pg)
+		py = similar(pg)
 		ps = similar(pg)
 	
 	  pB = identity_epm(element_variables, N, n; type=type)
 		fx = -1
-	  pd_pbfgs = PartitionedData_TR_PBFGS{CalculusTreeTools.complete_expr_tree, type}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, ps, pB, fx)
+	  pd_pbfgs = PartitionedData_TR_PBFGS{CalculusTreeTools.complete_expr_tree, type}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, pB, fx)
 	
 	  return pd_pbfgs
 	end
