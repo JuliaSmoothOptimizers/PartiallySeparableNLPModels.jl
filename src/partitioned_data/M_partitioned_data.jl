@@ -47,7 +47,7 @@ module Mod_ab_partitioned_data
 	@inline set_v!(part_data::T, v::Vector{Y}) where {T<:PartitionedData,Y<:Number} = part_data.v .= v
 	@inline set_s!(part_data::T, s::Vector{Y}) where {T<:PartitionedData,Y<:Number} = part_data.s .= s
 	
-	@inline set_pg!(part_data::T, pg::PartitionedStructures.Elemental_pm{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.pg, pg)
+	@inline set_pg!(part_data::T, pg::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.pg, pg)
 	@inline set_pv!(part_data::T, pv::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.pv, pv)
 	@inline set_py!(part_data::T, py::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.py, py)
 	@inline set_ps!(part_data::T, ps::PartitionedStructures.Elemental_pv{Y}) where {T<:PartitionedData,Y<:Number} = PartitionedStructures.epv_from_epv!(part_data.ps, ps)
@@ -80,7 +80,8 @@ module Mod_ab_partitioned_data
 		res .= PartitionedStructures.get_v(epv_res)
 	end 
 
-	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, pB::T, epv::PartitionedStructures.Elemental_pv{Y}) where T <: PartitionedStructures.Part_mat{Y} where Y<:Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
+	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, part_data :: T, epv::PartitionedStructures.Elemental_pv{Y}) where {T <: PartitionedData, Y <: Number} =	PartitionedStructures.mul_epm_epv!(epv_res, get_pB(part_data), epv)
+	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, pB::T, epv::PartitionedStructures.Elemental_pv{Y}) where T <: PartitionedStructures.Part_mat{Y} where Y <: Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
 
 	function evaluate_obj_part_data(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
 		set_x!(part_data, x)
@@ -100,6 +101,23 @@ module Mod_ab_partitioned_data
 		end
 		set_fx!(part_data, acc)
 	end 
+
+	# function evaluate_obj_part_data!(part_data::T) where T <: PartitionedData
+	# 	set_pv!(part_data, get_x(part_data))	
+	# 	element_expr_tree_table = get_element_expr_tree_table(part_data)
+	# 	M = get_M(part_data)
+	# 	acc=0
+	# 	for i in 1:M
+	# 		elt_expr_tree = get_vec_elt_complete_expr_tree(part_data, i)
+	# 		indices_elt_fun = element_expr_tree_table[i]
+	# 		for j in indices_elt_fun		
+	# 			fix = CalculusTreeTools.evaluate_expr_tree(elt_expr_tree, PartitionedStructures.get_eev_value(get_pv(part_data),j))
+	# 			acc += fix
+	# 		end
+	# 	end
+	# 	set_fx!(part_data, acc)
+	# end 
+
 
 	"""
 			evaluate_y_part_data!(part_data,x,s)

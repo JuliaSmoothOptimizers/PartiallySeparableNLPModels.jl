@@ -4,7 +4,6 @@ module Mod_common
 
 	export Element_function
 	export distinct_element_expr_tree, compiled_grad_elmt_fun
-	# export create_eev, create_id_eem, identity_epm, identity_eplom_lbfgs
 
 	mutable struct Element_function
 	  i :: Int # the index of the function 1 ≤ i ≤ N
