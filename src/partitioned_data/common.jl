@@ -33,11 +33,11 @@ module Mod_common
 	    real_indices_similar_element_functions = (tup -> tup[2]).(working_array[current_indices_similar_element_functions])
 	    current_expr_tree = vec_element_expr_tree[working_array[1][2]]
 	    push!(element_expr_tree, current_expr_tree) 
-	    comparator_elt_expr_tree(expr_tree) = expr_tree == current_expr_tree
+			comparator_elt_expr_tree(expr_tree) = expr_tree == current_expr_tree 
 	    current_indices_equal_element_function = findall(comparator_elt_expr_tree, vec_element_expr_tree[real_indices_similar_element_functions])
-			real_indices_equal_element_function = (tup -> tup[2]).(working_array[current_indices_equal_element_function])
-	    deleteat!(working_array, current_indices_equal_element_function)
+			real_indices_equal_element_function = (tup -> tup[2]).(working_array[current_indices_similar_element_functions[current_indices_equal_element_function]])
 	    index_element_tree[real_indices_equal_element_function] .= current_expr_tree_index
+			deleteat!(working_array, current_indices_similar_element_functions[current_indices_equal_element_function])
 	    current_expr_tree_index += 1
 	  end
 	  minimum(index_element_tree) == -1 && @error("Not every element function is attributed")
