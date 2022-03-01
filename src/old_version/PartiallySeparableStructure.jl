@@ -108,7 +108,8 @@ function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float6
         CalculusTreeTools.element_fun_from_N_to_Ni!(elmt_fun[i], elmt_var_i[i])
     end
     # à partir des fonctions éléments renumérotées factorisation en fonction éléments distinctes
-    (different_calculus_expr_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun, elmt_var_i)
+    # (different_calculus_expr_tree, different_calculus_tree_index) = get_different_CalculusTree(elmt_fun, elmt_var_i)
+		(different_calculus_expr_tree, different_calculus_tree_index) = distinct_element_expr_tree(elmt_fun, elmt_var_i)
     # creation d'arbres complets à partir des ces fonctions éléments distinctes
     temp_complete_trees = CalculusTreeTools.create_complete_tree.(different_calculus_expr_tree)
     # cast des ces arbres complets au type voulu
@@ -163,6 +164,32 @@ function _deduct_partially_separable_structure(tree :: T , n :: Int, type=Float6
                                                           compiled_gradients,
                                                           obj_Expr)
     return sps
+end
+
+
+function distinct_element_expr_tree(vec_element_expr_tree :: Vector{T}, vec_element_variables :: Vector{Vector{Int}}; N::Int=length(vec_element_expr_tree)) where T
+	N == length(vec_element_variables) || @error("The sizes vec_element_expr_tree and vec_element_variables are differents")
+	index_element_tree = (xi -> -xi).(ones(Int,N))
+	element_expr_tree = Vector{T}(undef,0)
+	vec_val_elt_fun_ones = map( (elt_fun,elt_vars) -> CalculusTreeTools.evaluate_expr_tree(elt_fun, ones(length(elt_vars))), vec_element_expr_tree, vec_element_variables) # evaluate as first equality test
+	working_array = map( (val_elt_fun_ones,i) -> (val_elt_fun_ones,i), vec_val_elt_fun_ones, 1:N)
+	current_expr_tree_index = 1
+	while isempty(working_array) == false
+		val = working_array[1][1]
+		comparator_value_elt_fun(val_elt_fun) = val_elt_fun[1] == val
+		current_indices_similar_element_functions = findall(comparator_value_elt_fun, working_array[:,1])
+		real_indices_similar_element_functions = (tup -> tup[2]).(working_array[current_indices_similar_element_functions])
+		current_expr_tree = vec_element_expr_tree[working_array[1][2]]
+		push!(element_expr_tree, current_expr_tree) 
+		comparator_elt_expr_tree(expr_tree) = expr_tree == current_expr_tree 
+		current_indices_equal_element_function = findall(comparator_elt_expr_tree, vec_element_expr_tree[real_indices_similar_element_functions])
+		real_indices_equal_element_function = (tup -> tup[2]).(working_array[current_indices_similar_element_functions[current_indices_equal_element_function]])
+		index_element_tree[real_indices_equal_element_function] .= current_expr_tree_index
+		deleteat!(working_array, current_indices_similar_element_functions[current_indices_equal_element_function])
+		current_expr_tree_index += 1
+	end
+	minimum(index_element_tree) == -1 && @error("Not every element function is attributed")
+	return element_expr_tree, index_element_tree
 end
 
 # evaluate_function(sps :: SPS{T, N}, x :: Vector{N}) where T where N <: Number = get_obj_Expr(sps)(x...)
