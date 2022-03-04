@@ -9,5 +9,5 @@ function PLBFGSNLPModel(nlp :: N ) where N <: SupportedNLPModel
 	ex, n, x0 = get_expr_tree(nlp)
 	part_data_plbfgs = build_PartitionedData_TR_PLBFGS(ex, n; x0=x0)
 	meta = nlp.meta
-	PLBFGSNLPMode(meta; part_data_pbfgs, nlp)
+	PLBFGSNLPModel(meta, part_data_plbfgs, nlp)
 end 

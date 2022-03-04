@@ -9,6 +9,6 @@ function PBFGSNLPModel(nlp :: N ) where N <: SupportedNLPModel
 	ex, n, x0 = get_expr_tree(nlp)
 	part_data_pbfgs = build_PartitionedData_TR_PBFGS(ex, n; x0=x0) 
 	meta = nlp.meta
-	PBFGSNLPMode(meta; part_data_pbfgs, nlp)
+	PBFGSNLPModel(meta, part_data_pbfgs, nlp)
 end 
 
