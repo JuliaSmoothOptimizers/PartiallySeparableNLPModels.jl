@@ -1,5 +1,5 @@
 
-mutable struct PBFGSNLPModel{T, S, G, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S}} <: PQNNLPModel{T, S}
+mutable struct PBFGSNLPModel{T, S, G, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S}} <: AbstractPQNNLPModel{T, S}
 	meta :: Meta
 	part_data :: PartitionedData_TR_PBFGS{G, T}
 	nlp :: M

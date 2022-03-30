@@ -455,7 +455,7 @@ end
 """
     Hv(sps, x, v)
 Compute the product hessian vector of the hessian at the point x dot the vector v.
-This version both ReverseDiff and ForwardDiff.
+This version use both ReverseDiff and ForwardDiff.
 """
 Hv(sps :: SPS{T,Y}, v :: AbstractVector{Y}) where T where Y <: Number = Hv(sps, sps.x, v)
 Hv(sps :: SPS{T,Y}, x :: AbstractVector{Y}, v :: AbstractVector{Y}) where T where Y <: Number = begin hv = similar(x); Hv!(hv,sps,x,v); return hv end

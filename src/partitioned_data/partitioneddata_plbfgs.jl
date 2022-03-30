@@ -3,7 +3,7 @@ module Mod_PLBFGS
 	using PartitionedStructures, CalculusTreeTools
 	using ..Mod_ab_partitioned_data, ..Mod_common 
 
-	import ..Mod_ab_partitioned_data.update!
+	import ..Mod_ab_partitioned_data.update_nlp!
 
 	export PartitionedData_TR_PLBFGS
 	export update_PLBFGS, update_PLBFGS!, build_PartitionedData_TR_PLBFGS
@@ -36,7 +36,8 @@ module Mod_PLBFGS
 		# the result of pB*v will be store and build from pv
 	end
 
-	update!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, get_x(pd_plbfgs)-s, s)
+	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, s; kwargs...)
+	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, x, s)
 
 	"""
 			update_PLBFGS(pd_pblfgs,x,s)
@@ -100,7 +101,7 @@ module Mod_PLBFGS
 
 		vec_compiled_element_gradients = map( (tree -> compiled_grad_elmt_fun(tree; type=T)), element_expr_tree)
 
-	  x = x0
+	  x = copy(x0)
 	  v = similar(x)
 		s = similar(x)
 
