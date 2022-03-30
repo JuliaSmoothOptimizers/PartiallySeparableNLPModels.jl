@@ -11,7 +11,7 @@ module Mod_ab_partitioned_data
 
 	export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 	export product_part_data_x!, evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data!
-	export update!
+	export update_nlp!
 
 	abstract type PartitionedData end 	
 
@@ -58,7 +58,7 @@ module Mod_ab_partitioned_data
 	@inline set_pB!(part_data::T, pB::PartitionedStructures.Elemental_pm{Y}) where {T <: PartitionedData,Y<:Number} = part_data.pB = pB
 	@inline set_fx!(part_data::T, fx::Y) where {T<:PartitionedData,Y<:Number} = part_data.fx = fx
 
-	update!(part_data :: T) where T <: PartitionedData = @error("Should not be called")
+	update_nlp!(part_data :: T) where T <: PartitionedData = @error("Should not be called")
 
 	"""
 			product_part_data_x!(part_data, x)
@@ -72,16 +72,18 @@ module Mod_ab_partitioned_data
 
 	function product_part_data_x!(res::Vector{Y}, part_data::T, x::Vector{Y}) where {T<:PartitionedData,Y<:Number} 
 		pB = get_pB(part_data)
-		epvx = PartitionedStructures.epv_from_epm(pB)
+		# epvx = PartitionedStructures.epv_from_epm(pB)
+		epvx = get_ps(part_data) # a first temporary partitione vector
 		PartitionedStructures.epv_from_v!(epvx,x)
-		epv_res = similar(epvx)
+		# epv_res = similar(epvx)
+		epv_res = get_py(part_data) # a second temporary partitione vector
 		product_part_data_x!(epv_res, pB, epvx)
 		PartitionedStructures.build_v!(epv_res)
 		res .= PartitionedStructures.get_v(epv_res)
 	end 
 
-	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, part_data :: T, epv::PartitionedStructures.Elemental_pv{Y}) where {T <: PartitionedData, Y <: Number} =	PartitionedStructures.mul_epm_epv!(epv_res, get_pB(part_data), epv)
-	product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, pB::T, epv::PartitionedStructures.Elemental_pv{Y}) where T <: PartitionedStructures.Part_mat{Y} where Y <: Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
+	@inline product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, part_data :: T, epv::PartitionedStructures.Elemental_pv{Y}) where {T <: PartitionedData, Y <: Number} =	PartitionedStructures.mul_epm_epv!(epv_res, get_pB(part_data), epv)
+	@inline product_part_data_x!(epv_res::PartitionedStructures.Elemental_pv{Y}, pB::T, epv::PartitionedStructures.Elemental_pv{Y}) where T <: PartitionedStructures.Part_mat{Y} where Y <: Number =	PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
 
 	function evaluate_obj_part_data(part_data::T, x :: Vector{Y}) where {T<:PartitionedData,Y<:Number}
 		set_x!(part_data, x)
@@ -133,11 +135,13 @@ module Mod_ab_partitioned_data
 	end
 	
 	function evaluate_y_part_data!(part_data::T, s :: Vector{Y}) where {T<:PartitionedData,Y<:Number}		
+		set_s!(part_data, s)
 		set_py!(part_data, get_pg(part_data))
 		PartitionedStructures.minus_epv!(get_py(part_data))
 		set_x!(part_data, get_x(part_data)+s)
 		evaluate_grad_part_data!(part_data)		
 		PartitionedStructures.add_epv!(get_pg(part_data), get_py(part_data))
+
 	end 
 
 	"""
@@ -161,8 +165,10 @@ module Mod_ab_partitioned_data
 			Uix = PartitionedStructures.get_eev_value(get_pv(part_data),i)
 			gi = PartitionedStructures.get_eev_value(get_pg(part_data),i)
 			ReverseDiff.gradient!(gi, compiled_tape, Uix)
+			# @show gi
 		end
 		PartitionedStructures.build_v!(pg)
+		# @show part_data.pg
 	end
 
 end
