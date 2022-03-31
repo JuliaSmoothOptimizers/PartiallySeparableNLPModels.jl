@@ -34,9 +34,11 @@ module Mod_PLBFGS
 		fx :: T
 		# g is build directly from pg
 		# the result of pB*v will be store and build from pv
+		
+		name :: Symbol
 	end
 
-	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, s; kwargs...)
+	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, s)
 	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, x, s)
 
 	"""
@@ -113,7 +115,7 @@ module Mod_PLBFGS
 	
 	  pB = identity_eplom_LBFGS(element_variables, N, n; T=T)
 		fx = -1
-	  pd_pblfgs = PartitionedData_TR_PLBFGS{CalculusTreeTools.complete_expr_tree, T}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, pB, fx)
+	  pd_pblfgs = PartitionedData_TR_PLBFGS{CalculusTreeTools.complete_expr_tree, T}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, pB, fx, :plbfgs)
 	
 	  return pd_pblfgs
 	end

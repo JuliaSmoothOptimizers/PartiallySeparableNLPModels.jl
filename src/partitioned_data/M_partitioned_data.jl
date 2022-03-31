@@ -165,10 +165,8 @@ module Mod_ab_partitioned_data
 			Uix = PartitionedStructures.get_eev_value(get_pv(part_data),i)
 			gi = PartitionedStructures.get_eev_value(get_pg(part_data),i)
 			ReverseDiff.gradient!(gi, compiled_tape, Uix)
-			# @show gi
 		end
 		PartitionedStructures.build_v!(pg)
-		# @show part_data.pg
 	end
 
 end
