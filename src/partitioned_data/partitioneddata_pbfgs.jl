@@ -34,10 +34,11 @@ module Mod_PBFGS
 		fx :: T
 		# g is build directly from pg
 		# the result of pB*v will be store and build from pv
+		name :: Symbol
 	end
 
-	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, s; kwargs...)
-	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, x, s; kwargs...)
+	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, s)
+	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, x, s)
 
 	"""
 			update_PBFGS(pd_pbfgs,x,s)
@@ -112,7 +113,7 @@ module Mod_PBFGS
 	
 	  pB = identity_epm(element_variables, N, n; T=T)
 		fx = -1
-	  pd_pbfgs = PartitionedData_TR_PBFGS{CalculusTreeTools.complete_expr_tree, T}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, pB, fx)
+	  pd_pbfgs = PartitionedData_TR_PBFGS{CalculusTreeTools.complete_expr_tree, T}(n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, pB, fx, :pbfgs)
 	
 	  return pd_pbfgs
 	end

@@ -48,12 +48,13 @@ module Mod_PQN
 	function update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} 
 		set_x!(pd_pqn, x)
 		evaluate_grad_part_data!(pd_pqn)
-		update_PQN!(pd_pqn,s;kwargs...)
+		update_PQN!(pd_pqn,s; kwargs...)
 	end 
 
 	"""
 			update_PQN(pd_pqn,s)
-	Perform the PBFGS update givent the current iterate x and the next iterate s
+	Perform the PBFGS update givent the current iterate x and the next iterate s.
+	It assume that the partitioned gradient is already computed in pd_pqn.pg
 	"""
 	function update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s :: Vector{T}; reset=0, kwargs...) where {G,T<:Number, P <: Part_mat{T}} 
 		evaluate_y_part_data!(pd_pqn,s)
