@@ -37,14 +37,14 @@ module Mod_PBFGS
 		name :: Symbol
 	end
 
-	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, s)
-	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, x, s)
+	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, s; kwargs...)
+	update_nlp!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PBFGS!(pd_pbfgs, x, s; kwargs...)
 
 	"""
 			update_PBFGS(pd_pbfgs,x,s)
 	Perform the PBFGS update givent the two iterate x and s
 	"""
-	update_PBFGS(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T<:Number} = begin update_PBFGS!(pd_pbfgs,x,s); return Matrix(get_pB(pd_pbfgs)) end
+	update_PBFGS(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = begin update_PBFGS!(pd_pbfgs,x,s; kwargs...); return Matrix(get_pB(pd_pbfgs)) end
 	function update_PBFGS!(pd_pbfgs::PartitionedData_TR_PBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} 
 		set_x!(pd_pbfgs, x)
 		evaluate_grad_part_data!(pd_pbfgs)
@@ -61,7 +61,7 @@ module Mod_PBFGS
 		set_ps!(pd_pbfgs,s)
 		ps = get_ps(pd_pbfgs)
 		pB = get_pB(pd_pbfgs)
-		PartitionedStructures.PBFGS_update!(pB, py, ps)
+		PartitionedStructures.PBFGS_update!(pB, py, ps; kwargs...)
 	end 
 	
 	"""

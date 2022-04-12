@@ -44,7 +44,7 @@ module Mod_PQN
 			update_PQN(pd_pqn,x,s)
 	Perform the PBFGS update givent the two iterate x and s
 	"""
-	update_PQN(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}) where {G,T<:Number, P <: Part_mat{T}} = begin update_PQN!(pd_pqn,x,s); return Matrix(get_pB(pd_pqn)) end
+	update_PQN(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} = begin update_PQN!(pd_pqn,x,s; kwargs...); return Matrix(get_pB(pd_pqn)) end
 	function update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} 
 		set_x!(pd_pqn, x)
 		evaluate_grad_part_data!(pd_pqn)
@@ -62,7 +62,7 @@ module Mod_PQN
 		set_ps!(pd_pqn,s)
 		ps = get_ps(pd_pqn)
 		pB = get_pB(pd_pqn)
-		PartitionedStructures.update!(pB, py, ps; name=pd_pqn.name)
+		PartitionedStructures.update!(pB, py, ps; name=pd_pqn.name, kwargs...)
 	end 
 	
 	"""

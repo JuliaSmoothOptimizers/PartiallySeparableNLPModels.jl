@@ -38,31 +38,31 @@ module Mod_PLBFGS
 		name :: Symbol
 	end
 
-	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, s)
-	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, x, s)
+	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, s; kwargs...)
+	update_nlp!(pd_plbfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = update_PLBFGS!(pd_plbfgs, x, s; kwargs...)
 
 	"""
 			update_PLBFGS(pd_pblfgs,x,s)
 	Perform the PBFGS update givent the two iterate x and s
 	"""
-	update_PLBFGS(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T<:Number} = begin update_PLBFGS!(pd_pblfgs,x,s); return Matrix(get_pB(pd_pblfgs)) end
-	function update_PLBFGS!(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}) where {G,T<:Number} 
+	update_PLBFGS(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} = begin update_PLBFGS!(pd_pblfgs,x,s; kwargs...); return Matrix(get_pB(pd_pblfgs)) end
+	function update_PLBFGS!(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number} 
 		set_x!(pd_pblfgs, x)
 		evaluate_grad_part_data!(pd_pblfgs)
-		update_PLBFGS!(pd_pblfgs,s)
+		update_PLBFGS!(pd_pblfgs,s; kwargs...)
 	end 
 
 	"""
 			update_PLBFGS(pd_pblfgs,s)
 	Perform the PBFGS update givent the current iterate x and the next iterate s
 	"""
-	function update_PLBFGS!(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}) where {G,T<:Number} 
+	function update_PLBFGS!(pd_pblfgs::PartitionedData_TR_PLBFGS{G,T}, s :: Vector{T}; kwargs...) where {G,T<:Number} 
 		evaluate_y_part_data!(pd_pblfgs,s)
 		py = get_py(pd_pblfgs)
 		set_ps!(pd_pblfgs,s)
 		ps = get_ps(pd_pblfgs)
 		pB = get_pB(pd_pblfgs)
-		PartitionedStructures.PLBFGS_update!(pB, py, ps)
+		PartitionedStructures.PLBFGS_update!(pB, py, ps; kwargs...)
 	end 
 	
 	"""
