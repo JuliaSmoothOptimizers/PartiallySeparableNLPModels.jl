@@ -37,15 +37,15 @@ module Mod_PQN
 		name :: Symbol
 	end
 
-	update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, s; kwargs...)
-	update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T},s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, x, s; kwargs...)
+	update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s :: Vector{T}; kwargs...) where {G, T<:Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, s; kwargs...)
+	update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G, T<:Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, x, s; kwargs...)
 
 	"""
 			update_PQN(pd_pqn,x,s)
 	Perform the PBFGS update givent the two iterate x and s
 	"""
-	update_PQN(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} = begin update_PQN!(pd_pqn,x,s; kwargs...); return Matrix(get_pB(pd_pqn)) end
-	function update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G,T<:Number, P <: Part_mat{T}} 
+	update_PQN(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G, T<:Number, P <: Part_mat{T}} = begin update_PQN!(pd_pqn,x,s; kwargs...); return Matrix(get_pB(pd_pqn)) end
+	function update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x :: Vector{T}, s :: Vector{T}; kwargs...) where {G, T<:Number, P <: Part_mat{T}} 
 		set_x!(pd_pqn, x)
 		evaluate_grad_part_data!(pd_pqn)
 		update_PQN!(pd_pqn,s; kwargs...)
@@ -60,9 +60,11 @@ module Mod_PQN
 		evaluate_y_part_data!(pd_pqn,s)
 		py = get_py(pd_pqn)
 		set_ps!(pd_pqn,s)
+		set_pv!(pd_pqn, py) # mandatory for plbfgs damped
 		ps = get_ps(pd_pqn)
 		pB = get_pB(pd_pqn)
 		PartitionedStructures.update!(pB, py, ps; name=pd_pqn.name, kwargs...)
+		set_py!(pd_pqn, get_pv(pd_pqn)) # mandatory for plbfgs damped
 	end 
 	
 	"""
@@ -71,7 +73,7 @@ module Mod_PQN
 	To define properly the size of sparse matrix we need the size of the problem : n.
 	At the end, we get the partially separable structure of f, f(x) = ∑fᵢ(xᵢ)
 	"""
-	function build_PartitionedData_TR_PQN(tree::G, n::Int; x0::Vector{T}=rand(Float64,n), name=:plse) where {G,T<:Number}
+	function build_PartitionedData_TR_PQN(tree::G, n::Int; x0::Vector{T}=rand(Float64,n), name=:plse, kwargs...) where {G,T<:Number}
 	  expr_tree = CalculusTreeTools.transform_to_expr_tree(tree) :: CalculusTreeTools.t_expr_tree # transform the expression tree of type G into an expr tree of type t_expr_tree (the standard type used by my algorithms)
 	  vec_element_function = CalculusTreeTools.delete_imbricated_plus(expr_tree) :: Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
 	  N = length(vec_element_function)
@@ -115,9 +117,9 @@ module Mod_PQN
 	  (name == :pbfgs) && (pB = epm_from_epv(pg))
 		(name == :psr1) && (pB = epm_from_epv(pg))
 		(name == :pse) && (pB = epm_from_epv(pg))
-		(name == :plbfgs) && (pB = eplom_lbfgs_from_epv(pg))
+		(name == :plbfgs) && (pB = eplom_lbfgs_from_epv(pg; kwargs...))
 		(name == :plsr1) && (pB = eplom_lsr1_from_epv(pg))
-		(name == :plse) && (pB = eplom_lose_from_epv(pg))
+		(name == :plse) && (pB = eplom_lose_from_epv(pg; kwargs...))
 		P = typeof(pB)
 
 		fx = -1
