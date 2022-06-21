@@ -59,12 +59,10 @@ module Mod_PQN
 	function update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s :: Vector{T}; reset=0, kwargs...) where {G,T<:Number, P <: Part_mat{T}} 
 		evaluate_y_part_data!(pd_pqn,s)
 		py = get_py(pd_pqn)
-		set_ps!(pd_pqn,s)
-		set_pv!(pd_pqn, py) # mandatory for plbfgs damped
+		set_ps!(pd_pqn, s)
 		ps = get_ps(pd_pqn)
 		pB = get_pB(pd_pqn)
 		PartitionedStructures.update!(pB, py, ps; name=pd_pqn.name, kwargs...)
-		set_py!(pd_pqn, get_pv(pd_pqn)) # mandatory for plbfgs damped
 	end 
 	
 	"""
