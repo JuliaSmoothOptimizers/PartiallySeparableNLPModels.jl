@@ -1,7 +1,11 @@
 m = Model()
 n = 100
 @variable(m, x[1:n])
-@NLobjective(m, Min, sum( x[j] * x[j+1] + (x[j+1]+5*x[j])^2 for j in 1:n-1 ) + (sin(x[1]))^2 + x[n-1]^3 )
+@NLobjective(
+  m,
+  Min,
+  sum(x[j] * x[j + 1] + (x[j + 1] + 5 * x[j])^2 for j = 1:(n - 1)) + (sin(x[1]))^2 + x[n - 1]^3
+)
 evaluator = JuMP.NLPEvaluator(m)
 MathOptInterface.initialize(evaluator, [:ExprGraph])
 Expr_ = MathOptInterface.objective_expr(evaluator)
@@ -20,23 +24,28 @@ obj2 = PartiallySeparableNLPModels.evaluate_SPS(sps2, x)
 obj3 = PartiallySeparableNLPModels.evaluate_SPS(sps3, x)
 obj4 = PartiallySeparableNLPModels.evaluate_obj_pre_compiled(sps1, x)
 
-grad1 =  PartiallySeparableNLPModels.evaluate_gradient(sps1, x)
-grad2 =  PartiallySeparableNLPModels.evaluate_gradient(sps2, x)
+grad1 = PartiallySeparableNLPModels.evaluate_gradient(sps1, x)
+grad2 = PartiallySeparableNLPModels.evaluate_gradient(sps2, x)
 grad3 = PartiallySeparableNLPModels.evaluate_gradient(sps3, x)
 moi_grad = similar(x)
 MathOptInterface.eval_objective_gradient(evaluator, moi_grad, x)
 
 @testset "tests évaluation" begin
-	@test PartiallySeparableNLPModels.evaluate_SPS(sps1, x) == PartiallySeparableNLPModels.evaluate_SPS(sps2, x)
-	@test PartiallySeparableNLPModels.evaluate_SPS(sps2, x) == PartiallySeparableNLPModels.evaluate_SPS(sps3, x)
-	@test PartiallySeparableNLPModels.evaluate_SPS(sps2, x) ≈ MathOptInterface.eval_objective(evaluator, x)
+  @test PartiallySeparableNLPModels.evaluate_SPS(sps1, x) ==
+        PartiallySeparableNLPModels.evaluate_SPS(sps2, x)
+  @test PartiallySeparableNLPModels.evaluate_SPS(sps2, x) ==
+        PartiallySeparableNLPModels.evaluate_SPS(sps3, x)
+  @test PartiallySeparableNLPModels.evaluate_SPS(sps2, x) ≈
+        MathOptInterface.eval_objective(evaluator, x)
 end
 
 @testset "tests gradient" begin
-	MOI_gradient = Vector{ eltype(x) }(undef,n)
-	MathOptInterface.eval_objective_gradient(evaluator, MOI_gradient, x)
+  MOI_gradient = Vector{eltype(x)}(undef, n)
+  MathOptInterface.eval_objective_gradient(evaluator, MOI_gradient, x)
 
-	@test PartiallySeparableNLPModels.evaluate_gradient(sps1, x) == PartiallySeparableNLPModels.evaluate_gradient(sps2, x)
-	@test PartiallySeparableNLPModels.evaluate_gradient(sps2, x) == PartiallySeparableNLPModels.evaluate_gradient(sps3, x)
-	@test PartiallySeparableNLPModels.evaluate_gradient(sps2, x) ≈ MOI_gradient
+  @test PartiallySeparableNLPModels.evaluate_gradient(sps1, x) ==
+        PartiallySeparableNLPModels.evaluate_gradient(sps2, x)
+  @test PartiallySeparableNLPModels.evaluate_gradient(sps2, x) ==
+        PartiallySeparableNLPModels.evaluate_gradient(sps3, x)
+  @test PartiallySeparableNLPModels.evaluate_gradient(sps2, x) ≈ MOI_gradient
 end
