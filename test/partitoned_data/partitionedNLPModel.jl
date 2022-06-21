@@ -1,19 +1,18 @@
 
-
 @testset "test PBGSNLPModel et PLBFGSNLPModel MathOptNLPModel" begin
-	n = 10
-	nlp = MathOptNLPModel(OptimizationProblems.arwhead(n), name="arwhead " * string(n))
-	x = rand(n)
+  n = 10
+  nlp = MathOptNLPModel(OptimizationProblems.arwhead(n), name = "arwhead " * string(n))
+  x = rand(n)
 
-	pbfgsnlp = PBFGSNLPModel(nlp)
-	plbfgsnlp = PLBFGSNLPModel(nlp)
+  pbfgsnlp = PBFGSNLPModel(nlp)
+  plbfgsnlp = PLBFGSNLPModel(nlp)
 
-	@test NLPModels.obj(nlp, x) ≈ NLPModels.obj(pbfgsnlp, x)
-	@test NLPModels.obj(nlp, x) ≈ NLPModels.obj(plbfgsnlp, x)
+  @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(pbfgsnlp, x)
+  @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(plbfgsnlp, x)
 
-	@test NLPModels.grad(nlp, x) ≈ NLPModels.grad(pbfgsnlp, x)
-	@test NLPModels.grad(nlp, x) ≈ NLPModels.grad(plbfgsnlp, x)
-end 
+  @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(pbfgsnlp, x)
+  @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(plbfgsnlp, x)
+end
 
 # @testset "test PBGSNLPModel et PLBFGSNLPModel ADNLPModel" begin
 # 	start_ones(n :: Int) = ones(n)
