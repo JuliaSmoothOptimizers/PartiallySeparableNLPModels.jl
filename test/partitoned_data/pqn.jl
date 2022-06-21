@@ -78,6 +78,7 @@ end
 	s = rand(n)
 
 	ps_data_plbfgs = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:plbfgs)
+	# ps_data_plbfgs_damped = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:plbfgs, damped=true)
 	# ps_data_plsr1 = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:plsr1)
 	ps_data_plse = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:plse)
 	ps_data_pbfgs = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:pbfgs)
@@ -85,6 +86,7 @@ end
 	ps_data_pse = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:pse)
 
 	update_nlp!(ps_data_plbfgs, x, s)
+	# update_nlp!(ps_data_plbfgs_damped, x, s)
 	# update_nlp!(ps_data_plsr1, x, s)
 	update_nlp!(ps_data_plse, x, s)
 	update_nlp!(ps_data_pbfgs, x, s)
@@ -93,6 +95,7 @@ end
 
 	# @test ps_data_plsr1.py == ps_data_plbfgs.py
 	@test ps_data_plbfgs.py == ps_data_plse.py
+	# @test ps_data_plbfgs.py != ps_data_plbfgs_damped.py
 	@test ps_data_plbfgs.py == ps_data_pbfgs.py
 	@test ps_data_plbfgs.py == ps_data_psr1.py
 	@test ps_data_plbfgs.py == ps_data_pse.py
@@ -100,11 +103,16 @@ end
 	epv_y = ps_data_plbfgs.py
 	PartitionedStructures.build_v!(epv_y)
 	y = PartitionedStructures.get_v(epv_y)
+	
+	# epv_y_damped = ps_data_plbfgs_damped.py
+	# PartitionedStructures.build_v!(epv_y_damped)
+	# y_damped = PartitionedStructures.get_v(epv_y_damped)
 
 	partitioned_matrix(nlp) = Matrix(nlp.pB)
 
 	# in the case of the Rosenbrock equation, for the given x,s and induces y, every partitioned update ensure the secant equation.
 	@test isapprox(norm(partitioned_matrix(ps_data_plbfgs)*s - y), 0, atol=1e-10)
+	# @test isapprox(norm(partitioned_matrix(ps_data_plbfgs_damped)*s - y_damped), 0, atol=1e-10)
 	# @test isapprox(norm(partitioned_matrix(ps_data_plsr1)*s - y), 0, atol=1e-10)
 	@test isapprox(norm(partitioned_matrix(ps_data_plse)*s - y), 0, atol=1e-10)
 	@test isapprox(norm(partitioned_matrix(ps_data_pbfgs)*s - y), 0, atol=1e-10)
