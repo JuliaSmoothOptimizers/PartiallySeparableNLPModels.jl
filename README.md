@@ -1,4 +1,4 @@
-# PartiallySeparableNLPModels : A bridge between [CalculusTreeTools.jl](https://github.com/paraynaud/CalculusTreeTools.jl), [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) and [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl).
+# PartiallySeparableNLPModels : A bridge between [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl), [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) and [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl).
 
 | **Documentation** | **Linux/macOS/Windows/FreeBSD** | **Coverage** | **DOI** |
 |:-----------------:|:-------------------------------:|:------------:|:-------:|
@@ -44,7 +44,7 @@ where each $\hat{B}_i \approx \nabla^2 \hat{f}_i$.
 * A. Griewank and P. Toint, [*Partitioned variable metric updates for large structured optimization problems*](10.1007/BF01399316), Numerische Mathematik volume, 39, pp. 119--137, 1982.
 
 ## Content
-PartiallySeparableNLPModels.jl use the module [CalculusTreeTools.jl](https://github.com/paraynaud/CalculusTreeTools.jl) to detect automatically the partially separable structure of $f$.
+PartiallySeparableNLPModels.jl use the module [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl) to detect automatically the partially separable structure of $f$.
 Once it is done, it defines the partitioned structures of $\nabla f$ and $B \approx \nabla^2 f$ with [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl).
 
 Considering the following `ADNLPModel`
@@ -83,11 +83,11 @@ part_data_pqn = build_PartitionedData_TR_PQN(ex, n; name=:pbfgs, x0=x0)
 The sole purpose of this module is to simplify how the module [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) handle the partial separability.
 
 ## Dependencies
-The module depends of : [CalculusTreeTools.jl](https://github.com/paraynaud/CalculusTreeTools.jl) to detects the partially separable structure and [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) to produce the partitioned quasi-Newton approximation.
+The module depends of : [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl) to detects the partially separable structure and [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) to produce the partitioned quasi-Newton approximation.
 
 ## How to install
 ```
 julia> ]
-pkg> add https://github.com/paraynaud/PartitionedStructures.jl, https://github.com/paraynaud/CalculusTreeTools.jl, 
+pkg> add https://github.com/paraynaud/PartitionedStructures.jl, https://github.com/paraynaud/ExpressionTreeForge.jl, 
 pkg> test PartiallySeparableNLPModels
 ```

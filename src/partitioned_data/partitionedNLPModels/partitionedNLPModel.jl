@@ -1,18 +1,16 @@
 module Mod_partitionedNLPModel
 
-using CalculusTreeTools
+using ExpressionTreeForge
 using ADNLPModels, NLPModels, NLPModelsJuMP
-# , PDENLPModels
 using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
-using ..Mod_PBFGS, ..Mod_PLBFGS, ..Mod_PQN
+using ..Mod_PQN
 
 export PBFGSNLPModel, PLBFGSNLPModel, PQNNLPModel
 
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end
 
-# SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel, GridapPDENLPModel} 
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
 
 function get_expr_tree(
@@ -25,8 +23,7 @@ function get_expr_tree(
   evaluator = JuMP.NLPEvaluator(model)
   MathOptInterface.initialize(evaluator, [:ExprGraph])
   obj_Expr = MathOptInterface.objective_expr(evaluator)::Expr
-  ex = CalculusTreeTools.transform_to_expr_tree(obj_Expr)::CalculusTreeTools.t_expr_tree
-  # CalculusTreeTools.print_tree(ex)
+  ex = ExpressionTreeForge.transform_to_expr_tree(obj_Expr)::ExpressionTreeForge.Type_expr_tree
   return ex, n, x0
 end
 
@@ -38,22 +35,10 @@ function get_expr_tree(
   n = adnlp.meta.nvar
   ModelingToolkit.@variables x[1:n]
   fun = adnlp.f(x)
-  ex = CalculusTreeTools.transform_to_expr_tree(fun)::CalculusTreeTools.t_expr_tree
-  # CalculusTreeTools.print_tree(ex)
+  ex = ExpressionTreeForge.transform_to_expr_tree(fun)::ExpressionTreeForge.Type_expr_tree
   return ex, n, x0
 end
 
-# function get_expr_tree(gridapnlpmodel :: GridapPDENLPModel; x0 :: Vector{T}=copy(gridapnlpmodel.meta.x0), kwargs...) where T <: Number
-# 	n = gridapnlpmodel.meta.nvar
-# 	ModelingToolkit.@variables x[1:n]
-# 	fun = (x :: AbstractVector -> NLPModels.obj(gridapnlpmodel,x))
-# 	ex = CalculusTreeTools.transform_to_expr_tree(fun) :: CalculusTreeTools.t_expr_tree		
-# 	CalculusTreeTools.print_tree(ex)
-# 	return ex, n, x0
-# end
-
-include("pbfgsNLPModel.jl")
-include("plbfgsNLPModel.jl")
 include("pqnNLPModel.jl")
 
 """
@@ -65,7 +50,7 @@ NLPModels.obj(nlp::P, x::AbstractVector{T}) where {P <: AbstractPQNNLPModel{T, S
   evaluate_obj_part_data(nlp.part_data, x)
 
 """
- 	  g = grad!(nlp, x, g)
+    g = grad!(nlp, x, g)
 
 Evaluate `∇f(x)`, the gradient of the objective function at `x` in place.
 """

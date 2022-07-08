@@ -3,7 +3,7 @@ using JSOSolvers, SolverBenchmark, SolverTools
 using NLPModelsJuMP
 using JuMP, MathOptInterface
 
-using CalculusTreeTools
+using ExpressionTreeForge
 using PartiallySeparableNLPModels
 # using ..My_SPS_Model_Module
 
@@ -45,7 +45,7 @@ SUITE["SPS_function"] = BenchmarkGroup()
 
 for p in problems
   (m_ros, evaluator, obj_ros) = p
-  obj_ros_expr_tree = CalculusTreeTools.transform_to_expr_tree(obj_ros)
+  obj_ros_expr_tree = ExpressionTreeForge.transform_to_expr_tree(obj_ros)
 
   n = m_ros.moi_backend.model_cache.model.num_variables_created
   SPS_ros = PartiallySeparableNLPModels.deduct_partially_separable_structure(obj_ros_expr_tree, n)

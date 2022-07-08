@@ -3,7 +3,7 @@ using JuMP, MathOptInterface
 using PkgBenchmark
 
 using PartiallySeparableNLPModels
-using CalculusTreeTools
+using ExpressionTreeForge
 
 function create_initial_point_Rosenbrock(n)
   point_initial = Vector{Float64}(undef, n)
@@ -54,7 +54,7 @@ function run_comparaison(problems)
     # définition des variables nécessaires
 
     #calcul de la structure partiellement séparable
-    obj_ros_expr_tree = CalculusTreeTools.transform_to_expr_tree(obj_ros)
+    obj_ros_expr_tree = ExpressionTreeForge.transform_to_expr_tree(obj_ros)
     SPS_ros = PartiallySeparableNLPModels.deduct_partially_separable_structure(obj_ros_expr_tree, n)
 
     #calcul de la fonction objectif

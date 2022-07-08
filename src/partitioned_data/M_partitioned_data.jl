@@ -1,6 +1,6 @@
 module Mod_ab_partitioned_data
 using ReverseDiff
-using PartitionedStructures, CalculusTreeTools
+using PartitionedStructures, ExpressionTreeForge
 using ..Mod_common
 
 export PartitionedData
@@ -122,7 +122,8 @@ abstract type PartitionedData end
 update_nlp!(part_data::T) where {T <: PartitionedData} = @error("Should not be called")
 
 """
-		product_part_data_x!(part_data, x)
+    product_part_data_x!(part_data, x)
+
 Return the product of the partitioned matrix `part_data*x`.
 """
 function product_part_data_x(part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
@@ -176,7 +177,7 @@ function evaluate_obj_part_data!(part_data::T) where {T <: PartitionedData}
   acc = 0
   for i = 1:N
     elt_expr_tree = get_vec_elt_complete_expr_tree(part_data, index_element_tree[i])
-    fix = CalculusTreeTools.evaluate_expr_tree(
+    fix = ExpressionTreeForge.evaluate_expr_tree(
       elt_expr_tree,
       PartitionedStructures.get_eev_value(get_pv(part_data), i),
     )
@@ -186,24 +187,24 @@ function evaluate_obj_part_data!(part_data::T) where {T <: PartitionedData}
 end
 
 # function evaluate_obj_part_data!(part_data::T) where T <: PartitionedData
-# 	set_pv!(part_data, get_x(part_data))	
-# 	element_expr_tree_table = get_element_expr_tree_table(part_data)
-# 	M = get_M(part_data)
-# 	acc=0
-# 	for i in 1:M
-# 		elt_expr_tree = get_vec_elt_complete_expr_tree(part_data, i)
-# 		indices_elt_fun = element_expr_tree_table[i]
-# 		for j in indices_elt_fun		
-# 			fix = CalculusTreeTools.evaluate_expr_tree(elt_expr_tree, PartitionedStructures.get_eev_value(get_pv(part_data),j))
-# 			acc += fix
-# 		end
-# 	end
-# 	set_fx!(part_data, acc)
+#   set_pv!(part_data, get_x(part_data))  
+#   element_expr_tree_table = get_element_expr_tree_table(part_data)
+#   M = get_M(part_data)
+#   acc=0
+#   for i in 1:M
+#     elt_expr_tree = get_vec_elt_complete_expr_tree(part_data, i)
+#     indices_elt_fun = element_expr_tree_table[i]
+#     for j in indices_elt_fun    
+#       fix = ExpressionTreeForge.evaluate_expr_tree(elt_expr_tree, PartitionedStructures.get_eev_value(get_pv(part_data),j))
+#       acc += fix
+#     end
+#   end
+#   set_fx!(part_data, acc)
 # end 
 
 """
-		evaluate_y_part_data!(part_data,x,s)
-		evaluate_y_part_data!(part_data,s)
+    evaluate_y_part_data!(part_data,x,s)
+    evaluate_y_part_data!(part_data,s)
 Compute the element gradients differences such as ∇̂fᵢ(x+s)-∇̂fᵢ(x) for each element functions. 
 It stores the results in part_data.pv.
 evaluate_y_part_data!(part_data,s) consider that pg is alreagy the gradient of the point x
@@ -228,7 +229,7 @@ function evaluate_y_part_data!(part_data::T, s::Vector{Y}) where {T <: Partition
 end
 
 """
-		evaluate_grad_part_data(part_data,x)
+    evaluate_grad_part_data(part_data,x)
 Build the gradient vector at the point x from the element gradient computed and stored in part_data.pg .
 """
 evaluate_grad_part_data(part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number} =
