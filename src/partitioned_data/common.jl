@@ -1,20 +1,23 @@
 module Mod_common
 using ReverseDiff, LinearAlgebra, SparseArrays
-using CalculusTreeTools, PartitionedStructures
+using ExpressionTreeForge, PartitionedStructures
 
 export Element_function
 export distinct_element_expr_tree, compiled_grad_elmt_fun
+
+using ExpressionTreeForge.M_implementation_convexity_type
 
 mutable struct Element_function
   i::Int # the index of the function 1 ≤ i ≤ N
   index_element_tree::Int # 1 ≤ index_element_tree ≤ M
   variable_indices::Vector{Int} # ≈ Uᵢᴱ
-  type::CalculusTreeTools.type_calculus_tree
-  convexity_status::CalculusTreeTools.convexity_wrapper
+  type::ExpressionTreeForge.Type_calculus_tree
+  convexity_status::ExpressionTreeForge.M_implementation_convexity_type.Convexity_wrapper
 end
 
 """
-    distinct_element_expr_tree(vec_element_expr_tree, vec_element_variables; N)
+    distinct_element_expr_tree(vec_element_expr_tree::Vector{T}, vec_element_variables::Vector{Vector{Int}}; N::Int = length(vec_element_expr_tree)) where {T}
+
 Filter the vector vec_element_expr_tree to obtain only the element functions that are distincts as element_expr_tree.
 length(element_expr_tree) == M.
 In addition it returns index_element_tree, who records the index 1 <= i <= M of each element function
@@ -29,7 +32,7 @@ function distinct_element_expr_tree(
   index_element_tree = (xi -> -xi).(ones(Int, N))
   element_expr_tree = Vector{T}(undef, 0)
   vec_val_elt_fun_ones = map(
-    (elt_fun, elt_vars) -> CalculusTreeTools.evaluate_expr_tree(elt_fun, ones(length(elt_vars))),
+    (elt_fun, elt_vars) -> ExpressionTreeForge.evaluate_expr_tree(elt_fun, ones(length(elt_vars))),
     vec_element_expr_tree,
     vec_element_variables,
   ) # evaluate as first equality test
@@ -67,15 +70,16 @@ function distinct_element_expr_tree(
 end
 
 """
-compiled_grad_elmt_fun(elmt_fun, ni)
-Return  the GradientTape compiled to speed up the ReverseDiff computation of the elmt_fun gradient in the future
+    compiled_grad_elmt_fun(elmt_fun::T; ni::Int = length(ExpressionTreeForge.get_elemental_variable(elmt_fun)), type = Float64) where {T}
+
+Return the `GradientTape` compiled to speed up the ReverseDiff computation of the elmt_fun gradient in the future
 """
 function compiled_grad_elmt_fun(
   elmt_fun::T;
-  ni::Int = length(CalculusTreeTools.get_elemental_variable(elmt_fun)),
+  ni::Int = length(ExpressionTreeForge.get_elemental_variable(elmt_fun)),
   type = Float64,
 ) where {T}
-  f = CalculusTreeTools.evaluate_expr_tree(elmt_fun)
+  f = ExpressionTreeForge.evaluate_expr_tree(elmt_fun)
   f_tape = ReverseDiff.GradientTape(f, rand(type, ni))
   compiled_f_tape = ReverseDiff.compile(f_tape)
   return compiled_f_tape

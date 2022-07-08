@@ -11,9 +11,9 @@ mutable struct PQNNLPModel{
   nlp::M
 end
 
-function PQNNLPModel(nlp::N) where {N <: SupportedNLPModel}
+function PQNNLPModel(nlp::N; kwargs...) where {N <: SupportedNLPModel}
   ex, n, x0 = get_expr_tree(nlp)
-  part_data_plbfgs = build_PartitionedData_TR_PQN(ex, n; x0 = x0)
+  part_data_plbfgs = build_PartitionedData_TR_PQN(ex, n; x0 = x0, kwargs...)
   meta = nlp.meta
   PQNNLPModel(meta, part_data_plbfgs, nlp)
 end

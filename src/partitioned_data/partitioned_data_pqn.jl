@@ -1,12 +1,14 @@
 module Mod_PQN
 using ReverseDiff
-using PartitionedStructures, CalculusTreeTools
+using PartitionedStructures, ExpressionTreeForge
 using ..Mod_ab_partitioned_data, ..Mod_common
+using ..ExpressionTreeForge.M_implementation_convexity_type
 
 import ..Mod_ab_partitioned_data.update_nlp!
 
 export PartitionedData_TR_PQN
 export update_PQN, update_PQN!, build_PartitionedData_TR_PQN
+
 
 mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
                Mod_ab_partitioned_data.PartitionedData
@@ -51,7 +53,7 @@ update_nlp!(
 ) where {G, T <: Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, x, s; kwargs...)
 
 """
-		update_PQN(pd_pqn,x,s)
+    update_PQN(pd_pqn,x,s)
 Perform the PBFGS update givent the two iterate x and s
 """
 update_PQN(
@@ -75,7 +77,7 @@ function update_PQN!(
 end
 
 """
-		update_PQN(pd_pqn,s)
+    update_PQN(pd_pqn,s)
 Perform the PBFGS update givent the current iterate x and the next iterate s.
 It assume that the partitioned gradient is already computed in pd_pqn.pg
 """
@@ -106,18 +108,18 @@ function build_PartitionedData_TR_PQN(
   name = :plse,
   kwargs...,
 ) where {G, T <: Number}
-  expr_tree = CalculusTreeTools.transform_to_expr_tree(tree)::CalculusTreeTools.t_expr_tree # transform the expression tree of type G into an expr tree of type t_expr_tree (the standard type used by my algorithms)
+  expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree # transform the expression tree of type G into an expr tree of type t_expr_tree (the standard type used by my algorithms)
   vec_element_function =
-    CalculusTreeTools.delete_imbricated_plus(expr_tree)::Vector{CalculusTreeTools.t_expr_tree} #séparation en fonction éléments
+    ExpressionTreeForge.delete_imbricated_plus(expr_tree)::Vector{ExpressionTreeForge.Type_expr_tree} #séparation en fonction éléments
   N = length(vec_element_function)
 
   element_variables = map(
-    (i -> CalculusTreeTools.get_elemental_variable(vec_element_function[i])),
+    (i -> ExpressionTreeForge.get_elemental_variable(vec_element_function[i])),
     1:N,
   )::Vector{Vector{Int}}# retrieve elemental variables
   sort!.(element_variables) # important line, sort the elemental varaibles. Mandatory for N_to_Ni and the partitioned structures
   map(
-    ((elt_fun, elt_var) -> CalculusTreeTools.element_fun_from_N_to_Ni!(elt_fun, elt_var)),
+    ((elt_fun, elt_var) -> ExpressionTreeForge.element_fun_from_N_to_Ni!(elt_fun, elt_var)),
     vec_element_function,
     element_variables,
   ) # renumérotation des variables des fonctions éléments en variables internes
@@ -127,24 +129,24 @@ function build_PartitionedData_TR_PQN(
   M = length(element_expr_tree)
   element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M) # create a table that give for each distinct element expr grah, every element function using it
 
-  vec_elt_complete_expr_tree = CalculusTreeTools.create_complete_tree.(element_expr_tree) # create complete tree given the remaining expr graph
+  vec_elt_complete_expr_tree = ExpressionTreeForge.create_complete_tree.(element_expr_tree) # create complete tree given the remaining expr graph
   vec_type_complete_element_tree =
-    map(tree -> CalculusTreeTools.cast_type_of_constant(tree, T), vec_elt_complete_expr_tree) # cast the constant of the complete trees
+    map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, T), vec_elt_complete_expr_tree) # cast the constant of the complete trees
 
-  CalculusTreeTools.set_bounds!.(vec_type_complete_element_tree) # deduce the bounds 
-  CalculusTreeTools.set_convexity!.(vec_type_complete_element_tree) # deduce the bounds 
+  ExpressionTreeForge.set_bounds!.(vec_type_complete_element_tree) # deduce the bounds 
+  ExpressionTreeForge.set_convexity!.(vec_type_complete_element_tree) # deduce the bounds 
   # information concernant la convexité des arbres complets distincts
 
   convexity_wrapper = map(
     (
-      complete_tree -> CalculusTreeTools.convexity_wrapper(
-        CalculusTreeTools.get_convexity_status(complete_tree),
+      complete_tree -> ExpressionTreeForge.M_implementation_convexity_type.Convexity_wrapper(
+        ExpressionTreeForge.get_convexity_status(complete_tree),
       )
     ),
     vec_type_complete_element_tree,
   ) # convexity of element function
   type_element_function =
-    map(elt_fun -> CalculusTreeTools.get_type_tree(elt_fun), vec_type_complete_element_tree) # type of element function
+    map(elt_fun -> ExpressionTreeForge.get_type_tree(elt_fun), vec_type_complete_element_tree) # type of element function
 
   vec_elt_fun = Vector{Element_function}(undef, N)
   for i = 1:N  # Define the N element functions
@@ -174,13 +176,13 @@ function build_PartitionedData_TR_PQN(
   (name == :pbfgs) && (pB = epm_from_epv(pg))
   (name == :psr1) && (pB = epm_from_epv(pg))
   (name == :pse) && (pB = epm_from_epv(pg))
-  (name == :plbfgs) && (pB = eplom_lbfgs_from_epv(pg; kwargs...))
-  (name == :plsr1) && (pB = eplom_lsr1_from_epv(pg))
-  (name == :plse) && (pB = eplom_lose_from_epv(pg; kwargs...))
+  (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(pg; kwargs...))
+  (name == :plsr1) && (pB = eplo_lsr1_from_epv(pg))
+  (name == :plse) && (pB = eplo_lose_from_epv(pg; kwargs...))
   P = typeof(pB)
 
   fx = -1
-  pd_pqn = PartitionedData_TR_PQN{CalculusTreeTools.complete_expr_tree, T, P}(
+  pd_pqn = PartitionedData_TR_PQN{ExpressionTreeForge.Complete_expr_tree, T, P}(
     n,
     N,
     vec_elt_fun,
