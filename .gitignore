@@ -23,7 +23,7 @@ docs/site/
 # environment.
 Manifest.toml
 
-test/script_dvpt/
+dvpt/**
 
 *pbfgs.jl
 *plbfgs.jl

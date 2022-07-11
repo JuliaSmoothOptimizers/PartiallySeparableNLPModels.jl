@@ -70,13 +70,13 @@ function distinct_element_expr_tree(
 end
 
 """
-    compiled_grad_elmt_fun(elmt_fun::T; ni::Int = length(ExpressionTreeForge.get_elemental_variable(elmt_fun)), type = Float64) where {T}
+    compiled_grad_elmt_fun(elmt_fun::T; ni::Int = length(ExpressionTreeForge.get_elemental_variables(elmt_fun)), type = Float64) where {T}
 
 Return the `GradientTape` compiled to speed up the ReverseDiff computation of the elmt_fun gradient in the future
 """
 function compiled_grad_elmt_fun(
   elmt_fun::T;
-  ni::Int = length(ExpressionTreeForge.get_elemental_variable(elmt_fun)),
+  ni::Int = length(ExpressionTreeForge.get_elemental_variables(elmt_fun)),
   type = Float64,
 ) where {T}
   f = ExpressionTreeForge.evaluate_expr_tree(elmt_fun)

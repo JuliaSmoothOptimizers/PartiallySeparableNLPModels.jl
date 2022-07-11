@@ -54,6 +54,7 @@ update_nlp!(
 
 """
     update_PQN(pd_pqn,x,s)
+
 Perform the PBFGS update givent the two iterate x and s
 """
 update_PQN(
@@ -65,6 +66,7 @@ update_PQN(
   update_PQN!(pd_pqn, x, s; kwargs...)
   return Matrix(get_pB(pd_pqn))
 end
+
 function update_PQN!(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
   x::Vector{T},
@@ -78,6 +80,7 @@ end
 
 """
     update_PQN(pd_pqn,s)
+
 Perform the PBFGS update givent the current iterate x and the next iterate s.
 It assume that the partitioned gradient is already computed in pd_pqn.pg
 """
@@ -97,6 +100,7 @@ end
 
 """
     build_PartitionedData_TR_PQN(expr_tree, n)
+
 Find the partially separable structure of a function f stored as an expression tree expr_tree.
 To define properly the size of sparse matrix we need the size of the problem : n.
 At the end, we get the partially separable structure of f, f(x) = ∑fᵢ(xᵢ)
@@ -110,16 +114,16 @@ function build_PartitionedData_TR_PQN(
 ) where {G, T <: Number}
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree # transform the expression tree of type G into an expr tree of type t_expr_tree (the standard type used by my algorithms)
   vec_element_function =
-    ExpressionTreeForge.delete_imbricated_plus(expr_tree)::Vector{ExpressionTreeForge.Type_expr_tree} #séparation en fonction éléments
+    ExpressionTreeForge.extract_element_functions(expr_tree)::Vector{ExpressionTreeForge.Type_expr_tree} #séparation en fonction éléments
   N = length(vec_element_function)
 
   element_variables = map(
-    (i -> ExpressionTreeForge.get_elemental_variable(vec_element_function[i])),
+    (i -> ExpressionTreeForge.get_elemental_variables(vec_element_function[i])),
     1:N,
   )::Vector{Vector{Int}}# retrieve elemental variables
   sort!.(element_variables) # important line, sort the elemental varaibles. Mandatory for N_to_Ni and the partitioned structures
   map(
-    ((elt_fun, elt_var) -> ExpressionTreeForge.element_fun_from_N_to_Ni!(elt_fun, elt_var)),
+    ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
     vec_element_function,
     element_variables,
   ) # renumérotation des variables des fonctions éléments en variables internes
@@ -129,7 +133,7 @@ function build_PartitionedData_TR_PQN(
   M = length(element_expr_tree)
   element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M) # create a table that give for each distinct element expr grah, every element function using it
 
-  vec_elt_complete_expr_tree = ExpressionTreeForge.create_complete_tree.(element_expr_tree) # create complete tree given the remaining expr graph
+  vec_elt_complete_expr_tree = ExpressionTreeForge.complete_tree.(element_expr_tree) # create complete tree given the remaining expr graph
   vec_type_complete_element_tree =
     map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, T), vec_elt_complete_expr_tree) # cast the constant of the complete trees
 
