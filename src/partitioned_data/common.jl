@@ -1,5 +1,6 @@
 module Mod_common
-using ReverseDiff, LinearAlgebra, SparseArrays
+using ReverseDiff, LinearAlgebra
+# using SparseArrays
 using ExpressionTreeForge, PartitionedStructures
 
 export Element_function
