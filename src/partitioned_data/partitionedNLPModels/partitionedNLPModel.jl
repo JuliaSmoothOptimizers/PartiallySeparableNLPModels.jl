@@ -6,7 +6,7 @@ using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
-export PBFGSNLPModel, PLBFGSNLPModel, PQNNLPModel
+export PQNNLPModel
 
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end
