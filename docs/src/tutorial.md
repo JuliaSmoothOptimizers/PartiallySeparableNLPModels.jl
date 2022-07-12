@@ -70,7 +70,7 @@ B = Matrix(get_pB(pqn_jumpnlp))
 where each element Hessian approximation is instantiated with an identity matrix.
 
 You can specify the partitioned quasi-Newton update with the optional argument `name`:
-```@example PSNLP
+```julia
 PQNNLPModel(jumpnlp_example; name=:plse) # by default
 ```
 The possible variants are: `:pbfg, :psr1, :pse, :plbfgs, :plsr1` and `:plse`, see the [PartitionedStructures.jl tutorial](https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/) for more details.
@@ -90,7 +90,7 @@ A variant allocating in place the result helps to define a `LinearOperator` (see
 ```@example PSNLP
 using LinearOperators
 T = eltype(x)
-linear_operator = LinearOperators.LinearOperator(T, n, n, true, true, ((res, v) -> product_part_data_x!(res, pqn_adnlp, v)))
+linear_operator = LinearOperator(T, n, n, true, true, ((res, v) -> product_part_data_x!(res, pqn_adnlp, v)))
 linear_operator*v
 ```
-which can be used later with iterative methods (see [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl)).
+which can be paired with iterative solvers (see [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl)).
