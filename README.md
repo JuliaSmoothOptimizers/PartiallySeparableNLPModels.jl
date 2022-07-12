@@ -18,8 +18,8 @@
 [doi-url]: https://doi.org/10.5281/zenodo.822073
 
 ## Philosophy
-The purpose of PartiallySeparableNLPModels.jl is to defined automatically partially-separable [NLPModels](https://github.com/JuliaSmoothOptimizers/NLPModels.jl) and facilitated the implementation of partitioned quasi-Newton methods.
-For now, it implements a `PartitionedData_TR_PQN` gathering the mandatory structures for implementing a partitioned quasi-Newton trust-region methods.
+The purpose of PartiallySeparableNLPModels.jl is to define automatically partially-separable [NLPModels](https://github.com/JuliaSmoothOptimizers/NLPModels.jl) and facilitate the implementation of partitioned quasi-Newton methods.
+For now, it implements a `PartitionedData_TR_PQN` gathering the mandatory structures for implementing partitioned quasi-Newton trust-region methods.
 
 ## Compatibility
 Julia ≥ 1.6.
@@ -30,6 +30,9 @@ pkg> add https://github.com/paraynaud/ExpressionTreeForge.jl, https://github.com
 pkg> test PartiallySeparableNLPModels
 ```
 
+## How to use 
+See the [tutorial](https://JuliaSmoothOptimizers.github.io/ExpressionTreeForge.jl/dev/tutorial/).
+
 ## Dependencies
-The module use [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) to allocate the partitioned quasi-Newton approximation.
-[PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) implement partitioned quasi-Newton trust-region methods by exploiting the `PartitionedData_TR_PQN` of PartiallySeparableNLPModels.jl.
+The module use [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) to allocate partitioned quasi-Newton approximations.
+[PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) implements partitioned quasi-Newton trust-region methods from `PartitionedData_TR_PQN` and the `PartiallySeparableNLPModels.jl` methods.
