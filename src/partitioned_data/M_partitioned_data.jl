@@ -149,9 +149,9 @@ abstract type PartitionedData end
 update_nlp!(part_data::T) where {T <: PartitionedData} = @error("Should not be called")
 
 """
-    product_part_data_x!(part_data, x)
+    Bx = product_part_data_x(part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
 
-Return the product of the partitioned matrix `part_data*x`.
+Return the product between the partitioned matrix `part_data.pB` and `x`.
 """
 function product_part_data_x(part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
   res = similar(x)
@@ -159,6 +159,11 @@ function product_part_data_x(part_data::T, x::Vector{Y}) where {T <: Partitioned
   return res
 end
 
+"""
+    product_part_data_x!(res::Vector{Y}, part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
+
+Return in place of `res` the product between the partitioned matrix `part_data.pB` and `x`.
+"""
 function product_part_data_x!(
   res::Vector{Y},
   part_data::T,
@@ -188,6 +193,11 @@ end
 ) where {T <: PartitionedStructures.Part_mat{Y}} where {Y <: Number} =
   PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
 
+"""
+    fx = evaluate_obj_part_data(part_data::T, x::Vector{Y}, ) where {T <: PartitionedData, Y <: Number}
+
+Return the partially separable objective value stored in `part_data`, computed as a sum of element functions.
+"""
 function evaluate_obj_part_data(
   part_data::T,
   x::Vector{Y},
@@ -197,6 +207,11 @@ function evaluate_obj_part_data(
   return get_fx(part_data)
 end
 
+"""
+    evaluate_obj_part_data!(part_data::T) where {T <: PartitionedData}
+
+Compute and store the partially separable objective value stored in `part_data`, as a sum of element functions, in `part_data` given `part_data.x`.
+"""
 function evaluate_obj_part_data!(part_data::T) where {T <: PartitionedData}
   set_pv!(part_data, get_x(part_data))
   index_element_tree = get_index_element_tree(part_data)
@@ -214,6 +229,7 @@ function evaluate_obj_part_data!(part_data::T) where {T <: PartitionedData}
   return part_data
 end
 
+# less efficient evaluation
 # function evaluate_obj_part_data!(part_data::T) where T <: PartitionedData
 #   set_pv!(part_data, get_x(part_data))  
 #   element_expr_tree_table = get_element_expr_tree_table(part_data)
@@ -231,12 +247,12 @@ end
 # end 
 
 """
-    evaluate_y_part_data!(part_data,x,s)
-    evaluate_y_part_data!(part_data,s)
+    evaluate_y_part_data!(part_data::T, x::Vector{Y}, s::Vector{Y}) where {T <: PartitionedData, Y <: Number}
+    evaluate_y_part_data!(part_data::T, s::Vector{Y}) where {T <: PartitionedData, Y <: Number}
 
 Compute the element gradients differences such as ∇̂fᵢ(x+s)-∇̂fᵢ(x) for each element functions. 
 It stores the results in `part_data.pv`.
-`evaluate_y_part_data!(part_data, s)` consider that `part_data.pg` is alreagy the gradient of the point `x`.
+`evaluate_y_part_data!(part_data, s)` consider the point `part_data.x` and the partitioned gradient `part_data.pg` known.
 """
 function evaluate_y_part_data!(
   part_data::T,
@@ -260,9 +276,9 @@ function evaluate_y_part_data!(part_data::T, s::Vector{Y}) where {T <: Partition
 end
 
 """
-    evaluate_grad_part_data(part_data,x)
+    gradient = evaluate_grad_part_data(part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
 
-Build the gradient vector at the point `x` from the element gradient computed and stored in `part_data.pg`.
+Return the gradient vector `g` at the point `x` after the computation of the element gradients (stored in `part_data.pg`).
 """
 function evaluate_grad_part_data(part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
   g = similar(x)
@@ -270,6 +286,13 @@ function evaluate_grad_part_data(part_data::T, x::Vector{Y}) where {T <: Partiti
   return g
 end
 
+"""
+    evaluate_grad_part_data!(g::Vector{Y}, part_data::T, x::Vector{Y}) where {T <: PartitionedData, Y <: Number}
+    evaluate_grad_part_data!(part_data::T) where {T <: PartitionedData}
+
+Evaluate in place of `g` the gradient at the point `x` after the computation of the element gradients (stored in `part_data.pg`).
+When `g` and `x` are omitted, it considers that `part_data.g` and `part_data.x` are respectively `g` and `x`.
+"""
 function evaluate_grad_part_data!(
   g::Vector{Y},
   part_data::T,

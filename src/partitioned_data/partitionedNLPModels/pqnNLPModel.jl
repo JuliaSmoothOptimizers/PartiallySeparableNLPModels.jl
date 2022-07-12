@@ -1,4 +1,13 @@
+"""
+    PQNNLPModel{ T, S, G, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S}} <: AbstractPQNNLPModel{T, S}
 
+A partitioned quasi-Newton `NLPModel`.
+A `PQNNLPModel` has field:
+
+* `meta` counting numerous information about the `PQNNLPModel`;
+* `part_data` allocate the partitioned structures required by a partitioned quasi-Newton trust-region method;
+* `nlp` the original `NLPModel`.
+"""
 mutable struct PQNNLPModel{
   T,
   S,

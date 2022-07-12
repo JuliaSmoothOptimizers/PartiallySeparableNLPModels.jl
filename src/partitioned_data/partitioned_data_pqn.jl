@@ -9,18 +9,42 @@ import ..Mod_ab_partitioned_data.update_nlp!
 export PartitionedData_TR_PQN
 export update_PQN, update_PQN!, build_PartitionedData_TR_PQN
 
+"""
+    PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <: Mod_ab_partitioned_data.PartitionedData
 
+Gather the structures required to run a partitioned quasi-Newton trust region method.
+`PartitionedData_TR_PQN` has fields:
+
+* `n` the size of the problem;
+* `N` the number of element functions;
+* `vec_elt_fun` a `Element_function` vector, of size `N`;
+* `M` the number of distinct element-function expression trees;
+* `vec_elt_complete_expr_tree` a `Complete_expr_tree` vector, of size `M`;
+* `element_expr_tree_table` a vector of size `M`, the i-th element `element_expr_tree_table[i]::Vector{Int}` informs which element functions have the `vec_elt_complete_expr_tree[i]` expreesion tree;
+* `index_element_tree` a vector of size `N` where each component indicates which `Complete_expr_tree` from `vec_elt_complete_expr_tree` use for the corresponding element;
+* `vec_compiled_element_gradients` the vector gathering the compiled tapes for the element gradient evaluations;
+* `x` the current point;
+* `v` a temporary vector;
+* `s` the current step;
+* `pg` the partitioned gradient;
+* `pv` a temporary partitioned vector;
+* `py` the partitioned gradient difference;
+* `ps` the partitioned step;
+* `pB` the partitioned matrix (main memory cost);
+* `fx` the current value of the objective function;
+* `name` the name of partitioned quasi-Newton update peformed at each iterate.
+"""
 mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
                Mod_ab_partitioned_data.PartitionedData
   n::Int
   N::Int
   vec_elt_fun::Vector{Element_function} #length(vec_elt_fun) == N
-  # Vector composed by the different expression graph of element function .
-  # Several element function may have the same expression graph
+  # Vector composed by the expression trees of element functions .
+  # Warning: Several element functions may have the same expression tree
   M::Int
   vec_elt_complete_expr_tree::Vector{G} # length(element_expr_tree) == M < N
-  element_expr_tree_table::Vector{Vector{Int}} # length(element_expr_tree_table) == M
   # element_expr_tree_table store the indices of every element function using each element_expr_tree, ∀i,j, 1 ≤ element_expr_tree_table[i][j] \leq N
+  element_expr_tree_table::Vector{Vector{Int}} # length(element_expr_tree_table) == M
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
@@ -37,14 +61,24 @@ mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
   fx::T
   # g is build directly from pg
   # the result of pB*v will be store and build from pv
-  name::Symbol
+  # name is the name of the partitioned quasi-Newton applied on pB
+  name::Symbol 
 end
 
+"""
+    update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s::Vector{T})
+    update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T})
+
+Perform the partitioned quasi-Newton update given the vectors `x` and `s`.
+When `x` is omitted, `update_PQN!` consider that `pd_pqn` already know the value of `x`.
+Moreover, it assumes that the partitioned gradient at `x` is already computed in `pd_pqn.pg`.
+"""
 update_nlp!(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
   s::Vector{T};
   kwargs...,
 ) where {G, T <: Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, s; kwargs...)
+
 update_nlp!(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
   x::Vector{T},
@@ -53,9 +87,9 @@ update_nlp!(
 ) where {G, T <: Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, x, s; kwargs...)
 
 """
-    update_PQN(pd_pqn,x,s)
+    B = update_PQN(  pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T};
 
-Perform the PBFGS update givent the two iterate x and s
+Perform the partitioned quasi-Newton update given the vectors `x` and `s`.
 """
 update_PQN(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
@@ -67,6 +101,14 @@ update_PQN(
   return Matrix(get_pB(pd_pqn))
 end
 
+"""
+    update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s::Vector{T})
+    update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T})
+
+Perform the partitioned quasi-Newton update given the vectors `x` and `s`.
+When `x` is omitted, `update_PQN!` consider that `pd_pqn` already know the value of `x`.
+Moreover, it assumes that the partitioned gradient at `x` is already computed in `pd_pqn.pg`.
+"""
 function update_PQN!(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
   x::Vector{T},
@@ -78,12 +120,6 @@ function update_PQN!(
   update_PQN!(pd_pqn, s; kwargs...)
 end
 
-"""
-    update_PQN(pd_pqn,s)
-
-Perform the PBFGS update givent the current iterate x and the next iterate s.
-It assume that the partitioned gradient is already computed in pd_pqn.pg
-"""
 function update_PQN!(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
   s::Vector{T};
@@ -99,11 +135,12 @@ function update_PQN!(
 end
 
 """
-    build_PartitionedData_TR_PQN(expr_tree, n)
+    partitioneddata_tr_pqn = build_PartitionedData_TR_PQN(expr_tree, n)
 
-Find the partially separable structure of a function f stored as an expression tree expr_tree.
-To define properly the size of sparse matrix we need the size of the problem : n.
-At the end, we get the partially separable structure of f, f(x) = ∑fᵢ(xᵢ)
+Return the structure required to run a partitioned quasi-Newton trust-region method. 
+It finds the partially-separable structure of an expression tree `expr_tree` representing f(x) = ∑fᵢ(xᵢ).
+Then it allocates the partitioned structures required.
+Note that to define properly the sparse matrix of the partitioned matrix we need the size of the problem: `n`.
 """
 function build_PartitionedData_TR_PQN(
   tree::G,
@@ -112,35 +149,49 @@ function build_PartitionedData_TR_PQN(
   name = :plse,
   kwargs...,
 ) where {G, T <: Number}
-  expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree # transform the expression tree of type G into an expr tree of type t_expr_tree (the standard type used by my algorithms)
+
+  # Transform the expression tree of type G into an expression tree of type Type_expr_tree (the standard type used by my algorithms)
+  expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
+
+  # Get the element functions
   vec_element_function =
-    ExpressionTreeForge.extract_element_functions(expr_tree)::Vector{ExpressionTreeForge.Type_expr_tree} #séparation en fonction éléments
+    ExpressionTreeForge.extract_element_functions(expr_tree)::Vector{ExpressionTreeForge.Type_expr_tree}
   N = length(vec_element_function)
 
+  # Retrieve elemental variables
   element_variables = map(
     (i -> ExpressionTreeForge.get_elemental_variables(vec_element_function[i])),
     1:N,
-  )::Vector{Vector{Int}}# retrieve elemental variables
-  sort!.(element_variables) # important line, sort the elemental varaibles. Mandatory for N_to_Ni and the partitioned structures
+  )::Vector{Vector{Int}}
+
+  # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
+  sort!.(element_variables) 
+
+  # Change the indices of the element-function expression trees.
   map(
     ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
     vec_element_function,
     element_variables,
-  ) # renumérotation des variables des fonctions éléments en variables internes
+  ) 
 
+  # Filter the element expression tree to keep only the distinct expression trees
   (element_expr_tree, index_element_tree) =
-    distinct_element_expr_tree(vec_element_function, element_variables) # Remains only the distinct expr graph functions
+    distinct_element_expr_tree(vec_element_function, element_variables)
   M = length(element_expr_tree)
-  element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M) # create a table that give for each distinct element expr grah, every element function using it
 
-  vec_elt_complete_expr_tree = ExpressionTreeForge.complete_tree.(element_expr_tree) # create complete tree given the remaining expr graph
+  # Create a table giving for each distinct element expression tree, every element function using it
+  element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M)
+  
+  # Create complete trees given the remaining expression trees
+  vec_elt_complete_expr_tree = ExpressionTreeForge.complete_tree.(element_expr_tree)
+  # Cast the constant of the complete trees
   vec_type_complete_element_tree =
-    map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, T), vec_elt_complete_expr_tree) # cast the constant of the complete trees
+    map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, T), vec_elt_complete_expr_tree)
 
-  ExpressionTreeForge.set_bounds!.(vec_type_complete_element_tree) # deduce the bounds 
-  ExpressionTreeForge.set_convexity!.(vec_type_complete_element_tree) # deduce the bounds 
-  # information concernant la convexité des arbres complets distincts
+  ExpressionTreeForge.set_bounds!.(vec_type_complete_element_tree) # Propagate the bounds 
+  ExpressionTreeForge.set_convexity!.(vec_type_complete_element_tree) # deduce the convexity status 
 
+  # Get the convexity status of element functions
   convexity_wrapper = map(
     (
       complete_tree -> ExpressionTreeForge.M_implementation_convexity_type.Convexity_wrapper(
@@ -148,9 +199,11 @@ function build_PartitionedData_TR_PQN(
       )
     ),
     vec_type_complete_element_tree,
-  ) # convexity of element function
+  )
+
+  # Get the type of element functions
   type_element_function =
-    map(elt_fun -> ExpressionTreeForge.get_type_tree(elt_fun), vec_type_complete_element_tree) # type of element function
+    map(elt_fun -> ExpressionTreeForge.get_type_tree(elt_fun), vec_type_complete_element_tree)
 
   vec_elt_fun = Vector{Element_function}(undef, N)
   for i = 1:N  # Define the N element functions
@@ -166,7 +219,7 @@ function build_PartitionedData_TR_PQN(
   end
 
   vec_compiled_element_gradients =
-    map((tree -> compiled_grad_elmt_fun(tree; type = T)), element_expr_tree)
+    map((tree -> compiled_grad_element_function(tree; type = T)), element_expr_tree)
 
   x = copy(x0)
   v = similar(x)
@@ -185,7 +238,7 @@ function build_PartitionedData_TR_PQN(
   (name == :plse) && (pB = eplo_lose_from_epv(pg; kwargs...))
   P = typeof(pB)
 
-  fx = -1
+  fx = (T)(-1)
   pd_pqn = PartitionedData_TR_PQN{ExpressionTreeForge.Complete_expr_tree, T, P}(
     n,
     N,
