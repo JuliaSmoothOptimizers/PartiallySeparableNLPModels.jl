@@ -1,4 +1,4 @@
-# PartiallySeparableNLPModels : A bridge between [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl), [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) and [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl).
+# PartiallySeparableNLPModels : A three-ways bridge between [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl), [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) and [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl).
 
 | **Documentation** | **Linux/macOS/Windows/FreeBSD** | **Coverage** | **DOI** |
 |:-----------------:|:-------------------------------:|:------------:|:-------:|
