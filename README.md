@@ -1,4 +1,4 @@
-# PartiallySeparableNLPModels : A three-ways bridge between [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl), [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) and [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl).
+# PartiallySeparableNLPModels : A three-ways bridge between [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl), [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) and [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl).
 
 | **Documentation** | **Linux/macOS/Windows/FreeBSD** | **Coverage** | **DOI** |
 |:-----------------:|:-------------------------------:|:------------:|:-------:|
@@ -26,7 +26,7 @@ Julia ≥ 1.6.
 
 ## How to install
 ```
-pkg> add https://github.com/paraynaud/ExpressionTreeForge.jl, https://github.com/paraynaud/PartiallySeparableNLPModels.jl
+pkg> add https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl, https://github.com/paraynaud/PartiallySeparableNLPModels.jl
 pkg> test PartiallySeparableNLPModels
 ```
 
