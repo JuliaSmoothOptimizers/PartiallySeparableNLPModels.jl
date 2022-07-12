@@ -231,23 +231,6 @@ function evaluate_obj_part_data!(part_data::PartitionedData)
   return part_data
 end
 
-# less efficient evaluation
-# function evaluate_obj_part_data!(part_data::T) where T <: PartitionedData
-#   set_pv!(part_data, get_x(part_data))  
-#   element_expr_tree_table = get_element_expr_tree_table(part_data)
-#   M = get_M(part_data)
-#   acc=0
-#   for i in 1:M
-#     elt_expr_tree = get_vec_elt_complete_expr_tree(part_data, i)
-#     indices_elt_fun = element_expr_tree_table[i]
-#     for j in indices_elt_fun    
-#       fix = ExpressionTreeForge.evaluate_expr_tree(elt_expr_tree, PartitionedStructures.get_eev_value(get_pv(part_data),j))
-#       acc += fix
-#     end
-#   end
-#   set_fx!(part_data, acc)
-# end 
-
 """
     evaluate_y_part_data!(part_data::PartitionedData, x::Vector{Y}, s::Vector{Y}) where {Y <: Number}
     evaluate_y_part_data!(part_data::PartitionedData, s::Vector{Y}) where {Y <: Number}
