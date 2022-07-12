@@ -4,7 +4,6 @@ using ReverseDiff, LinearAlgebra
 using ExpressionTreeForge, PartitionedStructures
 using ExpressionTreeForge.M_implementation_convexity_type
 
-
 export Element_function
 export distinct_element_expr_tree, compiled_grad_element_function
 
@@ -46,7 +45,8 @@ function distinct_element_expr_tree(
   indices_element_tree = (xi -> -xi).(ones(Int, N))
   element_expr_trees = Vector{T}(undef, 0)
   vec_val_elt_fun_ones = map(
-    (elt_fun, elt_vars) -> ExpressionTreeForge.evaluate_expr_tree(elt_fun, ones(length(elt_vars))),
+    (elt_fun, elt_vars) ->
+      ExpressionTreeForge.evaluate_expr_tree(elt_fun, ones(length(elt_vars))),
     vec_element_expr_tree,
     vec_element_variables,
   ) # evaluate as first equality test

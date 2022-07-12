@@ -4,8 +4,8 @@
   nlp = MathOptNLPModel(OptimizationProblems.arwhead(n), name = "arwhead " * string(n))
   x = rand(n)
 
-  pbfgsnlp = PQNNLPModel(nlp; name=:pbfgs)
-  plbfgsnlp = PQNNLPModel(nlp; name=:plbfgs)
+  pbfgsnlp = PQNNLPModel(nlp; name = :pbfgs)
+  plbfgsnlp = PQNNLPModel(nlp; name = :plbfgs)
 
   @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(pbfgsnlp, x)
   @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(plbfgsnlp, x)
