@@ -10,9 +10,9 @@ export PartitionedData_TR_PQN
 export update_PQN, update_PQN!, build_PartitionedData_TR_PQN
 
 """
-    PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <: Mod_ab_partitioned_data.PartitionedData
+    PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <: PartitionedData
 
-Gather the structures required to run a partitioned quasi-Newton trust region method.
+Gather the structures required to run a partitioned quasi-Newton trust-region method.
 `PartitionedData_TR_PQN` has fields:
 
 * `n` the size of the problem;

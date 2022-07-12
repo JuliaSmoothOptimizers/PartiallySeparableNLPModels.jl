@@ -11,7 +11,7 @@ export PQNNLPModel
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end
 
-""" Accumulate the NLPModels supported. """
+""" Accumulate the supported NLPModels. """
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
 
 """

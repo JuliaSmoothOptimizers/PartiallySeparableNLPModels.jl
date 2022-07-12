@@ -31,9 +31,10 @@ end
 """
     (element_expr_trees, indices_element_tree) = distinct_element_expr_tree(vec_element_expr_tree::Vector{T}, vec_element_variables::Vector{Vector{Int}}; N::Int = length(vec_element_expr_tree)) where {T}
 
-Filter the vector `vec_element_expr_tree` to return `element_expr_trees` the distincts element functions.
+In practice, there may have several element functions having the same expression tree.
+`distinct_element_expr_tree` filters the vector `vec_element_expr_tree` to return `element_expr_trees` the distincts element functions.
 `length(element_expr_trees) == M < N == length(vec_element_expr_tree)`.
-In addition it returns `indices_element_tree`, who records the index 1 <= i <= M for each element function.
+In addition it returns `indices_element_tree`, who records the index (1 <= i <= M) related ot the expression tree of each element function.
 """
 function distinct_element_expr_tree(
   vec_element_expr_tree::Vector{T},
