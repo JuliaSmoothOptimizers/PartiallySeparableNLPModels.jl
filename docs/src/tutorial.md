@@ -16,7 +16,7 @@ using PartiallySeparableNLPModels, ADNLPModels
 function example(x)
   n = length(x)
   n < 2 && @error("length of x must be >= 2")
-return sum((x[j]+x[j+1])^2 for i=1:n+1)
+return sum((x[i]+x[i+1])^2 for i=1:n-1)
 end 
 start_example(n :: Int) = ones(n)
 example_ADNLPModel(n :: Int) = ADNLPModel(example, start_example(n), name="Example " * string(n) * " variables")
