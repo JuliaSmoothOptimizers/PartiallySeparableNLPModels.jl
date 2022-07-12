@@ -11,8 +11,15 @@ export PQNNLPModel
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end
 
+""" Accumulate the NLPModels supported. """
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
 
+"""
+    expr, n, x0 = get_expr_tree(adnlp::MathOptNLPModel; x0::Vector{T} = copy(adnlp.meta.x0), kwargs...) where {T <: Number}
+    expr, n, x0 = get_expr_tree(adnlp::ADNLPModel; x0::Vector{T} = copy(adnlp.meta.x0), kwargs...) where {T <: Number}
+
+Return for a `MathOptNLPModel` or a `ADNLPModel`: the expression tree of the objective function `expr::Expr`, the size of the problem `n` and the initial point `x0`.
+"""
 function get_expr_tree(
   nlp::MathOptNLPModel;
   x0::Vector{T} = copy(nlp.meta.x0),
