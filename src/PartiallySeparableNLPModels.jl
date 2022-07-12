@@ -23,7 +23,7 @@ export get_n,
   get_element_expr_tree_table,
   get_index_element_tree,
   get_vec_compiled_element_gradients
-export get_x, get_v, get_s, get_pg, get_pv, get_ps, get_pB, get_fx
+export get_x, get_v, get_s, get_pg, get_pv, get_py, get_ps, get_pB, get_fx
 export set_n!,
   set_N!,
   set_vec_elt_fun!,
@@ -34,7 +34,6 @@ export set_n!,
   set_vec_compiled_element_gradients!
 export set_x!,
   set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_ps!, set_pB!, set_fx!
-export update_nlp!
-export update_PQN, update_PQN!
+export update_nlp, update_nlp!, update_PQN, update_PQN!
 
 end

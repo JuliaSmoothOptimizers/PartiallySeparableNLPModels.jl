@@ -1,67 +1,96 @@
 # PartiallySeparableNLPModels.jl Tutorial
 
+## A `NLPModel` exploiting the partial separability
+PartiallySeparableNLPModels.jl define `NLPModel` to implement partitioned quasi-Newton methods exploiting automatically the partially-separable structure of $f:\R^n \to \R$
+```math
+ f(x) = \sum_{i=1}^N f_i (U_i x) , \; f_i : \R^{n_i} \to \R, \; U_i \in \R^{n_i \times n},\; n_i \ll n,
+```
+as the sum of element function $f_i$.
 
-## Motivation
-The module [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) seeks to minimize the partially separable functions
-$$
-f(x) = \sum_{=1}^N \hat{f}_i (U_i x), \quad f \in \R^n \to \R, \quad \hat f_i:\R^{n_i} \to \R, \quad U_i \in \R^{n_i \times n}.
-$$
-$f$ is a sum of element functions $\hat{f}_i$, and usually $n_i \ll n$. $U_i$ is a linear operator, it selects the variables that parametrizes $\hat{f}_i$.
+PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and define the suitable partitioned structures, required by the partitioned derivatives, using [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl).
 
-PartiallySeparableNLPModels.jl define and manage the structures required by [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) to run a trust-region method that exploits the partially separable structure of $f$.
-Mainly, it manages the partitioned derivatives of $f$, such as the gradient 
-$$
-\nabla f(x) = \sum_{i=1}^N U_i^\top \nabla \hat{f}_i (U_i x),
-$$
-and the hessian 
-$$
-\nabla^2 f(x) = \sum_{i=1}^N U_i^\top \nabla^2 \hat{f_i} (U_i x) U_i,
-$$
- where both are the sum of the element derivatives $\nabla \hat{f}_i,  \nabla^2\hat{f}_i$.
-Moreover, this structure allows to define a partitioned quasi-Newton approximation of $\nabla^2 f$
-$$
-B = \sum_{i=1}^N U_i^\top \hat{B}_{i} U_i
-$$
-where each $\hat{B}_i \approx \nabla^2 \hat{f}_i$.
-
-#### Reference
-* A. Griewank and P. Toint, [*Partitioned variable metric updates for large structured optimization problems*](10.1007/BF01399316), Numerische Mathematik volume, 39, pp. 119--137, 1982.
-
-## Content
-PartiallySeparableNLPModels.jl use the module [ExpressionTreeForge.jl](https://github.com/paraynaud/ExpressionTreeForge.jl) to detect automatically the partially separable structure of $f$.
-Once it is done, it defines the partitioned structures of $\nabla f$ and $B \approx \nabla^2 f$ with [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl).
-
-Considering the following `ADNLPModel`
-```julia
+As a user, you only need to define your `ADNLPModel`:
+```@example PSNLP
 using PartiallySeparableNLPModels, ADNLPModels
 
-  function example(x)
-    n = length(x)
-    n < 2 && @error("length of x must be >= 2")
-  return sum( sum( x[j] for j=1:i)^2 for i=2:n)
+function example(x)
+  n = length(x)
+  n < 2 && @error("length of x must be >= 2")
+return sum((x[j]+x[j+1])^2 for i=1:n+1)
 end 
 start_example(n :: Int) = ones(n)
-example_ADNLPModel(n :: Int=100) = ADNLPModel(example, start_example(n), name="Example "*string(n) * " variables")
+example_ADNLPModel(n :: Int) = ADNLPModel(example, start_example(n), name="Example " * string(n) * " variables")
 
-n = 50 # size of the problem
-nlp_example = example_ADNLPModel(n) # example model of 
+n = 4 # size of the problem
+adnlp_example = example_ADNLPModel(n)
+```
+and call `PQNNLPModel` to define a partitioned quasi-Newton `NLPModel`:
+```@example PSNLP
+pqn_adnlp = PQNNLPModel(adnlp_example)
 ```
 
-You can either define the structures required for a trust region method using partitioned quasi-Newton update or define an `NLPModel` to evaluate $f, \nabla f, \nabla^2 f$ by exploiting the partial separabiliy of $f$
-```julia
+Then, you can apply the usual methods `obj` and `grad`, exploiting the partial separability, from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
+```@example PSNLP
 using NLPModels
-
-partially_separable_nlp = PQNNLPModel(nlp_example)
 x = rand(n)
-NLPModels.obj(partially_separable_nlp, x) # compute the obective function
-NLPModels.grad(partially_separable_nlp, x) # compute the gradient
+fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function
+gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient
 ```
-To define the structure for a trust region method, you have to extract `ex` the `Expr` from `nlp_example` and `n`. You can use
-```julia
-(ex, n, x0) = get_expr_tree(nlp_example)
+
+The same procedure can be applied to `MathNLPModel`s:
+```@example PSNLP
+using JuMP, MathOptInterface, NLPModelsJuMP
+
+function jump_example(n::Int)
+  m = Model()
+  @variable(m, x[1:n])
+  @NLobjective(m, Min, sum((x[i]^2 + x[i+1])^2 for i = 1:n-1))
+  evaluator = JuMP.NLPEvaluator(m)
+  MathOptInterface.initialize(evaluator, [:ExprGraph])
+  variables = JuMP.all_variables(m)
+  x0 = ones(n)
+  JuMP.set_start_value.(variables, x0)
+  nlp = MathOptNLPModel(m)
+  return nlp
+end
+
+jumpnlp_example = jump_example(n)
+pqn_jumpnlp = PQNNLPModel(jumpnlp_example)
+
+fx = NLPModels.obj(pqn_jumpnlp, x) # compute the obective function
+gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient
 ```
-after that you can call `PartitionedData_TR_PQN`
+
+## A partitioned quasi-Newton `NLPModel`
+By defining a `PQNNLPModel` you allocate a partitioned quasi-Newton update, which is implemented in `PartitionedStructures.jl`.
+You can visualize the matrix with:
+```@example PSNLP
+B = Matrix(get_pB(pqn_jumpnlp))
 ```
-part_data_pqn = build_PartitionedData_TR_PQN(ex, n; name=:pbfgs, x0=x0)
+where each element Hessian approximation is instantiated with an identity matrix.
+
+You can specify the partitioned quasi-Newton update with the optional argument `name`:
+```@example PSNLP
+PQNNLPModel(jumpnlp_example; name=:plse) # by default
 ```
-The sole purpose of this module is to simplify how the module [PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) handle the partial separability.
+The possible variants are: `:pbfg, :psr1, :pse, :plbfgs, :plsr1` and `:plse`, see the [PartitionedStructures.jl tutorial](https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/) for more details.
+
+Then, you can update the partitioned quasi-Newton approximation with the pair `x,s`:
+```@example PSNLP
+s = rand(n)
+update_B = update_nlp(pqn_adnlp, x, s)
+```
+and you can perform the partitioned matrix-vector product with:
+```@example PSNLP
+v = ones(n)
+Bv = product_part_data_x(pqn_adnlp, v)
+```
+
+A variant allocating in place the result helps to define a `LinearOperator` (see [LinearOperators](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl)) from a `PQNNLPModel`:
+```@example PSNLP
+using LinearOperators
+T = eltype(x)
+linear_operator = LinearOperators.LinearOperator(T, n, n, true, true, ((res, v) -> product_part_data_x!(res, pqn_adnlp, v)))
+linear_operator*v
+```
+which can be used later with iterative methods (see [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl)).

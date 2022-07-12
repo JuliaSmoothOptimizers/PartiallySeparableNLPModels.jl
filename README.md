@@ -17,16 +17,19 @@
 [doi-img]: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.822073-blue.svg
 [doi-url]: https://doi.org/10.5281/zenodo.822073
 
+## Philosophy
+The purpose of PartiallySeparableNLPModels.jl is to defined automatically partially-separable [NLPModels](https://github.com/JuliaSmoothOptimizers/NLPModels.jl) and facilitated the implementation of partitioned quasi-Newton methods.
+For now, it implements a `PartitionedData_TR_PQN` gathering the mandatory structures for implementing a partitioned quasi-Newton trust-region methods.
+
 ## Compatibility
 Julia ≥ 1.6.
 
 ## How to install
 ```
-pkg> add https://github.com/paraynaud/ExpressionTreeForge.jl
-pkg> test ExpressionTreeForge
+pkg> add https://github.com/paraynaud/ExpressionTreeForge.jl, https://github.com/paraynaud/PartiallySeparableNLPModels.jl
+pkg> test PartiallySeparableNLPModels
 ```
-
 
 ## Dependencies
 The module use [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl) to allocate the partitioned quasi-Newton approximation.
-[PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) implement partitioned quasi-Newton trust-region methods by exploiting the `PartitionedData_TR_PQN` of  PartiallySeparableNLPModels.jl.
+[PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) implement partitioned quasi-Newton trust-region methods by exploiting the `PartitionedData_TR_PQN` of PartiallySeparableNLPModels.jl.
