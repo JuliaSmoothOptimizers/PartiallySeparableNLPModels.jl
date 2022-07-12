@@ -1,5 +1,7 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ExpressionTreeForge = "93090adf-0e31-445f-8c8f-44d91f61d7ad"
+PartiallySeparableNLPModels = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 
 [compat]
 Documenter = "~0.25"

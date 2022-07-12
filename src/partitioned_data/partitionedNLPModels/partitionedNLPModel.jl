@@ -6,7 +6,7 @@ using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
-export PQNNLPModel
+export PQNNLPModel, update_nlp
 
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end
@@ -53,8 +53,10 @@ include("pqnNLPModel.jl")
 
 Evaluate `f(x)`, the objective function of `nlp` at `x`.
 """
-NLPModels.obj(nlp::P, x::AbstractVector{T}) where {P <: AbstractPQNNLPModel{T, S}} where {T, S} =
+function NLPModels.obj(nlp::P, x::AbstractVector{T}) where {P <: AbstractPQNNLPModel{T, S}} where {T, S}
+  increment!(nlp, :neval_obj)
   evaluate_obj_part_data(nlp.part_data, x)
+end
 
 """
     g = grad!(nlp, x, g)
@@ -66,6 +68,7 @@ function NLPModels.grad!(
   x::AbstractVector{T},
   g::AbstractVector{T},
 ) where {P <: AbstractPQNNLPModel{T, S}} where {T, S}
+  increment!(nlp, :neval_grad)
   evaluate_grad_part_data!(g, nlp.part_data, x)
   return g
 end
