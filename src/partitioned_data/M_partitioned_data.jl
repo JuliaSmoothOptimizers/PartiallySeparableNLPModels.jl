@@ -45,11 +45,9 @@ abstract type PartitionedData end
 @inline get_vec_elt_complete_expr_tree(part_data::PartitionedData, i::Int) =
   part_data.vec_elt_complete_expr_tree[i]
 
-@inline get_element_expr_tree_table(part_data::PartitionedData) =
-  part_data.element_expr_tree_table
+@inline get_element_expr_tree_table(part_data::PartitionedData) = part_data.element_expr_tree_table
 
-@inline get_index_element_tree(part_data::PartitionedData)=
-  part_data.index_element_tree
+@inline get_index_element_tree(part_data::PartitionedData) = part_data.index_element_tree
 
 @inline get_vec_compiled_element_gradients(part_data::PartitionedData) =
   part_data.vec_compiled_element_gradients
@@ -69,43 +67,34 @@ abstract type PartitionedData end
 
 @inline set_n!(part_data::PartitionedData, n::Int) = part_data.n = n
 @inline set_N!(part_data::PartitionedData, N::Int) = part_data.N = N
-@inline set_vec_elt_fun!(
-  part_data::PartitionedData,
-  vec_elt_fun::Vector{Element_function},
-) = part_data.vec_elt_fun .= vec_elt_fun
+@inline set_vec_elt_fun!(part_data::PartitionedData, vec_elt_fun::Vector{Element_function}) =
+  part_data.vec_elt_fun .= vec_elt_fun
 
 @inline set_M!(part_data::PartitionedData, M::Int) = part_data.M = M
 
 @inline set_vec_elt_complete_expr_tree!(
   part_data::PartitionedData,
   vec_elt_complete_expr_tree::Vector{G},
-) where {G} =
-  part_data.vec_elt_complete_expr_tree .= vec_elt_complete_expr_tree
+) where {G} = part_data.vec_elt_complete_expr_tree .= vec_elt_complete_expr_tree
 
 @inline set_element_expr_tree_table!(
   part_data::PartitionedData,
   element_expr_tree_table::Vector{Vector{Int}},
 ) = part_data.element_expr_tree_table .= element_expr_tree_table
 
-@inline set_index_element_tree!(
-  part_data::PartitionedData,
-  index_element_tree::Vector{Int},
-) = part_data.index_element_tree .= index_element_tree
+@inline set_index_element_tree!(part_data::PartitionedData, index_element_tree::Vector{Int}) =
+  part_data.index_element_tree .= index_element_tree
 
 @inline set_vec_compiled_element_gradients!(
   part_data::PartitionedData,
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape},
-) =
-  part_data.vec_compiled_element_gradients = vec_compiled_element_gradients
+) = part_data.vec_compiled_element_gradients = vec_compiled_element_gradients
 
-@inline set_x!(part_data::PartitionedData, x::Vector{Y}) where {Y <: Number} =
-  part_data.x .= x
+@inline set_x!(part_data::PartitionedData, x::Vector{Y}) where {Y <: Number} = part_data.x .= x
 
-@inline set_v!(part_data::PartitionedData, v::Vector{Y}) where {Y <: Number} =
-  part_data.v .= v
+@inline set_v!(part_data::PartitionedData, v::Vector{Y}) where {Y <: Number} = part_data.v .= v
 
-@inline set_s!(part_data::PartitionedData, s::Vector{Y}) where {Y <: Number} =
-  part_data.s .= s
+@inline set_s!(part_data::PartitionedData, s::Vector{Y}) where {Y <: Number} = part_data.s .= s
 
 @inline set_pg!(
   part_data::PartitionedData,
@@ -185,8 +174,7 @@ end
   epv_res::PartitionedStructures.Elemental_pv{Y},
   part_data::PartitionedData,
   epv::PartitionedStructures.Elemental_pv{Y},
-) where {Y <: Number} =
-  PartitionedStructures.mul_epm_epv!(epv_res, get_pB(part_data), epv)
+) where {Y <: Number} = PartitionedStructures.mul_epm_epv!(epv_res, get_pB(part_data), epv)
 
 @inline product_part_data_x!(
   epv_res::PartitionedStructures.Elemental_pv{Y},
@@ -200,10 +188,7 @@ end
 
 Return the partially separable objective value stored in `part_data`, computed as a sum of element functions.
 """
-function evaluate_obj_part_data(
-  part_data::PartitionedData,
-  x::Vector{Y},
-) where {Y <: Number}
+function evaluate_obj_part_data(part_data::PartitionedData, x::Vector{Y}) where {Y <: Number}
   set_x!(part_data, x)
   evaluate_obj_part_data!(part_data)
   return get_fx(part_data)

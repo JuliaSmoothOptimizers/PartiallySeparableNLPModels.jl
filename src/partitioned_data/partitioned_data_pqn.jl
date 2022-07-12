@@ -62,7 +62,7 @@ mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
   # g is build directly from pg
   # the result of pB*v will be store and build from pv
   # name is the name of the partitioned quasi-Newton applied on pB
-  name::Symbol 
+  name::Symbol
 end
 
 """
@@ -154,8 +154,9 @@ function build_PartitionedData_TR_PQN(
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
 
   # Get the element functions
-  vec_element_function =
-    ExpressionTreeForge.extract_element_functions(expr_tree)::Vector{ExpressionTreeForge.Type_expr_tree}
+  vec_element_function = ExpressionTreeForge.extract_element_functions(
+    expr_tree,
+  )::Vector{ExpressionTreeForge.Type_expr_tree}
   N = length(vec_element_function)
 
   # Retrieve elemental variables
@@ -165,14 +166,14 @@ function build_PartitionedData_TR_PQN(
   )::Vector{Vector{Int}}
 
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
-  sort!.(element_variables) 
+  sort!.(element_variables)
 
   # Change the indices of the element-function expression trees.
   map(
     ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
     vec_element_function,
     element_variables,
-  ) 
+  )
 
   # Filter the element expression tree to keep only the distinct expression trees
   (element_expr_tree, index_element_tree) =
@@ -181,7 +182,7 @@ function build_PartitionedData_TR_PQN(
 
   # Create a table giving for each distinct element expression tree, every element function using it
   element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M)
-  
+
   # Create complete trees given the remaining expression trees
   vec_elt_complete_expr_tree = ExpressionTreeForge.complete_tree.(element_expr_tree)
   # Cast the constant of the complete trees
