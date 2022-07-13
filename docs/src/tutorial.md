@@ -133,7 +133,6 @@ Bv = hprod(pqn_adnlp, x, v)
 
 An in-place variant helps define a `LinearOperator` (see [LinearOperators](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl)) from a `PartiallySeparableNLPModel`:
 ```@example PSNLP
-T = eltype(x)
 B = hess_op(pqn_adnlp, x)
 B*v
 ```
