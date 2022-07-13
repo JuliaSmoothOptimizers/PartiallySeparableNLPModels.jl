@@ -9,7 +9,8 @@ as the sum of element functions $f_i$.
 
 PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and defines the suitable partitioned structures, required by the partitioned derivatives, using [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl).
 
-As a user, you need only define your `ADNLPModel`:
+As a user, you need only define an `NLPModel` with an objective function implemented in pure Julia.
+For instance, one may use an `ADNLPModel`:
 ```@example PSNLP
 using PartiallySeparableNLPModels, ADNLPModels
 
