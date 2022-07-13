@@ -39,12 +39,12 @@ fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function
 ```@example PSNLP
 gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient
 ```
-`fx` and `gx` compute and accumulate the element functions $f_i$ and the element gradients $\nabla f_i$, respectively.
-In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward. 
 
 ```@example PSNLP
 gx == NLPModels.grad(model, x)
 ```
+`fx` and `gx` compute and accumulate the element functions $f_i$ and the element gradients $\nabla f_i$, respectively.
+In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward. 
 
 The same procedure can be applied to `MathOptNLPModel`s:
 ```@example PSNLP
@@ -133,9 +133,8 @@ Bv = hprod(pqn_adnlp, x, v)
 
 An in-place variant helps define a `LinearOperator` (see [LinearOperators](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl)) from a `PartiallySeparableNLPModel`:
 ```@example PSNLP
-using LinearOperators
 T = eltype(x)
-B = LinearOperator(T, n, n, true, true, ((Hv, v) -> hprod!(pqn_adnlp, x, v, Hv)))
+B = hess_op(pqn_adnlp, x)
 B*v
 ```
 which can be paired with iterative solvers (see [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl)).
