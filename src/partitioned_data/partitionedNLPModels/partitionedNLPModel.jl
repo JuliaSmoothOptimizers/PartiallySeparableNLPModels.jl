@@ -6,7 +6,8 @@ using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
-export PQNNLPModel, update_nlp
+export PQNNLPModel
+export update_nlp, hess_aprox, hessian_approx_prod, hessian_approx_prod!
 
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end

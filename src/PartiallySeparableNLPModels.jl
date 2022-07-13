@@ -35,5 +35,6 @@ export set_n!,
 export set_x!,
   set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_ps!, set_pB!, set_fx!
 export update_nlp, update_nlp!, update_PQN, update_PQN!
+export hess_approx
 
 end
