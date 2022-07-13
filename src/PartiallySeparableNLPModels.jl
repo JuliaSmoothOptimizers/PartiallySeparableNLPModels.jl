@@ -9,7 +9,7 @@ using .Mod_ab_partitioned_data, .Mod_PQN
 using .Mod_partitionedNLPModel
 
 export PartitionedData, PartitionedData_TR_PQN, build_PartitionedData_TR_PQN
-export PartitionedNLPModel, PQNNLPModel
+export PartiallySeparableNLPModel
 
 export element_function
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
