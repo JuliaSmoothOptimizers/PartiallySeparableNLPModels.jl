@@ -24,7 +24,7 @@ example_model(n :: Int) = ADNLPModel(example, start_example(n), name="Example " 
 n = 4 # size of the problem
 model = example_model(n)
 ```
-and call `PartiallySeparableNLPModel` to define a partitioned quasi-Newton `NLPModel`:
+and call `PartiallySeparableNLPModel` to define a partitioned `NLPModel`:
 ```@example PSNLP
 pqn_adnlp = PartiallySeparableNLPModel(model)
 ```
@@ -32,7 +32,7 @@ pqn_adnlp = PartiallySeparableNLPModel(model)
 Then, you can apply the usual methods `obj` and `grad`, exploiting the partial separability, from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
 ```@example PSNLP
 using NLPModels
-x = rand(n)
+x = ones(n)
 fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function
 ```
 
@@ -75,7 +75,7 @@ By defining a `PartiallySeparableNLPModel` you allocate a partitioned quasi-Newt
 
 The Hessian approximation of each element function $\hat{f}_i (y) = (y_1 + y_2)^2$ is initially set to an identity matrix. 
 The contribution of every element Hessian approximation is accumulated as
-$$
+```math
 \left [
 \begin{array}{ccc}
   \left ( \begin{array}{cc}
@@ -108,8 +108,8 @@ $$
   \end{array} \right )\\
 \end{array}
 \right ]
-$$
-Which can be visualized with:
+```
+The accumulated matrix can be visualized with:
 ```@example PSNLP
 Matrix(hess_approx(pqn_jumpnlp))
 ```

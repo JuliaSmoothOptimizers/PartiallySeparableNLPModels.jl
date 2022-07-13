@@ -19,7 +19,6 @@
 
 ## Philosophy
 The purpose of PartiallySeparableNLPModels.jl is to define automatically partially-separable [NLPModels](https://github.com/JuliaSmoothOptimizers/NLPModels.jl) and facilitate the implementation of partitioned quasi-Newton methods.
-For now, it implements a `PQNNLPModel` gathering the mandatory structures for implementing partitioned quasi-Newton trust-region methods.
 
 ## Compatibility
 Julia ≥ 1.6.
