@@ -43,15 +43,17 @@ end
 
 Mod_ab_partitioned_data.get_pB(nlp::PQNNLPModel) = get_pB(nlp.part_data)
 
+hess_approx(nlp::PQNNLPModel) = get_pB(nlp)
+
 Mod_ab_partitioned_data.get_py(nlp::PQNNLPModel) = get_py(nlp.part_data)
 
-Mod_ab_partitioned_data.product_part_data_x!(
+hessian_approx_prod!(
   res::Vector{Y},
   nlp::PQNNLPModel,
   x::Vector{Y}) where {Y <: Number} =
   product_part_data_x!(res, nlp.part_data, x) 
 
-Mod_ab_partitioned_data.product_part_data_x(
+hessian_approx_prod(
   nlp::PQNNLPModel,
   x::Vector{Y}) where {Y <: Number} =
   product_part_data_x(nlp.part_data, x)
