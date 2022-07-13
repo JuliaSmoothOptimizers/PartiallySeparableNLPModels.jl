@@ -40,7 +40,7 @@ fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function
 gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient
 ```
 `fx` and `gx` compute and accumulate the element functions $\hat{f}_i$ and the element gradients $\nabla \hat{f}_i$, respectively.
-In addition, a `PartiallySeparableNLPModel` store the value of each element gradient to perform partitioned quasi-Newton afterward. 
+In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward. 
 
 ```@example PSNLP
 gx == NLPModels.grad(model, x)
