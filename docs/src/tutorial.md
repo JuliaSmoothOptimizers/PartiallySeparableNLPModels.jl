@@ -5,7 +5,7 @@ PartiallySeparableNLPModels.jl defines a subtype of `AbstractNLPModel` to exploi
 ```math
  f(x) = \sum_{i=1}^N f_i (U_i x) , \; f_i : \R^{n_i} \to \R, \; U_i \in \R^{n_i \times n},\; n_i \ll n,
 ```
-as the sum of element function $f_i$.
+as the sum of element functions $f_i$.
 
 PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and defines the suitable partitioned structures, required by the partitioned derivatives, using [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl).
 
