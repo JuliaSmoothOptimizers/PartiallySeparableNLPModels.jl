@@ -6,11 +6,10 @@ using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
-export PQNNLPModel
+export PartiallySeparableNLPModel
 export update_nlp, hess_aprox
 
-abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
-abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end
+abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S} end
 
 """ Accumulate the supported NLPModels. """
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
@@ -47,14 +46,14 @@ function get_expr_tree(
   return ex, n, x0
 end
 
-include("pqnNLPModel.jl")
+include("PartiallySeparableNLPModel.jl")
 
 """
     f = obj(nlp, x)
 
 Evaluate `f(x)`, the objective function of `nlp` at `x`.
 """
-function NLPModels.obj(nlp::P, x::AbstractVector{T}) where {P <: AbstractPQNNLPModel{T, S}} where {T, S}
+function NLPModels.obj(nlp::P, x::AbstractVector{T}) where {P <: AbstractPartiallySeparableNLPModel{T, S}} where {T, S}
   increment!(nlp, :neval_obj)
   evaluate_obj_part_data(nlp.part_data, x)
 end
@@ -68,7 +67,7 @@ function NLPModels.grad!(
   nlp::P,
   x::AbstractVector{T},
   g::AbstractVector{T},
-) where {P <: AbstractPQNNLPModel{T, S}} where {T, S}
+) where {P <: AbstractPartiallySeparableNLPModel{T, S}} where {T, S}
   increment!(nlp, :neval_grad)
   evaluate_grad_part_data!(g, nlp.part_data, x)
   return g

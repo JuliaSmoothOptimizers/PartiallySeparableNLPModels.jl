@@ -1,11 +1,11 @@
 
-@testset "test PQNNLPModel (PBFGS, PLBFGS) MathOptNLPModel" begin
+@testset "test PartiallySeparableNLPModel (PBFGS, PLBFGS) MathOptNLPModel" begin
   n = 10
   nlp = MathOptNLPModel(OptimizationProblems.arwhead(n), name = "arwhead " * string(n))
   x = ones(n)
 
-  pbfgsnlp = PQNNLPModel(nlp; name = :pbfgs)
-  plbfgsnlp = PQNNLPModel(nlp; name = :plbfgs)
+  pbfgsnlp = PartiallySeparableNLPModel(nlp; name = :pbfgs)
+  plbfgsnlp = PartiallySeparableNLPModel(nlp; name = :plbfgs)
 
   @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(pbfgsnlp, x)
   @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(plbfgsnlp, x)

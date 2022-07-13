@@ -10,7 +10,7 @@ export distinct_element_expr_tree, compiled_grad_element_function
 """
     Element_function
 
-Gather the informations indentifying an element function in a `PQNNLPModel`, and its particular properties.
+Gather the informations indentifying an element function in a `PartiallySeparableNLPModel`, and its particular properties.
 `Element_function` has fields:
 
 * `i` describing the index of the element function;

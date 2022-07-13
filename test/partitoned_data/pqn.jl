@@ -69,7 +69,7 @@ end
   @test res ≈ Bk1 * x
 end
 
-@testset "PQNNLPModels" begin
+@testset "PartiallySeparableNLPModels" begin
   n = 40
 
   (m, evaluator, obj, x0) = create_Rosenbrock_JuMP_Model(n)

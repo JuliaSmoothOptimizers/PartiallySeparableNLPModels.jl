@@ -1,2 +1,2 @@
 include("pqn.jl")
-include("partitionedNLPModel.jl")
+include("PartiallySeparableNLPModel.jl")
