@@ -125,7 +125,7 @@ Then, you can update the partitioned quasi-Newton approximation with the pair `x
 s = rand(n)
 update_nlp(pqn_adnlp, x, s)
 ```
-and you can perform the partitioned matrix-vector product with:
+and you can perform a partitioned-matrix-vector product with:
 ```@example PSNLP
 v = ones(n)
 Bv = hprod(pqn_adnlp, x, v)
