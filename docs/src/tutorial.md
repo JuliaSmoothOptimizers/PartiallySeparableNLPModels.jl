@@ -26,7 +26,7 @@ model = example_model(n)
 ```
 and call `PartiallySeparableNLPModel` to define a partitioned quasi-Newton `NLPModel`:
 ```@example PSNLP
-pqn_adnlp = PartiallySeparableNLPModel(adnlp_example)
+pqn_adnlp = PartiallySeparableNLPModel(model)
 ```
 
 Then, you can apply the usual methods `obj` and `grad`, exploiting the partial separability, from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
@@ -78,10 +78,10 @@ The contribution of every element Hessian approximation is accumulated as
 $$
 \left [
 \begin{array}{ccc}
-  \left [ \begin{array}{cc}
+  \left ( \begin{array}{cc}
     1 & \\
     & 1 \\ 
-  \end{array} \right ] & & \\
+  \end{array} \right ) & & \\
   & 0 & \\
   & & 0 \\
 \end{array}
@@ -90,10 +90,10 @@ $$
 \left [
 \begin{array}{ccc}
   0 & & \\
-  & \left [ \begin{array}{cc}
+  & \left ( \begin{array}{cc}
     1 & \\
     & 1 \\ 
-  \end{array} \right ] & \\
+  \end{array} \right ) & \\
   & & 0 \\
 \end{array}
 \right ]
@@ -102,16 +102,16 @@ $$
 \begin{array}{ccc}
   0 & & \\
   & 0 & \\
-  & & \left [ \begin{array}{cc}
+  & & \left ( \begin{array}{cc}
     1 & \\
     & 1 \\ 
-  \end{array} \right ]\\
+  \end{array} \right )\\
 \end{array}
 \right ]
 $$
 Which can be visualized with:
 ```@example PSNLP
-B = Matrix(hess_approx(pqn_jumpnlp))
+Matrix(hess_approx(pqn_jumpnlp))
 ```
 
 You can specify the partitioned quasi-Newton update with the optional argument `name`:
@@ -123,7 +123,7 @@ The possible variants are: `:pbfgs, :psr1, :pse, :plbfgs, :plsr1` and `:plse`, s
 Then, you can update the partitioned quasi-Newton approximation with the pair `x,s`:
 ```@example PSNLP
 s = rand(n)
-update_B = update_nlp(pqn_adnlp, x, s)
+update_nlp(pqn_adnlp, x, s)
 ```
 and you can perform the partitioned matrix-vector product with:
 ```@example PSNLP
