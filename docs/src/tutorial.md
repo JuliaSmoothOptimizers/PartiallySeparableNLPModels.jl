@@ -44,7 +44,7 @@ gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient
 gx == NLPModels.grad(model, x)
 ```
 `fx` and `gx` compute and accumulate the element functions $f_i$ and the element gradients $\nabla f_i$, respectively.
-In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward. 
+In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward (see below).
 
 The same procedure can be applied to `MathOptNLPModel`s:
 ```@example PSNLP
