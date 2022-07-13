@@ -43,6 +43,11 @@ end
 
 Mod_ab_partitioned_data.get_pB(nlp::PartiallySeparableNLPModel) = get_pB(nlp.part_data)
 
+"""
+    B = hess_approx(nlp::PartiallySeparableNLPModel)
+
+Return the Hessian approximation of `nlp`.
+"""
 hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
 
 Mod_ab_partitioned_data.get_py(nlp::PartiallySeparableNLPModel) = get_py(nlp.part_data)

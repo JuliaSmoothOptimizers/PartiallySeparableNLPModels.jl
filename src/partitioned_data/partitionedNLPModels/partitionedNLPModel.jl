@@ -7,7 +7,7 @@ using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
 export PartiallySeparableNLPModel
-export update_nlp, hess_aprox
+export update_nlp, hess_approx
 
 abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S} end
 
