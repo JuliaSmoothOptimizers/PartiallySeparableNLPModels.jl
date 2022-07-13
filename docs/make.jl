@@ -23,7 +23,7 @@ makedocs(
 )
 
 deploydocs(
-  repo = "github.com/paraynaud/PartiallySeparableNLPModels.jl.git",
+  repo = "github.com/JuliaSmoothOptimizers/PartiallySeparableNLPModels.jl.git",
   push_preview = true,
   devbranch = "master",
 )

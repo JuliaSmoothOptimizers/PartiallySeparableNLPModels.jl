@@ -7,7 +7,7 @@ PartiallySeparableNLPModels.jl defines a subtype of `AbstractNLPModel` to exploi
 ```
 as the sum of element functions $f_i$.
 
-PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and defines the suitable partitioned structures, required by the partitioned derivatives, using [PartitionedStructures.jl](https://github.com/paraynaud/PartitionedStructures.jl).
+PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and defines the suitable partitioned structures, required by the partitioned derivatives, using [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl).
 
 As a user, you need only define an `NLPModel` with an objective function implemented in pure Julia.
 For instance, one may use an `ADNLPModel`:
