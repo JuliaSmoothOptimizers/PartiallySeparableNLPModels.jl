@@ -107,7 +107,7 @@ The contribution of every element Hessian approximation is accumulated as
     & 1 \\ 
   \end{array} \right )\\
 \end{array}
-\right ]
+\right ].
 ```
 The accumulated matrix can be visualized with:
 ```@example PSNLP
