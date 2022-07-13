@@ -4,22 +4,22 @@ using ReverseDiff, LinearAlgebra
 using ExpressionTreeForge, PartitionedStructures
 using ExpressionTreeForge.M_implementation_convexity_type
 
-export Element_function
+export ElementFunction
 export distinct_element_expr_tree, compiled_grad_element_function
 
 """
-    Element_function
+    ElementFunction
 
-Gather the informations indentifying an element function in a `PartiallySeparableNLPModel`, and its particular properties.
-`Element_function` has fields:
+A type that gathers the information indentifying an element function in a `PartiallySeparableNLPModel`, and its properties.
+`ElementFunction` has fields:
 
-* `i` describing the index of the element function;
-* `index_element_tree` the index occupied in the element-function vector after the deletion of redundant element functions;
-* `variable_indices` informing the elemental variable of `Element_function`
-* `type` describing `Element_function` as `constant`, `linear`, `quadratic`, `cubic` or `more` non linear;
-* `convexity_status` describing `Element_function` as `constant`, `linear`, `convex`, `concave` or `unknown`.
+* `i`: the index of the element function;
+* `index_element_tree`: the index occupied in the element-function vector after the deletion of redundant element functions;
+* `variable_indices`: list of elemental variables of `ElementFunction`;
+* `type`: `constant`, `linear`, `quadratic`, `cubic` or `general`;
+* `convexity_status`: `constant`, `linear`, `convex`, `concave` or `unknown`.
 """
-mutable struct Element_function
+mutable struct ElementFunction
   i::Int # the index of the function 1 ≤ i ≤ N
   index_element_tree::Int # 1 ≤ index_element_tree ≤ M
   variable_indices::Vector{Int} # ≈ Uᵢᴱ
