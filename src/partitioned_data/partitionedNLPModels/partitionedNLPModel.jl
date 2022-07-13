@@ -7,7 +7,7 @@ using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
 export PQNNLPModel
-export update_nlp, hess_aprox, hessian_approx_prod, hessian_approx_prod!
+export update_nlp, hess_aprox
 
 abstract type PartitionedNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: PartitionedNLPModel{T, S} end

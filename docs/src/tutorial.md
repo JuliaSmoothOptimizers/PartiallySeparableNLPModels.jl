@@ -92,14 +92,14 @@ update_B = update_nlp(pqn_adnlp, x, s)
 and you can perform the partitioned matrix-vector product with:
 ```@example PSNLP
 v = ones(n)
-Bv = hessian_approx_prod(pqn_adnlp, v)
+Bv = hprod(pqn_adnlp, x, v)
 ```
 
 An in-place variant helps define a `LinearOperator` (see [LinearOperators](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl)) from a `PQNNLPModel`:
 ```@example PSNLP
 using LinearOperators
 T = eltype(x)
-B = LinearOperator(T, n, n, true, true, ((res, v) -> hessian_approx_prod!(res, pqn_adnlp, v)))
+B = LinearOperator(T, n, n, true, true, ((Hv, v) -> hprod!(pqn_adnlp, x, v, Hv)))
 B*v
 ```
 which can be paired with iterative solvers (see [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl)).
