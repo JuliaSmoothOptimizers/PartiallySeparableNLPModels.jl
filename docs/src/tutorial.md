@@ -71,7 +71,7 @@ gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient
 ```
 
 ## A partitioned quasi-Newton `NLPModel`
-By defining a `PartiallySeparableNLPModel` you allocate a partitioned quasi-Newton update, which is implemented in `PartitionedStructures.jl`.
+When defining a `PartiallySeparableNLPModel`, you allocate storage for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl`.
 
 The Hessian approximation of each element function $\hat{f}_i (y) = (y_1 + y_2)^2$ is initially set to an identity matrix. 
 The contribution of every element Hessian approximation is accumulated as
