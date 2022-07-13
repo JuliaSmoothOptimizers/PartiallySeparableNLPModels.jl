@@ -17,14 +17,14 @@ mutable struct PartiallySeparableNLPModel{
   Meta <: AbstractNLPModelMeta{T, S},
 } <: AbstractPartiallySeparableNLPModel{T, S}
   meta::Meta
-  part_data::PartitionedData_TR_PQN{G, T}
+  part_data::PartitionedDataTRPQN{G, T}
   nlp::M
   counters::NLPModels.Counters
 end
 
 function PartiallySeparableNLPModel(nlp::SupportedNLPModel; kwargs...)
   ex, n, x0 = get_expr_tree(nlp)
-  part_data_plbfgs = build_PartitionedData_TR_PQN(ex, n; x0 = x0, kwargs...)
+  part_data_plbfgs = build_PartitionedDataTRPQN(ex, n; x0 = x0, kwargs...)
   meta = nlp.meta
   counters = NLPModels.Counters()
   PartiallySeparableNLPModel(meta, part_data_plbfgs, nlp, counters)

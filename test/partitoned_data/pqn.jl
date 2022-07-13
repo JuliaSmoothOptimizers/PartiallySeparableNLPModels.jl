@@ -34,7 +34,7 @@ end
   y = rand(n)
   (m, evaluator, obj, x0) = create_Rosenbrock_JuMP_Model(n)
 
-  ps_data = build_PartitionedData_TR_PQN(obj, n; x0 = x)
+  ps_data = build_PartitionedDataTRPQN(obj, n; x0 = x)
 
   objx = evaluate_obj_part_data(ps_data, x)
   obj_MOI_x = MathOptInterface.eval_objective(evaluator, x)
@@ -76,13 +76,13 @@ end
   x = (x -> 2 * x).(ones(n))
   s = rand(n)
 
-  ps_data_plbfgs = build_PartitionedData_TR_PQN(obj, n; x0 = x, name = :plbfgs)
-  # ps_data_plbfgs_damped = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:plbfgs, damped=true)
-  # ps_data_plsr1 = build_PartitionedData_TR_PQN(obj, n;x0=x, name=:plsr1)
-  ps_data_plse = build_PartitionedData_TR_PQN(obj, n; x0 = x, name = :plse)
-  ps_data_pbfgs = build_PartitionedData_TR_PQN(obj, n; x0 = x, name = :pbfgs)
-  ps_data_psr1 = build_PartitionedData_TR_PQN(obj, n; x0 = x, name = :psr1)
-  ps_data_pse = build_PartitionedData_TR_PQN(obj, n; x0 = x, name = :pse)
+  ps_data_plbfgs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :plbfgs)
+  # ps_data_plbfgs_damped = build_PartitionedDataTRPQN(obj, n;x0=x, name=:plbfgs, damped=true)
+  # ps_data_plsr1 = build_PartitionedDataTRPQN(obj, n;x0=x, name=:plsr1)
+  ps_data_plse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :plse)
+  ps_data_pbfgs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pbfgs)
+  ps_data_psr1 = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :psr1)
+  ps_data_pse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pse)
 
   update_nlp!(ps_data_plbfgs, x, s)
   # update_nlp!(ps_data_plbfgs_damped, x, s)

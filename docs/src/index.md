@@ -19,4 +19,4 @@ See the [tutorial](https://paraynaud.github.io/PartiallySeparableNLPModels.jl/de
 The module uses [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) to allocate partitioned quasi-Newton approximations.
 
 ## Application
-[PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) implements partitioned quasi-Newton trust-region methods from `PartitionedData_TR_PQN` and the `PartiallySeparableNLPModels.jl` methods.
+[PartiallySeparableSolvers.jl](https://github.com/paraynaud/PartiallySeparableSolvers.jl) implements partitioned quasi-Newton trust-region methods from `PartitionedDataTRPQN` and the `PartiallySeparableNLPModels.jl` methods.

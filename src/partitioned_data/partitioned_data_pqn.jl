@@ -6,14 +6,14 @@ using ..ExpressionTreeForge.M_implementation_convexity_type
 
 import ..Mod_ab_partitioned_data.update_nlp!
 
-export PartitionedData_TR_PQN
-export update_PQN, update_PQN!, build_PartitionedData_TR_PQN
+export PartitionedDataTRPQN
+export update_PQN, update_PQN!, build_PartitionedDataTRPQN
 
 """
-    PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <: PartitionedData
+    PartitionedDataTRPQN{G, T <: Number, P <: Part_mat{T}} <: PartitionedData
 
 Gather the structures required to run a partitioned quasi-Newton trust-region method.
-`PartitionedData_TR_PQN` has fields:
+`PartitionedDataTRPQN` has fields:
 
 * `n`: the size of the problem;
 * `N`: the number of element functions;
@@ -34,7 +34,7 @@ Gather the structures required to run a partitioned quasi-Newton trust-region me
 * `fx`: the current value of the objective function;
 * `name`: the name of partitioned quasi-Newton update peformed at each iterate.
 """
-mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
+mutable struct PartitionedDataTRPQN{G, T <: Number, P <: Part_mat{T}} <:
                Mod_ab_partitioned_data.PartitionedData
   n::Int
   N::Int
@@ -66,33 +66,33 @@ mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
 end
 
 """
-    update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s::Vector{T})
-    update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T})
+    update_nlp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, s::Vector{T})
+    update_nlp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, x::Vector{T}, s::Vector{T})
 
 Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
 When `x` is omitted, `update_PQN!` consider that `pd_pqn` has the current point in pd_pqn.x`.
 Moreover, it assumes that the partitioned gradient at `x` is already computed in `pd_pqn.pg`.
 """
 update_nlp!(
-  pd_pqn::PartitionedData_TR_PQN{G, T, P},
+  pd_pqn::PartitionedDataTRPQN{G, T, P},
   s::Vector{T};
   kwargs...,
 ) where {G, T <: Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, s; kwargs...)
 
 update_nlp!(
-  pd_pqn::PartitionedData_TR_PQN{G, T, P},
+  pd_pqn::PartitionedDataTRPQN{G, T, P},
   x::Vector{T},
   s::Vector{T};
   kwargs...,
 ) where {G, T <: Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, x, s; kwargs...)
 
 """
-    B = update_PQN(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T};
+    B = update_PQN(pd_pqn::PartitionedDataTRPQN{G, T, P}, x::Vector{T}, s::Vector{T};
 
 Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
 """
 update_PQN(
-  pd_pqn::PartitionedData_TR_PQN{G, T, P},
+  pd_pqn::PartitionedDataTRPQN{G, T, P},
   x::Vector{T},
   s::Vector{T};
   kwargs...,
@@ -102,15 +102,15 @@ update_PQN(
 end
 
 """
-    update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s::Vector{T})
-    update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T})
+    update_PQN!(pd_pqn::PartitionedDataTRPQN{G, T, P}, s::Vector{T})
+    update_PQN!(pd_pqn::PartitionedDataTRPQN{G, T, P}, x::Vector{T}, s::Vector{T})
 
 Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
 When `x` is omitted, `update_PQN!` consider that `pd_pqn` has the current point in pd_pqn.x`.
 Moreover, it assumes that the partitioned gradient at `x` is already computed in `pd_pqn.pg`.
 """
 function update_PQN!(
-  pd_pqn::PartitionedData_TR_PQN{G, T, P},
+  pd_pqn::PartitionedDataTRPQN{G, T, P},
   x::Vector{T},
   s::Vector{T};
   kwargs...,
@@ -121,7 +121,7 @@ function update_PQN!(
 end
 
 function update_PQN!(
-  pd_pqn::PartitionedData_TR_PQN{G, T, P},
+  pd_pqn::PartitionedDataTRPQN{G, T, P},
   s::Vector{T};
   reset = 0,
   kwargs...,
@@ -136,14 +136,14 @@ function update_PQN!(
 end
 
 """
-    partitioneddata_tr_pqn = build_PartitionedData_TR_PQN(expr_tree, n)
+    partitioneddata_tr_pqn = build_PartitionedDataTRPQN(expr_tree, n)
 
 Return the structure required to run a partitioned quasi-Newton trust-region method. 
 It finds the partially-separable structure of an expression tree `expr_tree` representing f(x) = ∑fᵢ(xᵢ).
 Then it allocates the partitioned structures required.
 To define properly the sparse matrix of the partitioned matrix we need the size of the problem: `n`.
 """
-function build_PartitionedData_TR_PQN(
+function build_PartitionedDataTRPQN(
   tree::G,
   n::Int;
   x0::Vector{T} = rand(Float64, n),
@@ -241,7 +241,7 @@ function build_PartitionedData_TR_PQN(
   P = typeof(pB)
 
   fx = (T)(-1)
-  pd_pqn = PartitionedData_TR_PQN{ExpressionTreeForge.Complete_expr_tree, T, P}(
+  pd_pqn = PartitionedDataTRPQN{ExpressionTreeForge.Complete_expr_tree, T, P}(
     n,
     N,
     vec_elt_fun,

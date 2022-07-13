@@ -8,7 +8,7 @@ include("partitioned_data/_include.jl")
 using .Mod_ab_partitioned_data, .Mod_PQN
 using .Mod_partitionedNLPModel
 
-export PartitionedData, PartitionedData_TR_PQN, build_PartitionedData_TR_PQN
+export PartitionedData, PartitionedDataTRPQN, build_PartitionedDataTRPQN
 export PartiallySeparableNLPModel
 
 export element_function
