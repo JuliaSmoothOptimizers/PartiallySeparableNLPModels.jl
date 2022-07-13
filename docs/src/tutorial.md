@@ -29,7 +29,7 @@ and call `PartiallySeparableNLPModel` to define a partitioned `NLPModel`:
 pqn_adnlp = PartiallySeparableNLPModel(model)
 ```
 
-Then, you can apply the usual methods `obj` and `grad`, exploiting the partial separability, from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
+Then, you can apply the usual methods `obj` and `grad` from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
 ```@example PSNLP
 using NLPModels
 x = ones(n)
