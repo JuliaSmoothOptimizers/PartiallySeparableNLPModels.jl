@@ -8,12 +8,12 @@ Julia ≥ 1.6.
 
 ## How to install
 ```
-pkg> add https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl, https://github.com/paraynaud/PartiallySeparableNLPModels.jl
+pkg> add https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl, https://github.com/JuliaSmoothOptimizers/PartiallySeparableNLPModels.jl
 pkg> test PartiallySeparableNLPModels
 ```
 
 ## How to use 
-See the [tutorial](https://paraynaud.github.io/PartiallySeparableNLPModels.jl/dev/tutorial/).
+See the [tutorial](https://JuliaSmoothOptimizers.github.io/PartiallySeparableNLPModels.jl/dev/tutorial/).
 
 ## Dependencies
 The module uses [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) to allocate partitioned quasi-Newton approximations.
