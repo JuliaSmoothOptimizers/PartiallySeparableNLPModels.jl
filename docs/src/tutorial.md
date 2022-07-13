@@ -39,7 +39,7 @@ fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function
 ```@example PSNLP
 gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient
 ```
-`fx` and `gx` compute and accumulate the element functions $\hat{f}_i$ and the element gradients $\nabla \hat{f}_i$, respectively.
+`fx` and `gx` compute and accumulate the element functions $f_i$ and the element gradients $\nabla f_i$, respectively.
 In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward. 
 
 ```@example PSNLP
@@ -73,7 +73,7 @@ gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient
 ## A partitioned quasi-Newton `NLPModel`
 When defining a `PartiallySeparableNLPModel`, you allocate storage for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl`.
 
-The Hessian approximation of each element function $\hat{f}_i (y) = (y_1 + y_2)^2$ is initially set to an identity matrix. 
+The Hessian approximation of each element function $f_i (y) = (y_1 + y_2)^2$ is initially set to an identity matrix. 
 The contribution of every element Hessian approximation is accumulated as
 ```math
 \left [
