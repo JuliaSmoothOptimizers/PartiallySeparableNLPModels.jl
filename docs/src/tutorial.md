@@ -69,6 +69,7 @@ pqn_jumpnlp = PartiallySeparableNLPModel(jumpnlp_example)
 fx = NLPModels.obj(pqn_jumpnlp, x) # compute the obective function
 gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient
 ```
+In the version v0.2.0 the [`ManualNLPModel`](https://github.com/JuliaSmoothOptimizers/ManualNLPModels.jl)s will be supported.
 
 ## A partitioned quasi-Newton `NLPModel`
 When defining a `PartiallySeparableNLPModel`, you allocate storage for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl`.
