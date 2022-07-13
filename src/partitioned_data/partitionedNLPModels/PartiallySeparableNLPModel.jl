@@ -4,10 +4,10 @@
 A partitioned quasi-Newton `NLPModel`.
 A `PartiallySeparableNLPModel` has field:
 
-* `meta` counting numerous information about the `PartiallySeparableNLPModel`;
-* `part_data` allocate the partitioned structures required by a partitioned quasi-Newton trust-region method;
-* `nlp` the original `NLPModel`;
-* `counters` counting the how many standards methods are called.
+* `meta`: gather information about the `PartiallySeparableNLPModel`;
+* `part_data`: allocate the partitioned structures required by a partitioned quasi-Newton trust-region method;
+* `nlp`: the original `NLPModel`;
+* `counters`: count how many standards methods of `NLPModels` are called.
 """
 mutable struct PartiallySeparableNLPModel{
   T,
@@ -52,26 +52,32 @@ hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
 
 Mod_ab_partitioned_data.get_py(nlp::PartiallySeparableNLPModel) = get_py(nlp.part_data)
 
-NLPModels.hprod!(
+function NLPModels.hprod!(
   nlp::PartiallySeparableNLPModel,  
   x::Vector{Y},
   v::Vector{Y},
   Hv::Vector{Y},
-  ) where {Y <: Number} =
+  ) where {Y <: Number}
+  increment!(nlp, :neval_hprod)
   product_part_data_x!(Hv, nlp.part_data, v) 
+end
 
-NLPModels.hprod!(
+function NLPModels.hprod!(
   nlp::PartiallySeparableNLPModel,  
   x::Vector{Y},
   y::Vector{Y},
   v::Vector{Y},
   Hv::Vector{Y};
   kwargs...
-  ) where {Y <: Number} =
+  ) where {Y <: Number}
+  increment!(nlp, :neval_hprod)
   product_part_data_x!(Hv, nlp.part_data, v) 
+end
 
-NLPModels.hprod(
+function NLPModels.hprod(
   nlp::PartiallySeparableNLPModel,
   x::Vector{Y},
-  v::Vector{Y}) where {Y <: Number} =
+  v::Vector{Y}) where {Y <: Number}
+  increment!(nlp, :neval_hprod)
   product_part_data_x(nlp.part_data, v)
+end

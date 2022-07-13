@@ -15,30 +15,30 @@ export update_PQN, update_PQN!, build_PartitionedData_TR_PQN
 Gather the structures required to run a partitioned quasi-Newton trust-region method.
 `PartitionedData_TR_PQN` has fields:
 
-* `n` the size of the problem;
-* `N` the number of element functions;
-* `vec_elt_fun` a `Element_function` vector, of size `N`;
-* `M` the number of distinct element-function expression trees;
-* `vec_elt_complete_expr_tree` a `Complete_expr_tree` vector, of size `M`;
-* `element_expr_tree_table` a vector of size `M`, the i-th element `element_expr_tree_table[i]::Vector{Int}` informs which element functions have the `vec_elt_complete_expr_tree[i]` expreesion tree;
-* `index_element_tree` a vector of size `N` where each component indicates which `Complete_expr_tree` from `vec_elt_complete_expr_tree` use for the corresponding element;
-* `vec_compiled_element_gradients` the vector gathering the compiled tapes for the element gradient evaluations;
-* `x` the current point;
-* `v` a temporary vector;
-* `s` the current step;
-* `pg` the partitioned gradient;
-* `pv` a temporary partitioned vector;
-* `py` the partitioned gradient difference;
-* `ps` the partitioned step;
-* `pB` the partitioned matrix (main memory cost);
-* `fx` the current value of the objective function;
-* `name` the name of partitioned quasi-Newton update peformed at each iterate.
+* `n`: the size of the problem;
+* `N`: the number of element functions;
+* `vec_elt_fun`: a `ElementFunction` vector, of size `N`;
+* `M`: the number of distinct element-function expression trees;
+* `vec_elt_complete_expr_tree`: a `Complete_expr_tree` vector, of size `M`;
+* `element_expr_tree_table`: a vector of size `M`, the i-th element `element_expr_tree_table[i]::Vector{Int}` informs which element functions use the `vec_elt_complete_expr_tree[i]` expression tree;
+* `index_element_tree`: a vector of size `N` where each component indicates which `Complete_expr_tree` from `vec_elt_complete_expr_tree` is used for the corresponding element;
+* `vec_compiled_element_gradients`: the vector gathering the compiled tapes for every element gradient evaluations;
+* `x`: the current point;
+* `v`: a temporary vector;
+* `s`: the current step;
+* `pg`: the partitioned gradient;
+* `pv`: a temporary partitioned vector;
+* `py`: the partitioned gradient difference;
+* `ps`: the partitioned step;
+* `pB`: the partitioned matrix (main memory cost);
+* `fx`: the current value of the objective function;
+* `name`: the name of partitioned quasi-Newton update peformed at each iterate.
 """
 mutable struct PartitionedData_TR_PQN{G, T <: Number, P <: Part_mat{T}} <:
                Mod_ab_partitioned_data.PartitionedData
   n::Int
   N::Int
-  vec_elt_fun::Vector{Element_function} #length(vec_elt_fun) == N
+  vec_elt_fun::Vector{ElementFunction} #length(vec_elt_fun) == N
   # Vector composed by the expression trees of element functions .
   # Warning: Several element functions may have the same expression tree
   M::Int
@@ -69,8 +69,8 @@ end
     update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s::Vector{T})
     update_nlp!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T})
 
-Perform the partitioned quasi-Newton update given the vectors `x` and `s`.
-When `x` is omitted, `update_PQN!` consider that `pd_pqn` already know the value of `x`.
+Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
+When `x` is omitted, `update_PQN!` consider that `pd_pqn` has the current point in pd_pqn.x`.
 Moreover, it assumes that the partitioned gradient at `x` is already computed in `pd_pqn.pg`.
 """
 update_nlp!(
@@ -87,9 +87,9 @@ update_nlp!(
 ) where {G, T <: Number, P <: Part_mat{T}} = update_PQN!(pd_pqn, x, s; kwargs...)
 
 """
-    B = update_PQN(  pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T};
+    B = update_PQN(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T};
 
-Perform the partitioned quasi-Newton update given the vectors `x` and `s`.
+Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
 """
 update_PQN(
   pd_pqn::PartitionedData_TR_PQN{G, T, P},
@@ -105,8 +105,8 @@ end
     update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, s::Vector{T})
     update_PQN!(pd_pqn::PartitionedData_TR_PQN{G, T, P}, x::Vector{T}, s::Vector{T})
 
-Perform the partitioned quasi-Newton update given the vectors `x` and `s`.
-When `x` is omitted, `update_PQN!` consider that `pd_pqn` already know the value of `x`.
+Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
+When `x` is omitted, `update_PQN!` consider that `pd_pqn` has the current point in pd_pqn.x`.
 Moreover, it assumes that the partitioned gradient at `x` is already computed in `pd_pqn.pg`.
 """
 function update_PQN!(
@@ -132,6 +132,7 @@ function update_PQN!(
   ps = get_ps(pd_pqn)
   pB = get_pB(pd_pqn)
   PartitionedStructures.update!(pB, py, ps; name = pd_pqn.name, kwargs...)
+  return pd_pqn
 end
 
 """
@@ -140,7 +141,7 @@ end
 Return the structure required to run a partitioned quasi-Newton trust-region method. 
 It finds the partially-separable structure of an expression tree `expr_tree` representing f(x) = ∑fᵢ(xᵢ).
 Then it allocates the partitioned structures required.
-Note that to define properly the sparse matrix of the partitioned matrix we need the size of the problem: `n`.
+To define properly the sparse matrix of the partitioned matrix we need the size of the problem: `n`.
 """
 function build_PartitionedData_TR_PQN(
   tree::G,
@@ -206,10 +207,10 @@ function build_PartitionedData_TR_PQN(
   type_element_function =
     map(elt_fun -> ExpressionTreeForge.get_type_tree(elt_fun), vec_type_complete_element_tree)
 
-  vec_elt_fun = Vector{Element_function}(undef, N)
+  vec_elt_fun = Vector{ElementFunction}(undef, N)
   for i = 1:N  # Define the N element functions
     index_distinct_element_tree = index_element_tree[i]
-    elt_fun = Element_function(
+    elt_fun = ElementFunction(
       i,
       index_distinct_element_tree,
       element_variables[i],
