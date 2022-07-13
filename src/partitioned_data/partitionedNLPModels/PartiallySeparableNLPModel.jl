@@ -60,6 +60,16 @@ NLPModels.hprod!(
   ) where {Y <: Number} =
   product_part_data_x!(Hv, nlp.part_data, v) 
 
+NLPModels.hprod!(
+  nlp::PartiallySeparableNLPModel,  
+  x::Vector{Y},
+  y::Vector{Y},
+  v::Vector{Y},
+  Hv::Vector{Y};
+  kwargs...
+  ) where {Y <: Number} =
+  product_part_data_x!(Hv, nlp.part_data, v) 
+
 NLPModels.hprod(
   nlp::PartiallySeparableNLPModel,
   x::Vector{Y},
