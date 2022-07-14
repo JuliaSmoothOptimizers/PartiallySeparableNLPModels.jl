@@ -49,7 +49,7 @@ jobs:
       - name: Installing non-registered dependencies
         run: |
           using Pkg
-          pkg1 = PackageSpec(url = "https://github.com/paraynaud/ExpressionTreeForge.jl.git")
+          pkg1 = PackageSpec(url = "https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl.git")
           pkg_list = [pkg1]
           Pkg.add(pkg_list)
         shell: julia --project=@. --color=yes {0}
