@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · PartiallySeparableNLPModels.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/style.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="PartiallySeparableNLPModels.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">PartiallySeparableNLPModels.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#An-NLPModel-exploiting-partial-separability"><span>An <code>NLPModel</code> exploiting partial separability</span></a></li><li><a class="tocitem" href="#A-partitioned-quasi-Newton-NLPModel"><span>A partitioned quasi-Newton <code>NLPModel</code></span></a></li></ul></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaSmoothOptimizers/PartiallySeparableNLPModels.jl/blob/master/docs/src/tutorial.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="PartiallySeparableNLPModels.jl-Tutorial"><a class="docs-heading-anchor" href="#PartiallySeparableNLPModels.jl-Tutorial">PartiallySeparableNLPModels.jl Tutorial</a><a id="PartiallySeparableNLPModels.jl-Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#PartiallySeparableNLPModels.jl-Tutorial" title="Permalink"></a></h1><h2 id="An-NLPModel-exploiting-partial-separability"><a class="docs-heading-anchor" href="#An-NLPModel-exploiting-partial-separability">An <code>NLPModel</code> exploiting partial separability</a><a id="An-NLPModel-exploiting-partial-separability-1"></a><a class="docs-heading-anchor-permalink" href="#An-NLPModel-exploiting-partial-separability" title="Permalink"></a></h2><p>PartiallySeparableNLPModels.jl defines a subtype of <code>AbstractNLPModel</code> to exploit automatically the partially-separable structure of <span>$f:\R^n \to \R$</span></p><p class="math-container">\[ f(x) = \sum_{i=1}^N f_i (U_i x) , \; f_i : \R^{n_i} \to \R, \; U_i \in \R^{n_i \times n},\; n_i \ll n,\]</p><p>as the sum of element functions <span>$f_i$</span>.</p><p>PartiallySeparableNLPModels.jl relies on <a href="https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl">ExpressionTreeForge.jl</a> to detect the partially-separable structure and defines the suitable partitioned structures, required by the partitioned derivatives, using <a href="https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl">PartitionedStructures.jl</a>.</p><p>As a user, you need only define an <code>NLPModel</code> with an objective function implemented in pure Julia. For instance, one may use an <code>ADNLPModel</code>:</p><pre><code class="language-julia">using PartiallySeparableNLPModels, ADNLPModels
+
+function example(x)
+  n = length(x)
+  n &lt; 2 &amp;&amp; @error(&quot;length of x must be &gt;= 2&quot;)
+  return sum((x[i] + x[i+1])^2 for i=1:n-1)
+end
+start_example(n :: Int) = ones(n)
+example_model(n :: Int) = ADNLPModel(example, start_example(n), name=&quot;Example &quot; * string(n) * &quot; variables&quot;)
+
+n = 4 # size of the problem
+model = example_model(n)</code></pre><pre class="documenter-example-output">ADNLPModel - Model with automatic differentiation backend ADNLPModels.ForwardDiffAD{ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}}(10, 0, ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}((Partials(1.0, 0.0, 0.0, 0.0), Partials(0.0, 1.0, 0.0, 0.0), Partials(0.0, 0.0, 1.0, 0.0), Partials(0.0, 0.0, 0.0, 1.0)), ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}[Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9240157508461e-310,6.9240157508461e-310,6.9240157508461e-310,6.9240157508461e-310,6.9240157508461e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9240157508461e-310,6.92393733495783e-310,6.9240161212459e-310,6.92393699858134e-310,6.92393699858134e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9239369985908e-310,6.9239369985908e-310,6.92393733495783e-310,6.92393699872837e-310,6.9239369987584e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9239369987584e-310,6.9239369987679e-310,6.9239369987679e-310,6.9239369988185e-310,6.92393699887066e-310)]))
+  Problem name: Example 4 variables
+   All variables: ████████████████████ 4      All constraints: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+            free: ████████████████████ 4                 free: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           lower: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                lower: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           upper: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                upper: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+         low/upp: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0              low/upp: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           fixed: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                fixed: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+          infeas: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               infeas: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+            nnzh: (  0.00% sparsity)   10              linear: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+                                                    nonlinear: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+                                                         nnzj: (------% sparsity)         
+
+  Counters:
+             obj: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 grad: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 cons: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+            jcon: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jgrad: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                  jac: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           jprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jtprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 hess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           hprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jhess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jhprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+</pre><p>and call <code>PartiallySeparableNLPModel</code> to define a partitioned <code>NLPModel</code>:</p><pre><code class="language-julia">pqn_adnlp = PartiallySeparableNLPModel(model)</code></pre><pre class="documenter-example-output">PartiallySeparableNLPModel{Float64, Vector{Float64}, ExpressionTreeForge.M_implementation_tree.Type_node{ExpressionTreeForge.M_implementation_complete_expr_tree.Complete_node{T}} where T&lt;:Number, ADNLPModels.ADNLPModel{Float64, Vector{Float64}}, NLPModels.NLPModelMeta{Float64, Vector{Float64}}}
+  Problem name: Example 4 variables
+   All variables: ████████████████████ 4      All constraints: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+            free: ████████████████████ 4                 free: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           lower: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                lower: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           upper: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                upper: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+         low/upp: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0              low/upp: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           fixed: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                fixed: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+          infeas: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               infeas: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+            nnzh: (  0.00% sparsity)   10              linear: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+                                                    nonlinear: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+                                                         nnzj: (------% sparsity)         
+
+  Counters:
+             obj: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 grad: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 cons: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+            jcon: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jgrad: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                  jac: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           jprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jtprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 hess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+           hprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jhess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jhprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
+</pre><p>Then, you can apply the usual methods <code>obj</code> and <code>grad</code> from <a href="https://github.com/JuliaSmoothOptimizers/NLPModels.jl">NLPModels.jl</a>:</p><pre><code class="language-julia">using NLPModels
+x = ones(n)
+fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function</code></pre><pre class="documenter-example-output">12.0</pre><pre><code class="language-julia">gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
+ 4.0
+ 8.0
+ 8.0
+ 4.0</pre><pre><code class="language-julia">gx == NLPModels.grad(model, x)</code></pre><pre class="documenter-example-output">true</pre><p><code>fx</code> and <code>gx</code> compute and accumulate the element functions <span>$f_i$</span> and the element gradients <span>$\nabla f_i$</span>, respectively. In addition, a <code>PartiallySeparableNLPModel</code> stores the value of each element gradient to perform partitioned quasi-Newton updates afterward (see below).</p><p>The same procedure can be applied to <code>MathOptNLPModel</code>s:</p><pre><code class="language-julia">using JuMP, MathOptInterface, NLPModelsJuMP
+
+function jump_example(n::Int)
+  m = Model()
+  @variable(m, x[1:n])
+  @NLobjective(m, Min, sum((x[i] + x[i+1])^2 for i = 1:n-1))
+  evaluator = JuMP.NLPEvaluator(m)
+  MathOptInterface.initialize(evaluator, [:ExprGraph])
+  variables = JuMP.all_variables(m)
+  x0 = ones(n)
+  JuMP.set_start_value.(variables, x0)
+  nlp = MathOptNLPModel(m)
+  return nlp
+end
+
+jumpnlp_example = jump_example(n)
+pqn_jumpnlp = PartiallySeparableNLPModel(jumpnlp_example)
+
+fx = NLPModels.obj(pqn_jumpnlp, x) # compute the obective function
+gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
+ 4.0
+ 8.0
+ 8.0
+ 4.0</pre><p>In the version v0.2.0, <a href="https://github.com/JuliaSmoothOptimizers/ManualNLPModels.jl"><code>ManualNLPModel</code></a>s will be supported.</p><h2 id="A-partitioned-quasi-Newton-NLPModel"><a class="docs-heading-anchor" href="#A-partitioned-quasi-Newton-NLPModel">A partitioned quasi-Newton <code>NLPModel</code></a><a id="A-partitioned-quasi-Newton-NLPModel-1"></a><a class="docs-heading-anchor-permalink" href="#A-partitioned-quasi-Newton-NLPModel" title="Permalink"></a></h2><p>When defining a <code>PartiallySeparableNLPModel</code>, you allocate storage for partitioned quasi-Newton updates, which are implemented in <code>PartitionedStructures.jl</code>.</p><p>The Hessian approximation of each element function <span>$f_i (y) = (y_1 + y_2)^2$</span> is initially set to an identity matrix.  The contribution of every element Hessian approximation is accumulated as</p><p class="math-container">\[\left [
+\begin{array}{ccc}
+  \left ( \begin{array}{cc}
+    1 &amp; \\
+    &amp; 1 \\ 
+  \end{array} \right ) &amp; &amp; \\
+  &amp; 0 &amp; \\
+  &amp; &amp; 0 \\
+\end{array}
+\right ] 
++ 
+\left [
+\begin{array}{ccc}
+  0 &amp; &amp; \\
+  &amp; \left ( \begin{array}{cc}
+    1 &amp; \\
+    &amp; 1 \\ 
+  \end{array} \right ) &amp; \\
+  &amp; &amp; 0 \\
+\end{array}
+\right ]
++ 
+\left [
+\begin{array}{ccc}
+  0 &amp; &amp; \\
+  &amp; 0 &amp; \\
+  &amp; &amp; \left ( \begin{array}{cc}
+    1 &amp; \\
+    &amp; 1 \\ 
+  \end{array} \right )\\
+\end{array}
+\right ].\]</p><p>The accumulated matrix can be visualized with:</p><pre><code class="language-julia">Matrix(hess_approx(pqn_jumpnlp))</code></pre><pre class="documenter-example-output">4×4 Matrix{Float64}:
+ 1.0  0.0  0.0  0.0
+ 0.0  2.0  0.0  0.0
+ 0.0  0.0  2.0  0.0
+ 0.0  0.0  0.0  1.0</pre><p>You can specify the partitioned quasi-Newton update with the optional argument <code>name</code>:</p><pre><code class="language-julia">PartiallySeparableNLPModel(jumpnlp_example; name=:plse) # by default</code></pre><p>The possible variants are: <code>:pbfgs, :psr1, :pse, :plbfgs, :plsr1</code> and <code>:plse</code>, see the <a href="https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/">PartitionedStructures.jl tutorial</a> for more details.</p><p>Then, you can update the partitioned quasi-Newton approximation with the pair <code>x,s</code>:</p><pre><code class="language-julia">s = rand(n)
+update_nlp(pqn_adnlp, x, s)</code></pre><pre class="documenter-example-output">4×4 Matrix{Float64}:
+ 2.77328    0.420391  0.0       0.0
+ 0.420391  10.634     0.578893  0.0
+ 0.0        0.578893  4.82352   1.06728
+ 0.0        0.0       1.06728   5.76919</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
+Bv = hprod(pqn_adnlp, x, v)</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
+  3.1936736664101693
+ 11.633287775634754
+  6.469696276408892
+  6.836468995241777</pre><p>An in-place variant helps define a <code>LinearOperator</code> (see <a href="https://github.com/JuliaSmoothOptimizers/LinearOperators.jl">LinearOperators</a>) from a <code>PartiallySeparableNLPModel</code>:</p><pre><code class="language-julia">B = hess_op(pqn_adnlp, x)
+B*v</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
+  3.1936736664101693
+ 11.633287775634754
+  6.469696276408892
+  6.836468995241777</pre><p>which can be paired with iterative solvers (see <a href="https://github.com/JuliaSmoothOptimizers/Krylov.jl">Krylov.jl</a>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 14 July 2022 00:37">Thursday 14 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
