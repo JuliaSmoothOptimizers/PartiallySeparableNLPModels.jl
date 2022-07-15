@@ -1,7 +1,8 @@
 
 @testset "test PartiallySeparableNLPModel (PBFGS, PLBFGS) MathOptNLPModel" begin
   n = 10
-  nlp = MathOptNLPModel(OptimizationProblems.arwhead(n), name = "arwhead " * string(n))
+  nlp = arwhead(; n)
+
   x = ones(n)
 
   pbfgsnlp = PartiallySeparableNLPModel(nlp; name = :pbfgs)
