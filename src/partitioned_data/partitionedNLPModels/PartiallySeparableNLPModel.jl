@@ -30,12 +30,20 @@ function PartiallySeparableNLPModel(nlp::SupportedNLPModel; kwargs...)
   PartiallySeparableNLPModel(meta, part_data_plbfgs, nlp, counters)
 end
 
-function update_nlp(nlp::PartiallySeparableNLPModel, x::AbstractVector{T}, s::AbstractVector{T}) where T
+function update_nlp(
+  nlp::PartiallySeparableNLPModel,
+  x::AbstractVector{T},
+  s::AbstractVector{T},
+) where {T}
   update_nlp!(nlp, x, s)
   return Matrix(get_pB(nlp.part_data))
-end 
+end
 
-function Mod_PQN.update_nlp!(nlp::PartiallySeparableNLPModel, x::AbstractVector{T}, s::AbstractVector{T}) where T
+function Mod_PQN.update_nlp!(
+  nlp::PartiallySeparableNLPModel,
+  x::AbstractVector{T},
+  s::AbstractVector{T},
+) where {T}
   part_data = nlp.part_data
   update_PQN!(part_data, x, s)
   return part_data
@@ -53,31 +61,32 @@ hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
 Mod_ab_partitioned_data.get_py(nlp::PartiallySeparableNLPModel) = get_py(nlp.part_data)
 
 function NLPModels.hprod!(
-  nlp::PartiallySeparableNLPModel,  
+  nlp::PartiallySeparableNLPModel,
   x::Vector{Y},
   v::Vector{Y},
   Hv::Vector{Y},
-  ) where {Y <: Number}
+) where {Y <: Number}
   increment!(nlp, :neval_hprod)
-  product_part_data_x!(Hv, nlp.part_data, v) 
+  product_part_data_x!(Hv, nlp.part_data, v)
 end
 
 function NLPModels.hprod!(
-  nlp::PartiallySeparableNLPModel,  
+  nlp::PartiallySeparableNLPModel,
   x::Vector{Y},
   y::Vector{Y},
   v::Vector{Y},
   Hv::Vector{Y};
-  kwargs...
-  ) where {Y <: Number}
+  kwargs...,
+) where {Y <: Number}
   increment!(nlp, :neval_hprod)
-  product_part_data_x!(Hv, nlp.part_data, v) 
+  product_part_data_x!(Hv, nlp.part_data, v)
 end
 
 function NLPModels.hprod(
   nlp::PartiallySeparableNLPModel,
   x::Vector{Y},
-  v::Vector{Y}) where {Y <: Number}
+  v::Vector{Y},
+) where {Y <: Number}
   increment!(nlp, :neval_hprod)
   product_part_data_x(nlp.part_data, v)
 end

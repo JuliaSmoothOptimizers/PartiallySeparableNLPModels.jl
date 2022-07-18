@@ -53,7 +53,10 @@ include("PartiallySeparableNLPModel.jl")
 
 Evaluate `f(x)`, the objective function of `nlp` at `x`.
 """
-function NLPModels.obj(nlp::P, x::AbstractVector{T}) where {P <: AbstractPartiallySeparableNLPModel{T, S}} where {T, S}
+function NLPModels.obj(
+  nlp::P,
+  x::AbstractVector{T},
+) where {P <: AbstractPartiallySeparableNLPModel{T, S}} where {T, S}
   increment!(nlp, :neval_obj)
   evaluate_obj_part_data(nlp.part_data, x)
 end

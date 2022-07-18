@@ -90,11 +90,14 @@ abstract type PartitionedData end
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape},
 ) = part_data.vec_compiled_element_gradients = vec_compiled_element_gradients
 
-@inline set_x!(part_data::PartitionedData, x::AbstractVector{Y}) where {Y <: Number} = part_data.x .= x
+@inline set_x!(part_data::PartitionedData, x::AbstractVector{Y}) where {Y <: Number} =
+  part_data.x .= x
 
-@inline set_v!(part_data::PartitionedData, v::AbstractVector{Y}) where {Y <: Number} = part_data.v .= v
+@inline set_v!(part_data::PartitionedData, v::AbstractVector{Y}) where {Y <: Number} =
+  part_data.v .= v
 
-@inline set_s!(part_data::PartitionedData, s::AbstractVector{Y}) where {Y <: Number} = part_data.s .= s
+@inline set_s!(part_data::PartitionedData, s::AbstractVector{Y}) where {Y <: Number} =
+  part_data.s .= s
 
 @inline set_pg!(
   part_data::PartitionedData,
@@ -190,7 +193,10 @@ end
 
 Return the partially separable objective at `x`.
 """
-function evaluate_obj_part_data(part_data::PartitionedData, x::AbstractVector{Y}) where {Y <: Number}
+function evaluate_obj_part_data(
+  part_data::PartitionedData,
+  x::AbstractVector{Y},
+) where {Y <: Number}
   set_x!(part_data, x)
   evaluate_obj_part_data!(part_data)
   return get_fx(part_data)
@@ -254,7 +260,10 @@ end
 Return the gradient vector `g` at `x`.
 After the computation of the element gradients (stored in `part_data.pg`), `g` is built by accumulating their contributions.
 """
-function evaluate_grad_part_data(part_data::PartitionedData, x::AbstractVector{Y}) where {Y <: Number}
+function evaluate_grad_part_data(
+  part_data::PartitionedData,
+  x::AbstractVector{Y},
+) where {Y <: Number}
   g = similar(x)
   evaluate_grad_part_data!(g, part_data, x)
   return g
