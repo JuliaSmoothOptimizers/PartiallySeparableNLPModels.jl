@@ -308,7 +308,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   print(io, " - ", quadratic, quadratic>=2 ? " are" : " is", " quadratic;\n")
   print(io, " - ", cubic, cubic>=2 ? " are" : " is", " cubic;\n")
   print(io, " - ", general, general>=2 ? " are" : " is", " general;\n")
-  println("and:")
+  println(io, "and:")
 
   element_function_convexity_status = (elt_fun -> elt_fun.convexity_status).(element_functions)
   convex = count(is_convex, element_function_convexity_status)
@@ -320,7 +320,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
 
 
   length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
-  mean_length_element_functions = Int(mean(length_element_functions))
+  mean_length_element_functions = mean(length_element_functions)
   min_length_element_functions = minimum(length_element_functions)
   max_length_element_functions = maximum(length_element_functions)
   print(io, "Each element affect ", min_length_element_functions, " ≤ ", mean_length_element_functions, " (mean) ≤ ", max_length_element_functions, " elements.\n")
