@@ -1,10 +1,12 @@
 module Mod_PQN
+using Statistics
 using ReverseDiff
 using PartitionedStructures, ExpressionTreeForge
 using ..Mod_ab_partitioned_data, ..Mod_common
 using ..ExpressionTreeForge.M_implementation_convexity_type
 
 import ..Mod_ab_partitioned_data.update_nlp!
+import Base.show
 
 export PartitionedDataTRPQN
 export update_PQN, update_PQN!, build_PartitionedDataTRPQN
@@ -263,6 +265,57 @@ function build_PartitionedDataTRPQN(
   )
 
   return pd_pqn
+end
+
+show(psnlp::PartitionedDataTRPQN) = show(stdout, psnlp)
+
+function show(io::IO, part_data::PartitionedDataTRPQN)  
+  println(io, "Partitioned structure summary:")
+  n = get_n(part_data)
+  N = get_N(part_data)
+  M = get_M(part_data)
+  print(io, N, " element ", (N==1 ? " function;" : " functions;"))
+  print(io, " represented by ", M, (M==1 ? " expression tree" : " expression trees"), ".\n")
+
+  element_functions = part_data.vec_elt_fun
+
+  element_function_types = (elt_fun -> elt_fun.type).(element_functions)
+  linear = count(is_linear, element_function_types)
+  quadratic = count(is_quadratic, element_function_types)
+  cubic = count(is_cubic, element_function_types)
+  general = count(is_more, element_function_types)
+  print(io, "Among element functions:\n")
+  print(io, " - ", linear, linear>=2 ? " are" : " is", " linear;\n")
+  print(io, " - ", quadratic, quadratic>=2 ? " are" : " is", " quadratic;\n")
+  print(io, " - ", cubic, cubic>=2 ? " are" : " is", " cubic;\n")
+  print(io, " - ", general, general>=2 ? " are" : " is", " general;\n")
+  println("and:")
+
+  element_function_convexity_status = (elt_fun -> elt_fun.convexity_status).(element_functions)
+  convex = count(is_convex, element_function_convexity_status)
+  concave = count(is_concave, element_function_convexity_status)
+  general = count(is_unknown, element_function_convexity_status)
+  print(io, " - ", convex, convex>=2 ? " are" : " is", " convex;\n")
+  print(io, " - ", concave, concave>=2 ? " are" : " is", " concave;\n")
+  print(io, " - ", general, general>=2 ? " are" : " is", " more general.\n")
+
+
+  length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
+  mean_length_element_functions = Int(mean(length_element_functions))
+  min_length_element_functions = minimum(length_element_functions)
+  max_length_element_functions = maximum(length_element_functions)
+  print(io, "Each element affect ", min_length_element_functions, " ≤ ", mean_length_element_functions, " (mean) ≤ ", max_length_element_functions, " elements.\n")
+
+  pv = part_data.pv
+  component_list = PartitionedStructures.get_component_list(pv)
+  length_by_variable = (elt_list_var -> length(elt_list_var)).(component_list)
+  mean_length_variable = mean(length_by_variable)
+  min_length_variable = minimum(length_by_variable)
+  max_length_variable = maximum(length_by_variable)
+  print(io, "Each problem variable is affected by ", min_length_variable, " ≤ ", mean_length_variable, " (mean) ≤ ", max_length_variable, " elements.\n")
+  
+
+  return nothing
 end
 
 end
