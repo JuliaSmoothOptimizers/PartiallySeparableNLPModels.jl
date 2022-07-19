@@ -1,3 +1,5 @@
+import Base.show
+
 """
     PartiallySeparableNLPModel{ T, S, G, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S}} <: AbstractPartiallySeparableNLPModel{T, S}
 
@@ -89,4 +91,12 @@ function NLPModels.hprod(
 ) where {Y <: Number}
   increment!(nlp, :neval_hprod)
   product_part_data_x(nlp.part_data, v)
+end
+
+show(psnlp::PartiallySeparableNLPModel) = show(stdout, psnlp)
+
+function show(io::IO, psnlp::PartiallySeparableNLPModel)
+  show(io, psnlp.nlp)
+  show(io, psnlp.part_data)
+  return nothing
 end
