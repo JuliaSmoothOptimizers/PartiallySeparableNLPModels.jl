@@ -232,9 +232,16 @@ function build_PartitionedDataTRPQN(
   py = similar(pg)
   ps = similar(pg)
 
+  # convex_expr_tree = map(convexity_status -> is_convex(convexity_status), convexity_wrapper)
+  convex_vector = zeros(Bool, N)
+  for (index, list_element) in enumerate(element_expr_tree_table)
+    map(index_element -> convex_vector[index_element] = is_convex(convexity_wrapper[index]), list_element)    
+  end
+
   (name == :pbfgs) && (pB = epm_from_epv(pg))
   (name == :psr1) && (pB = epm_from_epv(pg))
   (name == :pse) && (pB = epm_from_epv(pg))
+  (name == :pcs) && (pB = epm_from_epv(pg; convex_vector))
   (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(pg; kwargs...))
   (name == :plsr1) && (pB = eplo_lsr1_from_epv(pg))
   (name == :plse) && (pB = eplo_lose_from_epv(pg; kwargs...))
