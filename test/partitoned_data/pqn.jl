@@ -83,6 +83,7 @@ end
   ps_data_pbfgs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pbfgs)
   ps_data_psr1 = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :psr1)
   ps_data_pse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pse)
+  ps_data_pcs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pcs)
 
   update_nlp!(ps_data_plbfgs, x, s)
   # update_nlp!(ps_data_plbfgs_damped, x, s)
@@ -91,6 +92,7 @@ end
   update_nlp!(ps_data_pbfgs, x, s)
   update_nlp!(ps_data_psr1, x, s)
   update_nlp!(ps_data_pse, x, s)
+  update_nlp!(ps_data_pcs, x, s)
 
   # @test ps_data_plsr1.py == ps_data_plbfgs.py
   @test ps_data_plbfgs.py == ps_data_plse.py
@@ -98,6 +100,7 @@ end
   @test ps_data_plbfgs.py == ps_data_pbfgs.py
   @test ps_data_plbfgs.py == ps_data_psr1.py
   @test ps_data_plbfgs.py == ps_data_pse.py
+  @test ps_data_plbfgs.py == ps_data_pcs.py
 
   epv_y = ps_data_plbfgs.py
   PartitionedStructures.build_v!(epv_y)
@@ -117,4 +120,5 @@ end
   @test isapprox(norm(partitioned_matrix(ps_data_pbfgs) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_psr1) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_pse) * s - y), 0, atol = 1e-10)
+  @test isapprox(norm(partitioned_matrix(ps_data_pcs) * s - y), 0, atol = 1e-10)
 end
