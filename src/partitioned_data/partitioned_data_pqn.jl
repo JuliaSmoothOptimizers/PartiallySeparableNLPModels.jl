@@ -37,7 +37,7 @@ Gather the structures required to run a partitioned quasi-Newton trust-region me
   * `name=:pbfgs`: every element-Hessian approximation is updated with BFGS;
   * `name=:psr1`: every element-Hessian approximation is updated with SR1;
   * `name=:pse`: every element-Hessian approximation is updated with BFGS or SR1 if the curvature condition doesn't hold;
-  * `name=:pcs`: each element-Hessian approximation with BFGS if it is instantied as `convex` or with SR1 otherwise;
+  * `name=:pcs`: each element-Hessian approximation with BFGS if it is classified as `convex`, or with SR1 otherwise;
   * `name=:plbfgs`: every element-Hessian approximations is a LBFGS operator;
   * `name=:plsr1`: every element-Hessian approximations is a LSR1 operator;
   * `name=:plse`: by default, every element-Hessian approximations is a LBFGS operator as long as the curvature condition holds, otherwise it becomes a LSR1 operator.
