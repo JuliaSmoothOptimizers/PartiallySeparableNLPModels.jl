@@ -1,1 +1,0 @@
-JuMP, MathOptInterface, PkgBenchmark, ForwardDiff, ReverseDiff, Zygote

@@ -6,7 +6,6 @@ using PartiallySeparableNLPModels
 using ExpressionTreeForge
 using NLPModels, NLPModelsJuMP, ADNLPModels
 using ForwardDiff, ReverseDiff
-# , Zygote
 using OptimizationProblems, OptimizationProblems.PureJuMP
 
 

@@ -6,7 +6,6 @@ using PartiallySeparableNLPModels
 using ExpressionTreeForge
 using NLPModels, NLPModelsJuMP, ADNLPModels
 using ForwardDiff, ReverseDiff
-# , Zygote
 using OptimizationProblems, OptimizationProblems.PureJuMP
 
 function woods_adnlp(; n::Int = default_nvar, type::Val{T} = Val(Float64), kwargs...) where {T}
