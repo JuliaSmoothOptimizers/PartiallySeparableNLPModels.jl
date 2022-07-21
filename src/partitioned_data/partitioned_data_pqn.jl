@@ -32,7 +32,16 @@ Gather the structures required to run a partitioned quasi-Newton trust-region me
 * `ps`: the partitioned step;
 * `pB`: the partitioned matrix (main memory cost);
 * `fx`: the current value of the objective function;
-* `name`: the name of partitioned quasi-Newton update peformed at each iterate.
+* `name`: the name of partitioned quasi-Newton update performed at each iteration:
+
+  * `name=:pbfgs`: every element-Hessian approximation is updated with BFGS;
+  * `name=:psr1`: every element-Hessian approximation is updated with SR1;
+  * `name=:pse`: every element-Hessian approximation is updated with BFGS or SR1 if the curvature condition doesn't hold;
+  * `name=:pcs`: each element-Hessian approximation with BFGS if it is instantied as `convex` or with SR1 otherwise;
+  * `name=:plbfgs`: every element-Hessian approximations is a LBFGS operator;
+  * `name=:plsr1`: every element-Hessian approximations is a LSR1 operator;
+  * `name=:plse`: by default, every element-Hessian approximations is a LBFGS operator as long as the curvature condition holds, otherwise it becomes a LSR1 operator.
+
 """
 mutable struct PartitionedDataTRPQN{G, T <: Number, P <: Part_mat{T}} <:
                Mod_ab_partitioned_data.PartitionedData
