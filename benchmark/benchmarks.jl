@@ -8,10 +8,10 @@ using PartiallySeparableNLPModels
 const SUITE = BenchmarkGroup()
 
 ns = [10, 100, 1000]
-nlps = map(n -> arwhead(; n), ns)
 
-SUITE["OBJ"] = BenchmarkGroup()
-SUITE["GRAD"] = BenchmarkGroup()
+SUITE["PSNLPS"] = BenchmarkGroup()
+SUITE["PSNLPS"]["OBJ"] = BenchmarkGroup()
+SUITE["PSNLPS"]["GRAD"] = BenchmarkGroup()
 
 for n in ns
 
@@ -20,11 +20,11 @@ for n in ns
   x = rand(n)
   psnlp = PartiallySeparableNLPModel(nlp)
 
-  SUITE["OBJ"]["$name $n"] =
+  SUITE["PSNLPS"]["OBJ"]["$name $n"] =
     @benchmarkable NLPModels.obj($psnlp, $x)
 
   g = similar(x)
-  SUITE["GRAD"]["$name $n"] =
+  SUITE["PSNLPS"]["GRAD"]["$name $n"] =
   @benchmarkable NLPModels.grad!($psnlp, $x, $g)
 
 end
