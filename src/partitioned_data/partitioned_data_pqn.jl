@@ -291,7 +291,7 @@ end
 show(psnlp::PartitionedDataTRPQN) = show(stdout, psnlp)
 
 function show(io::IO, part_data::PartitionedDataTRPQN)  
-  println(io, "Partitioned structure summary:")
+  println(io, "\nPartitioned structure summary:")
   n = get_n(part_data)  
   N = get_N(part_data)
   M = get_M(part_data)
