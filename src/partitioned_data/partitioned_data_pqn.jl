@@ -272,8 +272,6 @@ end
 show(psnlp::PartitionedDataTRPQN) = show(stdout, psnlp)
 
 function show(io::IO, part_data::PartitionedDataTRPQN)  
-
-
   println(io, "Partitioned structure summary:")
   n = get_n(part_data)  
   N = get_N(part_data)
@@ -282,7 +280,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   V = [N, n, M]
   print(io, join(NLPModels.lines_of_hist(S, V), "\n"))
     
-  @printf(io, "\n %20s:\n", "Element statistics:")
+  @printf(io, "\n %20s:\n", "Element statistics")
   element_functions = part_data.vec_elt_fun
 
   element_function_types = (elt_fun -> elt_fun.type).(element_functions)
@@ -307,7 +305,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   LH = map((i,j) -> i*j, LH1, LH2)
   print(io, join(LH, "\n"))
 
-  @printf(io, "\n %28s: %28s: \n", "Elemental variable sizes", "Variable overlappings")
+  @printf(io, "\n %28s: %s %28s: \n", "Element function dimensions", " "^12, "Variable overlappings")
   length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
   mean_length_element_functions = mean(length_element_functions)
   min_length_element_functions = minimum(length_element_functions)
@@ -316,7 +314,6 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   S1 = ["min", "mean:", "max"]
   V1 = [min_length_element_functions, mean_length_element_functions, max_length_element_functions]
   LH1 = NLPModels.lines_of_hist(S1, V1)
-  # print(io, "Each element affect ", min_length_element_functions, " ≤ ", mean_length_element_functions, " (mean) ≤ ", max_length_element_functions, " elements.\n")
 
   pv = part_data.pv
   component_list = PartitionedStructures.get_component_list(pv)
@@ -327,7 +324,6 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   S2 = ["min", "mean:", "max"]
   V2 = [min_length_variable, mean_length_variable, max_length_variable]
   LH2 = NLPModels.lines_of_hist(S2, V2)
-  # print(io, "Each problem variable is affected by ", min_length_variable, " ≤ ", mean_length_variable, " (mean) ≤ ", max_length_variable, " elements.\n")
 
   LH = map((i,j) -> i*j, LH1, LH2)
   print(io, join(LH, "\n"))  
