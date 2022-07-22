@@ -2,6 +2,8 @@ module Mod_PQN
 using Statistics
 using ReverseDiff
 using PartitionedStructures, ExpressionTreeForge
+using NLPModels # for show
+using Printf # for show
 using ..Mod_ab_partitioned_data, ..Mod_common
 using ..ExpressionTreeForge.M_implementation_convexity_type
 
@@ -270,13 +272,17 @@ end
 show(psnlp::PartitionedDataTRPQN) = show(stdout, psnlp)
 
 function show(io::IO, part_data::PartitionedDataTRPQN)  
+
+
   println(io, "Partitioned structure summary:")
-  n = get_n(part_data)
+  n = get_n(part_data)  
   N = get_N(part_data)
   M = get_M(part_data)
-  print(io, N, " element ", (N==1 ? " function;" : " functions;"))
-  print(io, " represented by ", M, (M==1 ? " expression tree" : " expression trees"), ".\n")
-
+  S = ["N", "n", "M"]
+  V = [N, n, M]
+  print(io, join(NLPModels.lines_of_hist(S, V), "\n"))
+    
+  @printf(io, "\n %20s:\n", "Element statistics:")
   element_functions = part_data.vec_elt_fun
 
   element_function_types = (elt_fun -> elt_fun.type).(element_functions)
@@ -284,27 +290,33 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   quadratic = count(is_quadratic, element_function_types)
   cubic = count(is_cubic, element_function_types)
   general = count(is_more, element_function_types)
-  print(io, "Among element functions:\n")
-  print(io, " - ", linear, linear>=2 ? " are" : " is", " linear;\n")
-  print(io, " - ", quadratic, quadratic>=2 ? " are" : " is", " quadratic;\n")
-  print(io, " - ", cubic, cubic>=2 ? " are" : " is", " cubic;\n")
-  print(io, " - ", general, general>=2 ? " are" : " is", " general;\n")
-  println(io, "and:")
 
+  S1 = ["linear", "quadratic", "cubic", "general"]
+  V1 = [linear, quadratic, cubic, general]
+  LH1 = NLPModels.lines_of_hist(S1, V1)
+  
   element_function_convexity_status = (elt_fun -> elt_fun.convexity_status).(element_functions)
   convex = count(is_convex, element_function_convexity_status)
   concave = count(is_concave, element_function_convexity_status)
   general = count(is_unknown, element_function_convexity_status)
-  print(io, " - ", convex, convex>=2 ? " are" : " is", " convex;\n")
-  print(io, " - ", concave, concave>=2 ? " are" : " is", " concave;\n")
-  print(io, " - ", general, general>=2 ? " are" : " is", " more general.\n")
+  
+  S2 = ["convex", "concave", "general", " "]
+  V2 = [convex, concave, general, 0 ]
+  LH2 = NLPModels.lines_of_hist(S2, V2)
 
+  LH = map((i,j) -> i*j, LH1, LH2)
+  print(io, join(LH, "\n"))
 
+  @printf(io, "\n %28s: %28s: \n", "Elemental variable sizes", "Variable overlappings")
   length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
   mean_length_element_functions = mean(length_element_functions)
   min_length_element_functions = minimum(length_element_functions)
   max_length_element_functions = maximum(length_element_functions)
-  print(io, "Each element affect ", min_length_element_functions, " ≤ ", mean_length_element_functions, " (mean) ≤ ", max_length_element_functions, " elements.\n")
+
+  S1 = ["min", "mean:", "max"]
+  V1 = [min_length_element_functions, mean_length_element_functions, max_length_element_functions]
+  LH1 = NLPModels.lines_of_hist(S1, V1)
+  # print(io, "Each element affect ", min_length_element_functions, " ≤ ", mean_length_element_functions, " (mean) ≤ ", max_length_element_functions, " elements.\n")
 
   pv = part_data.pv
   component_list = PartitionedStructures.get_component_list(pv)
@@ -312,10 +324,44 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   mean_length_variable = mean(length_by_variable)
   min_length_variable = minimum(length_by_variable)
   max_length_variable = maximum(length_by_variable)
-  print(io, "Each problem variable is affected by ", min_length_variable, " ≤ ", mean_length_variable, " (mean) ≤ ", max_length_variable, " elements.\n")
-  
+  S2 = ["min", "mean:", "max"]
+  V2 = [min_length_variable, mean_length_variable, max_length_variable]
+  LH2 = NLPModels.lines_of_hist(S2, V2)
+  # print(io, "Each problem variable is affected by ", min_length_variable, " ≤ ", mean_length_variable, " (mean) ≤ ", max_length_variable, " elements.\n")
+
+  LH = map((i,j) -> i*j, LH1, LH2)
+  print(io, join(LH, "\n"))  
 
   return nothing
 end
+
+# """
+#     lines_of_hist(S, V)
+# Return a vector of `histline(s, v, maxv)`s using pairs of `s` in `S` and `v` in `V`. `maxv` is given by the maximum of `V`.
+# """
+# function lines_of_hist(S, V)
+#   maxv = maximum(V)
+#   lines = histline.(S, V, maxv)
+#   return lines
+# end
+# """
+#              histline(s, v, maxv)
+# Return a string of the form
+#     ______NAME______: ████⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 5
+# where:
+# - `______NAME______` is `s` with padding to the left and length 16.
+# - And the symbols █ and ⋅ fill 20 characters in the proportion of `v / maxv` to █ and the rest to ⋅.
+# - The number `5` is v.
+# """
+# function histline(s, v, maxv)
+#   @assert 0 ≤ v ≤ maxv
+#   λ = maxv == 0 ? 0 : ceil(Int, 20 * v / maxv)
+#   return @sprintf("%16s: %s %-6s", s, "█"^λ * "⋅"^(20 - λ), v)
+# end
+
+# for i = 1:3:length(lines)
+#   idx = i:min(n, i + 2)
+#   println(io, join(lines[idx], ""))
+# end
 
 end
