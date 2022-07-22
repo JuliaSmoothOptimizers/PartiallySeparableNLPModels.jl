@@ -76,4 +76,44 @@ function NLPModels.grad!(
   return g
 end
 
+"""
+    B = hess_approx(nlp::PartiallySeparableNLPModel)
+
+Return the Hessian approximation of `nlp`.
+"""
+hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
+
+function NLPModels.hprod!(
+  nlp::PartiallySeparableNLPModel,
+  x::Vector{Y},
+  v::Vector{Y},
+  Hv::Vector{Y},
+) where {Y <: Number}
+  increment!(nlp, :neval_hprod)
+  product_part_data_x!(Hv, nlp.part_data, v)
+end
+
+function NLPModels.hprod!(
+  nlp::PartiallySeparableNLPModel,
+  x::Vector{Y},
+  y::Vector{Y},
+  v::Vector{Y},
+  Hv::Vector{Y};
+  kwargs...,
+) where {Y <: Number}
+  increment!(nlp, :neval_hprod)
+  product_part_data_x!(Hv, nlp.part_data, v)
+end
+
+function NLPModels.hprod(
+  nlp::PartiallySeparableNLPModel,
+  x::Vector{Y},
+  v::Vector{Y},
+) where {Y <: Number}
+  increment!(nlp, :neval_hprod)
+  product_part_data_x(nlp.part_data, v)
+end
+
+
+
 end
