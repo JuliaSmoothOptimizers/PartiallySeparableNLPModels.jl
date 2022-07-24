@@ -295,7 +295,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   n = get_n(part_data)  
   N = get_N(part_data)
   M = get_M(part_data)
-  S = ["N", "n", "M"]
+  S = ["         N (element functions)", "            n (problem's size)", "M (distinct element functions)"]
   V = [N, n, M]
   print(io, join(NLPModels.lines_of_hist(S, V), "\n"))
     
@@ -317,20 +317,21 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   concave = count(is_concave, element_function_convexity_status)
   general = count(is_unknown, element_function_convexity_status)
   
-  S2 = ["convex", "concave", "general", " "]
-  V2 = [convex, concave, general, 0 ]
+  S2 = ["convex", "concave", "general"]
+  V2 = [convex, concave, general]
   LH2 = NLPModels.lines_of_hist(S2, V2)
 
-  LH = map((i,j) -> i*j, LH1, LH2)
+  LH = map((i) -> LH1[i]*LH2[i], 1:3)
+  push!(LH, LH1[4])
   print(io, join(LH, "\n"))
 
-  @printf(io, "\n %28s: %s %28s: \n", "Element function dimensions", " "^12, "Variable overlappings")
+  @printf(io, "\n %28s: %s %28s: \n", "Element function dimensions", " "^12, "Variable overlaps")
   length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
   mean_length_element_functions = mean(length_element_functions)
   min_length_element_functions = minimum(length_element_functions)
   max_length_element_functions = maximum(length_element_functions)
 
-  S1 = ["min", "mean:", "max"]
+  S1 = ["min", "mean", "max"]
   V1 = [min_length_element_functions, mean_length_element_functions, max_length_element_functions]
   LH1 = NLPModels.lines_of_hist(S1, V1)
 
@@ -340,7 +341,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   mean_length_variable = mean(length_by_variable)
   min_length_variable = minimum(length_by_variable)
   max_length_variable = maximum(length_by_variable)
-  S2 = ["min", "mean:", "max"]
+  S2 = ["min", "mean", "max"]
   V2 = [min_length_variable, mean_length_variable, max_length_variable]
   LH2 = NLPModels.lines_of_hist(S2, V2)
 
@@ -349,34 +350,5 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
 
   return nothing
 end
-
-# """
-#     lines_of_hist(S, V)
-# Return a vector of `histline(s, v, maxv)`s using pairs of `s` in `S` and `v` in `V`. `maxv` is given by the maximum of `V`.
-# """
-# function lines_of_hist(S, V)
-#   maxv = maximum(V)
-#   lines = histline.(S, V, maxv)
-#   return lines
-# end
-# """
-#              histline(s, v, maxv)
-# Return a string of the form
-#     ______NAME______: ████⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 5
-# where:
-# - `______NAME______` is `s` with padding to the left and length 16.
-# - And the symbols █ and ⋅ fill 20 characters in the proportion of `v / maxv` to █ and the rest to ⋅.
-# - The number `5` is v.
-# """
-# function histline(s, v, maxv)
-#   @assert 0 ≤ v ≤ maxv
-#   λ = maxv == 0 ? 0 : ceil(Int, 20 * v / maxv)
-#   return @sprintf("%16s: %s %-6s", s, "█"^λ * "⋅"^(20 - λ), v)
-# end
-
-# for i = 1:3:length(lines)
-#   idx = i:min(n, i + 2)
-#   println(io, join(lines[idx], ""))
-# end
 
 end
