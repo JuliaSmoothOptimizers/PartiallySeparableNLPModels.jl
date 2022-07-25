@@ -95,23 +95,22 @@ end
 
 function NLPModels.hprod!(
   nlp::PartiallySeparableNLPModel,
-  x::Vector{Y},
-  y::Vector{Y},
-  v::Vector{Y},
-  Hv::Vector{Y};
+  x::AbstractVector,
+  v::AbstractVector,
+  Hv::AbstractVector;
   kwargs...,
-) where {Y <: Number}
+)
   increment!(nlp, :neval_hprod)
-  product_part_data_x!(Hv, nlp.part_data, v)
+  part_hprod!(nlp.part_data, x, v, Hv)
 end
 
 function NLPModels.hprod(
   nlp::PartiallySeparableNLPModel,
-  x::Vector{Y},
-  v::Vector{Y},
-) where {Y <: Number}
+  x::AbstractVector,
+  v::AbstractVector,
+)
   increment!(nlp, :neval_hprod)
-  product_part_data_x(nlp.part_data, v)
+  part_hprod(nlp.part_data, x, v)
 end
 
 
