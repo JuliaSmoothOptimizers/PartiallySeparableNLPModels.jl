@@ -308,11 +308,21 @@ function evaluate_grad_part_data!(part_data::PartitionedData)
   return part_data
 end
 
+"""
+    hv = part_hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
+
+Return `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
+"""
 function part_hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
   hv = similar(x)
   part_hprod!(part_data, x, v, hv)
 end 
 
+"""
+    hv = part_hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
+
+Build in place of `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
+""" 
 function part_hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
   set_ps!(part_data, x)
   set_pv!(part_data, v)
