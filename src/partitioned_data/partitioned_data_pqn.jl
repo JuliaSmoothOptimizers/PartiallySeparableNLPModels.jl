@@ -290,15 +290,15 @@ end
 
 show(psnlp::PartitionedDataTRPQN) = show(stdout, psnlp)
 
-function show(io::IO, part_data::PartitionedDataTRPQN)  
+function show(io::IO, part_data::PartitionedDataTRPQN)
   println(io, "\nPartitioned structure summary:")
-  n = get_n(part_data)  
+  n = get_n(part_data)
   N = get_N(part_data)
   M = get_M(part_data)
   S = ["           element functions", "  distinct element functions"]
   V = [N, M]
   print(io, join(NLPModels.lines_of_hist(S, V), "\n"))
-    
+
   @printf(io, "\n %20s:\n", "Element statistics")
   element_functions = part_data.vec_elt_fun
 
@@ -311,17 +311,17 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   S1 = ["linear", "quadratic", "cubic", "general"]
   V1 = [linear, quadratic, cubic, general]
   LH1 = NLPModels.lines_of_hist(S1, V1)
-  
+
   element_function_convexity_status = (elt_fun -> elt_fun.convexity_status).(element_functions)
   convex = count(is_convex, element_function_convexity_status)
   concave = count(is_concave, element_function_convexity_status)
   general = count(is_unknown, element_function_convexity_status)
-  
+
   S2 = ["convex", "concave", "general"]
   V2 = [convex, concave, general]
   LH2 = NLPModels.lines_of_hist(S2, V2)
 
-  LH = map((i) -> LH1[i]*LH2[i], 1:3)
+  LH = map((i) -> LH1[i] * LH2[i], 1:3)
   push!(LH, LH1[4])
   print(io, join(LH, "\n"))
 
@@ -345,8 +345,8 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   V2 = [min_length_variable, mean_length_variable, max_length_variable]
   LH2 = NLPModels.lines_of_hist(S2, V2)
 
-  LH = map((i,j) -> i*j, LH1, LH2)
-  print(io, join(LH, "\n"))  
+  LH = map((i, j) -> i * j, LH1, LH2)
+  print(io, join(LH, "\n"))
 
   return nothing
 end
