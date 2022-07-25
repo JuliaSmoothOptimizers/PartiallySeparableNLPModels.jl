@@ -1,5 +1,5 @@
 module Mod_ab_partitioned_data
-using ReverseDiff
+using ReverseDiff, ForwardDiff
 using PartitionedStructures, ExpressionTreeForge
 using ..Mod_common
 
@@ -12,7 +12,7 @@ export get_n,
   get_element_expr_tree_table,
   get_index_element_tree,
   get_vec_compiled_element_gradients
-export get_x, get_v, get_s, get_pg, get_pv, get_py, get_ps, get_pB, get_fx
+export get_x, get_v, get_s, get_pg, get_pv, get_py, get_ps, get_phv, get_pB, get_fx
 export set_n!,
   set_N!,
   set_vec_elt_fun!,
@@ -22,11 +22,12 @@ export set_n!,
   set_index_element_tree!,
   set_vec_compiled_element_gradients!
 export set_x!,
-  set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_py!, set_ps!, set_pB!, set_fx!
+  set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_py!, set_ps!, set_phv!, set_pB!, set_fx!
 
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 export product_part_data_x!,
   evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data!
+export part_hprod, part_hprod!
 export update_nlp!
 
 abstract type PartitionedData end
@@ -62,6 +63,7 @@ abstract type PartitionedData end
 @inline get_pv(part_data::PartitionedData) = part_data.pv
 @inline get_py(part_data::PartitionedData) = part_data.py
 @inline get_ps(part_data::PartitionedData) = part_data.ps
+@inline get_phv(part_data::PartitionedData) = part_data.phv
 @inline get_pB(part_data::PartitionedData) = part_data.pB
 @inline get_fx(part_data::PartitionedData) = part_data.fx
 
@@ -129,6 +131,9 @@ abstract type PartitionedData end
   PartitionedStructures.epv_from_v!(part_data.py, y)
 
 @inline set_ps!(part_data::PartitionedData, s::AbstractVector{Y}) where {Y <: Number} =
+  PartitionedStructures.epv_from_v!(part_data.ps, s)
+
+@inline set_phv!(part_data::PartitionedData, s::AbstractVector{Y}) where {Y <: Number} =
   PartitionedStructures.epv_from_v!(part_data.ps, s)
 
 @inline set_pB!(
@@ -301,6 +306,34 @@ function evaluate_grad_part_data!(part_data::PartitionedData)
   end
   PartitionedStructures.build_v!(pg)
   return part_data
+end
+
+function part_hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
+  hv = similar(x)
+  part_hprod!(part_data, x, v, hv)
+end 
+
+function part_hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
+  set_ps!(part_data, x)
+  set_pv!(part_data, v)
+  
+  index_element_tree = get_index_element_tree(part_data)
+  N = get_N(part_data)
+  ∇f(x; f) = ReverseDiff.gradient(f, x)
+  ∇²fv!(x, v, hv; f) = ForwardDiff.derivative!(hv, t -> ∇f(x + t*v; f), 0)
+
+  for i = 1:N
+    complete_tree = get_vec_elt_complete_expr_tree(part_data, index_element_tree[i])
+    elf_fun = ExpressionTreeForge.evaluate_expr_tree(complete_tree)
+
+    Uix = PartitionedStructures.get_eev_value(get_ps(part_data), i)
+    Uiv = PartitionedStructures.get_eev_value(get_pv(part_data), i)    
+    
+    hvi = PartitionedStructures.get_eev_value(get_phv(part_data), i)
+    ∇²fv!(Uix, Uiv, hvi; f=elf_fun)
+  end
+  PartitionedStructures.build_v!(get_phv(part_data))
+  hv .= PartitionedStructures.get_v(get_phv(part_data))
 end
 
 end

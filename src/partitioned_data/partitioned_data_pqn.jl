@@ -34,6 +34,7 @@ Gather the structures required to run a partitioned quasi-Newton trust-region me
 * `pv`: a temporary partitioned vector;
 * `py`: the partitioned gradient difference;
 * `ps`: the partitioned step;
+* `phv`: the partitioned Hessian-vector product;
 * `pB`: the partitioned matrix (main memory cost);
 * `fx`: the current value of the objective function;
 * `name`: the name of partitioned quasi-Newton update performed at each iteration:
@@ -69,6 +70,7 @@ mutable struct PartitionedDataTRPQN{G, T <: Number, P <: Part_mat{T}} <:
   pv::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
   py::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
   ps::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
+  phv::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
   pB::P # partitioned B
 
   fx::T
@@ -244,6 +246,7 @@ function build_PartitionedDataTRPQN(
   pv = similar(pg)
   py = similar(pg)
   ps = similar(pg)
+  phv = similar(pg)
 
   # convex_expr_tree = map(convexity_status -> is_convex(convexity_status), convexity_wrapper)
   convex_vector = zeros(Bool, N)
@@ -280,6 +283,7 @@ function build_PartitionedDataTRPQN(
     pv,
     py,
     ps,
+    phv,
     pB,
     fx,
     name,
