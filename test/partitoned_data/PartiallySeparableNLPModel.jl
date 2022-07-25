@@ -14,6 +14,8 @@
   @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(pbfgsnlp, x)
   @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(plbfgsnlp, x)
 
+  @test NLPModels.hess(nlp, x) ≈ NLPModels.hess(pbfgsnlp, x)
+
   v = [ i%2 == 0 ? 1. : 0. for i in 1:n]
   @test NLPModels.hprod(nlp, x, v) ≈ NLPModels.hprod(pbfgsnlp, x, v)
   @test NLPModels.hprod(nlp, x, v) ≈ NLPModels.hprod(plbfgsnlp, x, v)
