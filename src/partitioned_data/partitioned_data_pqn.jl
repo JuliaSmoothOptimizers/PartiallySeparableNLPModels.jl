@@ -276,8 +276,8 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   n = get_n(part_data)  
   N = get_N(part_data)
   M = get_M(part_data)
-  S = ["         N (element functions)", "            n (problem's size)", "M (distinct element functions)"]
-  V = [N, n, M]
+  S = ["           element functions", "  distinct element functions"]
+  V = [N, M]
   print(io, join(NLPModels.lines_of_hist(S, V), "\n"))
     
   @printf(io, "\n %20s:\n", "Element statistics")
