@@ -83,6 +83,13 @@ Return the Hessian approximation of `nlp`.
 """
 hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
 
+function NLPModels.hess(
+  nlp::PartiallySeparableNLPModel,
+  x::AbstractVector
+)
+  increment!(nlp, :neval_hess)
+  part_hessian(nlp.part_data, x)
+end
 
 """
     Hv = hprod(nlp, x, v; obj_weight=1.0)
@@ -92,10 +99,10 @@ with objective function scaled by `obj_weight`.
 """
 function NLPModels.hprod!(
   nlp::PartiallySeparableNLPModel,
-  x::Vector{Y},
-  v::Vector{Y},
-  Hv::Vector{Y},
-) where {Y <: Number}
+  x::AbstractVector,
+  v::AbstractVector,
+  Hv::AbstractVector,
+)
   increment!(nlp, :neval_hprod)
   part_hprod!(nlp.part_data, x, v, Hv)
 end
