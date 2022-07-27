@@ -88,7 +88,7 @@ function NLPModels.hess(
   x::AbstractVector
 )
   increment!(nlp, :neval_hess)
-  part_hessian(nlp.part_data, x)
+  hess(nlp.part_data, x)
 end
 
 """
@@ -104,7 +104,7 @@ function NLPModels.hprod!(
   Hv::AbstractVector,
 )
   increment!(nlp, :neval_hprod)
-  part_hprod!(nlp.part_data, x, v, Hv)
+  hprod!(nlp.part_data, x, v, Hv)
 end
 
 """
@@ -122,7 +122,7 @@ function NLPModels.hprod!(
   kwargs...,
 )
   increment!(nlp, :neval_hprod)
-  part_hprod!(nlp.part_data, x, v, Hv)
+  hprod!(nlp.part_data, x, v, Hv)
 end
 
 """
@@ -137,7 +137,7 @@ function NLPModels.hprod(
   v::AbstractVector,
 )
   increment!(nlp, :neval_hprod)
-  part_hprod(nlp.part_data, x, v)
+  hprod(nlp.part_data, x, v)
 end
 
 
