@@ -3,6 +3,8 @@ using ReverseDiff, ForwardDiff
 using PartitionedStructures, ExpressionTreeForge
 using ..Mod_common
 
+import NLPModels: hprod, hprod!, hess
+
 export PartitionedData
 export get_n,
   get_N,
@@ -27,7 +29,6 @@ export set_x!,
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 export product_part_data_x!,
   evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data!
-export part_hprod, part_hprod!, part_hessian, part_hessian!
 export update_nlp!
 
 abstract type PartitionedData end
@@ -313,9 +314,9 @@ end
 
 Return `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
 """
-function part_hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
+function hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
   hv = similar(x)
-  part_hprod!(part_data, x, v, hv)
+  hprod!(part_data, x, v, hv)
 end 
 
 """
@@ -323,7 +324,7 @@ end
 
 Build in place of `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
 """ 
-function part_hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
+function hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
   set_ps!(part_data, x)
   set_pv!(part_data, v)
   
@@ -347,18 +348,18 @@ function part_hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractV
 end
 
 
-function part_hessian(part_data::PartitionedData, x::AbstractVector)
-  part_hessian!(part_data::PartitionedData, x::AbstractVector)
+function hess(part_data::PartitionedData, x::AbstractVector)
+  hess!(part_data::PartitionedData, x::AbstractVector)
   pB = get_pB(part_data)
   return Matrix(pB)
 end
 
 """
-    hv = part_hessian!(part_data::PartitionedData, x::AbstractVector)
+    hv = hess!(part_data::PartitionedData, x::AbstractVector)
 
 Build in place the partitioned hessian ∇²f(`x`).
 """ 
-function part_hessian!(part_data::PartitionedData, x::AbstractVector)
+function hess!(part_data::PartitionedData, x::AbstractVector)
   set_pv!(part_data, x)
   
   index_element_tree = get_index_element_tree(part_data)
