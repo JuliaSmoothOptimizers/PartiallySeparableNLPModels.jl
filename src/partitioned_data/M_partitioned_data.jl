@@ -310,7 +310,7 @@ function evaluate_grad_part_data!(part_data::PartitionedData)
 end
 
 """
-    hv = part_hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
+    hv = hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
 
 Return `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
 """
