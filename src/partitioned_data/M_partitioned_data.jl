@@ -322,7 +322,7 @@ end
 """
     hv = hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
 
-Build in place of `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
+Set `hv::Vector` to the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
 """ 
 function hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
   set_ps!(part_data, x)
