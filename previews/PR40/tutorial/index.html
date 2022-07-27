@@ -10,7 +10,7 @@ start_example(n :: Int) = ones(n)
 example_model(n :: Int) = ADNLPModel(example, start_example(n), name=&quot;Example &quot; * string(n) * &quot; variables&quot;)
 
 n = 4 # size of the problem
-model = example_model(n)</code></pre><pre class="documenter-example-output">ADNLPModel - Model with automatic differentiation backend ADNLPModels.ForwardDiffAD{ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}}(10, 0, ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}((Partials(1.0, 0.0, 0.0, 0.0), Partials(0.0, 1.0, 0.0, 0.0), Partials(0.0, 0.0, 1.0, 0.0), Partials(0.0, 0.0, 0.0, 1.0)), ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}[Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9446411775525e-310,6.94464117755566e-310,6.9446411775588e-310,6.944641177562e-310,6.94464117756514e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9446411775683e-310,6.94464117757147e-310,6.94464117757463e-310,6.9446411775778e-310,6.94464117758095e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.9446411775841e-310,6.9446411775873e-310,6.94464117759044e-310,6.9446411775936e-310,6.94464117759676e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.94464117759993e-310,6.9446411776031e-310,6.94464117760625e-310,6.9446411776094e-310,6.94464117761257e-310)]))
+model = example_model(n)</code></pre><pre class="documenter-example-output">ADNLPModel - Model with automatic differentiation backend ADNLPModels.ForwardDiffAD{ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}}(10, 0, ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}((Partials(1.0, 0.0, 0.0, 0.0), Partials(0.0, 1.0, 0.0, 0.0), Partials(0.0, 0.0, 1.0, 0.0), Partials(0.0, 0.0, 0.0, 1.0)), ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}[Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(9.4e-323,1.0e-322,9.0e-323,3.0e-323,8.4e-323), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.4e-323,8.0e-323,7.0e-323,7.4e-323,6.0e-323), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(5.0e-323,5.4e-323,4.4e-323,3.5e-323,4.0e-323), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(2.5e-323,2.0e-323,1.5e-323,1.0e-323,5.0e-324)]))
   Problem name: Example 4 variables
    All variables: ████████████████████ 4      All constraints: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
             free: ████████████████████ 4                 free: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
@@ -112,10 +112,10 @@ gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient</code></pre><pre clas
  0.0  0.0  2.0  0.0
  0.0  0.0  0.0  1.0</pre><p>You can specify the partitioned quasi-Newton update with the optional argument <code>name</code>:</p><pre><code class="language-julia">PartiallySeparableNLPModel(jumpnlp_example; name=:plse) # by default</code></pre><p>The possible variants are: <code>:pbfgs, :psr1, :pse, :plbfgs, :plsr1</code> and <code>:plse</code>, see the <a href="https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/">PartitionedStructures.jl tutorial</a> for more details.</p><p>Then, you can update the partitioned quasi-Newton approximation with the pair <code>x,s</code>:</p><pre><code class="language-julia">s = rand(n)
 update_nlp(pqn_adnlp, x, s)</code></pre><pre class="documenter-example-output">4×4 Matrix{Float64}:
- 5.1203    0.343215   0.0       0.0
- 0.343215  5.40703    0.646766  0.0
- 0.0       0.646766  11.0727    0.800092
- 0.0       0.0        0.800092  2.39993</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
+ 5.90827  1.40125     0.0         0.0
+ 1.40125  6.26792     0.00777633  0.0
+ 0.0      0.00777633  8.12731     0.0231633
+ 0.0      0.0         0.0231633   3.69649</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
 Bv = hprod(pqn_adnlp, x, v)</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
  4.0
  8.0
