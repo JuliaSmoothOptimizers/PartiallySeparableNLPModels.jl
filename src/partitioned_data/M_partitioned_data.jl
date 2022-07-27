@@ -1,4 +1,6 @@
 module Mod_ab_partitioned_data
+
+using SparseArrays
 using ReverseDiff, ForwardDiff
 using PartitionedStructures, ExpressionTreeForge
 using ..Mod_common
@@ -347,15 +349,19 @@ function hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector
   hv .= PartitionedStructures.get_v(get_phv(part_data))
 end
 
+"""
+    H = hess(part_data::PartitionedData, x::AbstractVector)
 
+Build the sparse hessian ∇²f(`x`).
+""" 
 function hess(part_data::PartitionedData, x::AbstractVector)
   hess!(part_data::PartitionedData, x::AbstractVector)
   pB = get_pB(part_data)
-  return Matrix(pB)
+  return SparseMatrixCSC(pB)
 end
 
 """
-    hv = hess!(part_data::PartitionedData, x::AbstractVector)
+    hess!(part_data::PartitionedData, x::AbstractVector)
 
 Build in place the partitioned hessian ∇²f(`x`).
 """ 

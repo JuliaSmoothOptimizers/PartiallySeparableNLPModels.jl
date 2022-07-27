@@ -83,16 +83,24 @@ Return the Hessian approximation of `nlp`.
 """
 hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
 
+"""
+    Hx = hess(nlp, x; obj_weight=1.0)
+
+Evaluate the objective Hessian at `x` as a sparse matrix,
+with objective function scaled by `obj_weight`, i.e.,
+"""
 function NLPModels.hess(
   nlp::PartiallySeparableNLPModel,
-  x::AbstractVector
+  x::AbstractVector;
+  obj_weight=1.
 )
   increment!(nlp, :neval_hess)
-  hess(nlp.part_data, x)
+  sp_hess = hess(nlp.part_data, x)
+  return obj_weight .* sp_hess
 end
 
 """
-    Hv = hprod(nlp, x, v; obj_weight=1.0)
+    hprod(nlp, x, v; obj_weight=1.0)
 
 Evaluate the product of the objective Hessian at `x` with the vector `v`,
 with objective function scaled by `obj_weight`.
@@ -101,45 +109,11 @@ function NLPModels.hprod!(
   nlp::PartiallySeparableNLPModel,
   x::AbstractVector,
   v::AbstractVector,
-  Hv::AbstractVector,
-)
-  increment!(nlp, :neval_hprod)
-  hprod!(nlp.part_data, x, v, Hv)
-end
-
-"""
-    Hv = hprod(nlp, x, y, v; obj_weight=1.0)
-
-Evaluate the product of the Lagrangian Hessian at `(x,y)` with the vector `v`,
-with objective function scaled by `obj_weight`.
-"""
-function NLPModels.hprod!(
-  nlp::PartiallySeparableNLPModel,
-  x::AbstractVector,
-  y::AbstractVector,
-  v::AbstractVector,
   Hv::AbstractVector;
-  kwargs...,
+  obj_weight=1.
 )
   increment!(nlp, :neval_hprod)
-  hprod!(nlp.part_data, x, v, Hv)
+  hprod!(nlp.part_data, x, obj_weight .* v, Hv)
 end
-
-"""
-    Hv = hprod!(nlp, x, v, Hv; obj_weight=1.0)
-    
-Evaluate the product of the objective Hessian at `x` with the vector `v` in
-place, with objective function scaled by `obj_weight`.
-"""
-function NLPModels.hprod(
-  nlp::PartiallySeparableNLPModel,
-  x::AbstractVector,
-  v::AbstractVector,
-)
-  increment!(nlp, :neval_hprod)
-  hprod(nlp.part_data, x, v)
-end
-
-
 
 end
