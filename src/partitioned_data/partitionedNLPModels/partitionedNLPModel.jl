@@ -84,23 +84,7 @@ Return the Hessian approximation of `nlp`.
 hess_approx(nlp::PartiallySeparableNLPModel) = get_pB(nlp)
 
 """
-    Hx = hess(nlp, x; obj_weight=1.0)
-
-Evaluate the objective Hessian at `x` as a sparse matrix,
-with objective function scaled by `obj_weight`, i.e.,
-"""
-function NLPModels.hess(
-  nlp::PartiallySeparableNLPModel,
-  x::AbstractVector;
-  obj_weight=1.
-)
-  increment!(nlp, :neval_hess)
-  sp_hess = hess(nlp.part_data, x)
-  return obj_weight .* sp_hess
-end
-
-"""
-    hprod(nlp, x, v; obj_weight=1.0)
+    hprod!(nlp::PartiallySeparableNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
 
 Evaluate the product of the objective Hessian at `x` with the vector `v`,
 with objective function scaled by `obj_weight`.

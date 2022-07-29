@@ -322,7 +322,7 @@ function hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
 end 
 
 """
-    hv = hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
+    hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
 
 Set `hv::Vector` to the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
 """ 
@@ -347,42 +347,6 @@ function hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector
   end
   PartitionedStructures.build_v!(get_phv(part_data))
   hv .= PartitionedStructures.get_v(get_phv(part_data))
-end
-
-"""
-    H = hess(part_data::PartitionedData, x::AbstractVector)
-
-Build the sparse hessian ∇²f(`x`).
-""" 
-function hess(part_data::PartitionedData, x::AbstractVector)
-  hess!(part_data::PartitionedData, x::AbstractVector)
-  pB = get_pB(part_data)
-  return SparseMatrixCSC(pB)
-end
-
-"""
-    hess!(part_data::PartitionedData, x::AbstractVector)
-
-Build in place the partitioned hessian ∇²f(`x`).
-""" 
-function hess!(part_data::PartitionedData, x::AbstractVector)
-  set_pv!(part_data, x)
-  
-  index_element_tree = get_index_element_tree(part_data)
-  N = get_N(part_data)
-  ∇²f!(H, f, x) = ForwardDiff.hessian!(H, f, x)
-
-  for i = 1:N
-    complete_tree = get_vec_elt_complete_expr_tree(part_data, index_element_tree[i])
-    elf_fun = ExpressionTreeForge.evaluate_expr_tree(complete_tree)
-
-    Uix = PartitionedStructures.get_eev_value(get_pv(part_data), i)
-    sym_Hi = PartitionedStructures.get_eem_set_Bie(get_pB(part_data), i)
-    Hi = sym_Hi.data
-    
-    ∇²f!(Hi, elf_fun, Uix)
-  end
-  return get_pB(part_data)
 end
 
 end
