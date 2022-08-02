@@ -14,13 +14,15 @@
   @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(pbfgsnlp, x)
   @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(plbfgsnlp, x)
 
-  v = [ i%2 == 0 ? 1. : 0. for i in 1:n]
+  v = [i % 2 == 0 ? 1.0 : 0.0 for i = 1:n]
   @test NLPModels.hprod(nlp, x, v) ≈ NLPModels.hprod(pbfgsnlp, x, v)
   @test NLPModels.hprod(nlp, x, v) ≈ NLPModels.hprod(plbfgsnlp, x, v)
 
-  @test NLPModels.hprod(nlp, x, v; obj_weight=1.5) ≈ NLPModels.hprod(pbfgsnlp, x, v; obj_weight=1.5)
-  @test NLPModels.hprod(nlp, x, v; obj_weight=1.5) ≈ NLPModels.hprod(plbfgsnlp, x, v; obj_weight=1.5)
-  
+  @test NLPModels.hprod(nlp, x, v; obj_weight = 1.5) ≈
+        NLPModels.hprod(pbfgsnlp, x, v; obj_weight = 1.5)
+  @test NLPModels.hprod(nlp, x, v; obj_weight = 1.5) ≈
+        NLPModels.hprod(plbfgsnlp, x, v; obj_weight = 1.5)
+
   s = (si -> 0.5 * si).(ones(n))
   B_pbfgs = update_nlp(pbfgsnlp, x, s)
   B_plbfgs = update_nlp(plbfgsnlp, x, s)

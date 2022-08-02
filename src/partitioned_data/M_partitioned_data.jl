@@ -26,7 +26,18 @@ export set_n!,
   set_index_element_tree!,
   set_vec_compiled_element_gradients!
 export set_x!,
-  set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_py!, set_ps!, set_phv!, set_pB!, set_fx!
+  set_v!,
+  set_s!,
+  set_pg!,
+  set_pv!,
+  set_ps!,
+  set_pg!,
+  set_pv!,
+  set_py!,
+  set_ps!,
+  set_phv!,
+  set_pB!,
+  set_fx!
 
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 export product_part_data_x!,
@@ -319,31 +330,36 @@ Return `hv::Vector` the product between the partitioned hessian ∇²f(`x`) and 
 function hprod(part_data::PartitionedData, x::AbstractVector, v::AbstractVector)
   hv = similar(x)
   hprod!(part_data, x, v, hv)
-end 
+end
 
 """
     hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
 
 Set `hv::Vector` to the product between the partitioned hessian ∇²f(`x`) and the vector `v`.
-""" 
-function hprod!(part_data::PartitionedData, x::AbstractVector, v::AbstractVector, hv::AbstractVector)
+"""
+function hprod!(
+  part_data::PartitionedData,
+  x::AbstractVector,
+  v::AbstractVector,
+  hv::AbstractVector,
+)
   set_ps!(part_data, x)
   set_pv!(part_data, v)
-  
+
   index_element_tree = get_index_element_tree(part_data)
   N = get_N(part_data)
   ∇f(x; f) = ReverseDiff.gradient(f, x)
-  ∇²fv!(x, v, hv; f) = ForwardDiff.derivative!(hv, t -> ∇f(x + t*v; f), 0)
+  ∇²fv!(x, v, hv; f) = ForwardDiff.derivative!(hv, t -> ∇f(x + t * v; f), 0)
 
   for i = 1:N
     complete_tree = get_vec_elt_complete_expr_tree(part_data, index_element_tree[i])
     elf_fun = ExpressionTreeForge.evaluate_expr_tree(complete_tree)
 
     Uix = PartitionedStructures.get_eev_value(get_ps(part_data), i)
-    Uiv = PartitionedStructures.get_eev_value(get_pv(part_data), i)    
-    
+    Uiv = PartitionedStructures.get_eev_value(get_pv(part_data), i)
+
     hvi = PartitionedStructures.get_eev_value(get_phv(part_data), i)
-    ∇²fv!(Uix, Uiv, hvi; f=elf_fun)
+    ∇²fv!(Uix, Uiv, hvi; f = elf_fun)
   end
   PartitionedStructures.build_v!(get_phv(part_data))
   hv .= PartitionedStructures.get_v(get_phv(part_data))
