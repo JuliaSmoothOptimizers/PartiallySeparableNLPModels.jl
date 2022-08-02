@@ -10,7 +10,7 @@ start_example(n :: Int) = ones(n)
 example_model(n :: Int) = ADNLPModel(example, start_example(n), name=&quot;Example &quot; * string(n) * &quot; variables&quot;)
 
 n = 4 # size of the problem
-model = example_model(n)</code></pre><pre class="documenter-example-output">ADNLPModel - Model with automatic differentiation backend ADNLPModels.ForwardDiffAD{ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}}(10, 0, ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}((Partials(1.0, 0.0, 0.0, 0.0), Partials(0.0, 1.0, 0.0, 0.0), Partials(0.0, 0.0, 1.0, 0.0), Partials(0.0, 0.0, 0.0, 1.0)), ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}[Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(3.26e-322,3.26e-322,5.63e-322,7.2e-322,7.6e-322), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(5.63e-322,9.7e-322,2.67e-322,3.26e-322,4.15e-322), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(4.45e-322,4.94e-322,6.03e-322,6.3e-322,7.3e-322), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(8.2e-322,8.5e-322,9.0e-322,1.01e-321,1.077e-321)]))
+model = example_model(n)</code></pre><pre class="documenter-example-output">ADNLPModel - Model with automatic differentiation backend ADNLPModels.ForwardDiffAD{ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}}(10, 0, ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}((Partials(1.0, 0.0, 0.0, 0.0), Partials(0.0, 1.0, 0.0, 0.0), Partials(0.0, 0.0, 1.0, 0.0), Partials(0.0, 0.0, 0.0, 1.0)), ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}[Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.94775364715254e-310,6.94775364715254e-310,6.94775364715254e-310,6.94775364715254e-310,6.94775364715254e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.94775364715254e-310,6.94775364715254e-310,6.94775364715254e-310,6.94775364715254e-310,6.94775364715254e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.94775364715254e-310,6.94775364715254e-310,6.94766304348494e-310,6.9476630435972e-310,6.94766207551706e-310), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(6.94775364715254e-310,6.94766260083533e-310,6.94775364715254e-310,6.94766209247577e-310,6.9476663359376e-310)]))
   Problem name: Example 4 variables
    All variables: ████████████████████ 4      All constraints: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
             free: ████████████████████ 4                 free: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
@@ -28,7 +28,7 @@ model = example_model(n)</code></pre><pre class="documenter-example-output">ADNL
             jcon: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jgrad: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                  jac: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
            jprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jtprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 hess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
            hprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jhess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jhprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
-</pre><p>and call <code>PartiallySeparableNLPModel</code> to define a partitioned <code>NLPModel</code>:</p><pre><code class="language-julia">pqn_adnlp = PartiallySeparableNLPModel(model)</code></pre><pre class="documenter-example-output">ADNLPModel - Model with automatic differentiation backend ADNLPModels.ForwardDiffAD{ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}}(10, 0, ForwardDiff.GradientConfig{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}}}((Partials(1.0, 0.0, 0.0, 0.0), Partials(0.0, 1.0, 0.0, 0.0), Partials(0.0, 0.0, 1.0, 0.0), Partials(0.0, 0.0, 0.0, 1.0)), ForwardDiff.Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}, Float64, 4}[Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(3.26e-322,3.26e-322,5.63e-322,7.2e-322,7.6e-322), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(5.63e-322,9.7e-322,2.67e-322,3.26e-322,4.15e-322), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(4.45e-322,4.94e-322,6.03e-322,6.3e-322,7.3e-322), Dual{ForwardDiff.Tag{typeof(Main.ex-PSNLP.example), Float64}}(8.2e-322,8.5e-322,9.0e-322,1.01e-321,1.077e-321)]))
+</pre><p>and call <code>PartiallySeparableNLPModel</code> to define a partitioned <code>NLPModel</code>:</p><pre><code class="language-julia">pqn_adnlp = PartiallySeparableNLPModel(model)</code></pre><pre class="documenter-example-output">PartiallySeparableNLPModel{Float64, Vector{Float64}, ExpressionTreeForge.M_implementation_tree.Type_node{ExpressionTreeForge.M_implementation_complete_expr_tree.Complete_node{T}} where T&lt;:Number, ADNLPModels.ADNLPModel{Float64, Vector{Float64}}, NLPModels.NLPModelMeta{Float64, Vector{Float64}}}
   Problem name: Example 4 variables
    All variables: ████████████████████ 4      All constraints: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
             free: ████████████████████ 4                 free: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
@@ -46,19 +46,7 @@ model = example_model(n)</code></pre><pre class="documenter-example-output">ADNL
             jcon: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jgrad: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                  jac: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
            jprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jtprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                 hess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
            hprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0                jhess: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               jhprod: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
-
-Partitioned structure summary:
-           element functions: ████████████████████ 3     
-  distinct element functions: ███████⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 1     
-   Element statistics:
-          linear: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0               convex: ████████████████████ 3     
-       quadratic: ████████████████████ 3              concave: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
-           cubic: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0              general: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
-         general: ⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 0     
-  Element function dimensions:                         Variable overlaps: 
-             min: ████████████████████ 2.0                min: ██████████⋅⋅⋅⋅⋅⋅⋅⋅⋅⋅ 1.0   
-            mean: ████████████████████ 2.0               mean: ███████████████⋅⋅⋅⋅⋅ 1.5   
-             max: ████████████████████ 2.0                max: ████████████████████ 2.0   </pre><p>Then, you can apply the usual methods <code>obj</code> and <code>grad</code> from <a href="https://github.com/JuliaSmoothOptimizers/NLPModels.jl">NLPModels.jl</a>:</p><pre><code class="language-julia">using NLPModels
+</pre><p>Then, you can apply the usual methods <code>obj</code> and <code>grad</code> from <a href="https://github.com/JuliaSmoothOptimizers/NLPModels.jl">NLPModels.jl</a>:</p><pre><code class="language-julia">using NLPModels
 x = ones(n)
 fx = NLPModels.obj(pqn_adnlp, x) # compute the obective function</code></pre><pre class="documenter-example-output">12.0</pre><pre><code class="language-julia">gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
  4.0
@@ -124,17 +112,17 @@ gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient</code></pre><pre clas
  0.0  0.0  2.0  0.0
  0.0  0.0  0.0  1.0</pre><p>You can specify the partitioned quasi-Newton update with the optional argument <code>name</code>:</p><pre><code class="language-julia">PartiallySeparableNLPModel(jumpnlp_example; name=:plse) # by default</code></pre><p>The possible variants are: <code>:pbfgs, :psr1, :pse, :plbfgs, :plsr1</code> and <code>:plse</code>, see the <a href="https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/">PartitionedStructures.jl tutorial</a> for more details.</p><p>Then, you can update the partitioned quasi-Newton approximation with the pair <code>x,s</code>:</p><pre><code class="language-julia">s = rand(n)
 update_nlp(pqn_adnlp, x, s)</code></pre><pre class="documenter-example-output">4×4 Matrix{Float64}:
- 2.78936    0.408034  0.0        0.0
- 0.408034  11.1952    1.75179    0.0
- 0.0        1.75179   5.76342    0.0159453
- 0.0        0.0       0.0159453  4.25205</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
+ 5.01888  0.27899   0.0        0.0
+ 0.27899  5.4453    0.718884   0.0
+ 0.0      0.718884  9.53774    9.2045e-7
+ 0.0      0.0       9.2045e-7  3.99808</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
 Bv = hprod(pqn_adnlp, x, v)</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
-  3.1973959987890233
- 13.354999857316411
-  7.531151294567778
-  4.267990579486865</pre><p>An in-place variant helps define a <code>LinearOperator</code> (see <a href="https://github.com/JuliaSmoothOptimizers/LinearOperators.jl">LinearOperators</a>) from a <code>PartiallySeparableNLPModel</code>:</p><pre><code class="language-julia">B = hess_op(pqn_adnlp, x)
+ 4.0
+ 8.0
+ 8.0
+ 4.0</pre><p>An in-place variant helps define a <code>LinearOperator</code> (see <a href="https://github.com/JuliaSmoothOptimizers/LinearOperators.jl">LinearOperators</a>) from a <code>PartiallySeparableNLPModel</code>:</p><pre><code class="language-julia">B = hess_op(pqn_adnlp, x)
 B*v</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
-  3.1973959987890233
- 13.354999857316411
-  7.531151294567778
-  4.267990579486865</pre><p>which can be paired with iterative solvers (see <a href="https://github.com/JuliaSmoothOptimizers/Krylov.jl">Krylov.jl</a>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 29 July 2022 15:04">Friday 29 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 4.0
+ 8.0
+ 8.0
+ 4.0</pre><p>which can be paired with iterative solvers (see <a href="https://github.com/JuliaSmoothOptimizers/Krylov.jl">Krylov.jl</a>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 2 August 2022 16:20">Tuesday 2 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
