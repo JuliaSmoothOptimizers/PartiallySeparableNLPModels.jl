@@ -94,7 +94,7 @@ function NLPModels.hprod!(
   x::AbstractVector,
   v::AbstractVector,
   Hv::AbstractVector;
-  obj_weight=1.
+  obj_weight = 1.0,
 )
   increment!(nlp, :neval_hprod)
   hprod!(nlp.part_data, x, obj_weight .* v, Hv)
