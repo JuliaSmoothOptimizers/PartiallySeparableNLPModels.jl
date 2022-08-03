@@ -15,38 +15,6 @@ abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S}
 """ Accumulate the supported NLPModels. """
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
 
-"""
-    expr, n, x0 = get_expr_tree(adnlp::MathOptNLPModel; x0::Vector{T} = copy(adnlp.meta.x0), kwargs...) where {T <: Number}
-    expr, n, x0 = get_expr_tree(adnlp::ADNLPModel; x0::Vector{T} = copy(adnlp.meta.x0), kwargs...) where {T <: Number}
-
-Return for a `MathOptNLPModel` or a `ADNLPModel`: the expression tree `expr::Expr` of the objective function, the size of the problem `n` and the initial point `x0`.
-"""
-function get_expr_tree(
-  nlp::MathOptNLPModel;
-  x0::Vector{T} = copy(nlp.meta.x0),
-  kwargs...,
-) where {T <: Number}
-  model = nlp.eval.m
-  n = nlp.meta.nvar
-  evaluator = JuMP.NLPEvaluator(model)
-  MathOptInterface.initialize(evaluator, [:ExprGraph])
-  obj_Expr = MathOptInterface.objective_expr(evaluator)::Expr
-  ex = ExpressionTreeForge.transform_to_expr_tree(obj_Expr)::ExpressionTreeForge.Type_expr_tree
-  return ex, n, x0
-end
-
-function get_expr_tree(
-  adnlp::ADNLPModel;
-  x0::Vector{T} = copy(adnlp.meta.x0),
-  kwargs...,
-) where {T <: Number}
-  n = adnlp.meta.nvar
-  ModelingToolkit.@variables x[1:n]
-  fun = adnlp.f(x)
-  ex = ExpressionTreeForge.transform_to_expr_tree(fun)::ExpressionTreeForge.Type_expr_tree
-  return ex, n, x0
-end
-
 include("PartiallySeparableNLPModel.jl")
 
 """
