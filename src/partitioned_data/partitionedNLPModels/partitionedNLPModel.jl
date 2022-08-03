@@ -100,4 +100,12 @@ function NLPModels.hprod!(
   hprod!(nlp.part_data, x, obj_weight .* v, Hv)
 end
 
+show(psnlp::PartiallySeparableNLPModel) = show(stdout, psnlp)
+
+function show(io::IO, psnlp::PartiallySeparableNLPModel)
+  show(io, psnlp.nlp)
+  show(io, psnlp.part_data)
+  return nothing
+end
+
 end

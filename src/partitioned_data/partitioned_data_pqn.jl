@@ -307,18 +307,19 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   element_functions = part_data.vec_elt_fun
 
   element_function_types = (elt_fun -> elt_fun.type).(element_functions)
+  constant = count(is_constant, element_function_types)
   linear = count(is_linear, element_function_types)
   quadratic = count(is_quadratic, element_function_types)
   cubic = count(is_cubic, element_function_types)
   general = count(is_more, element_function_types)
 
-  S1 = ["linear", "quadratic", "cubic", "general"]
-  V1 = [linear, quadratic, cubic, general]
+  S1 = ["constant", "linear", "quadratic", "cubic", "general"]
+  V1 = [constant, linear, quadratic, cubic, general]
   LH1 = NLPModels.lines_of_hist(S1, V1)
 
   element_function_convexity_status = (elt_fun -> elt_fun.convexity_status).(element_functions)
-  convex = count(is_convex, element_function_convexity_status)
-  concave = count(is_concave, element_function_convexity_status)
+  convex = count(is_convex, element_function_convexity_status) - constant - linear
+  concave = count(is_concave, element_function_convexity_status) - constant - linear
   general = count(is_unknown, element_function_convexity_status)
 
   S2 = ["convex", "concave", "general"]
@@ -327,11 +328,12 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
 
   LH = map((i) -> LH1[i] * LH2[i], 1:3)
   push!(LH, LH1[4])
+  push!(LH, LH1[5])
   print(io, join(LH, "\n"))
 
   @printf(io, "\n %28s: %s %28s: \n", "Element function dimensions", " "^12, "Variable overlaps")
   length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
-  mean_length_element_functions = mean(length_element_functions)
+  mean_length_element_functions = round(mean(length_element_functions), digits=4)
   min_length_element_functions = minimum(length_element_functions)
   max_length_element_functions = maximum(length_element_functions)
 
@@ -342,7 +344,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   pv = part_data.pv
   component_list = PartitionedStructures.get_component_list(pv)
   length_by_variable = (elt_list_var -> length(elt_list_var)).(component_list)
-  mean_length_variable = mean(length_by_variable)
+  mean_length_variable = round(mean(length_by_variable), digits=4)
   min_length_variable = minimum(length_by_variable)
   max_length_variable = maximum(length_by_variable)
   S2 = ["min", "mean", "max"]
