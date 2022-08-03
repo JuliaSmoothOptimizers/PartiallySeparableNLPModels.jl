@@ -2,6 +2,7 @@ module Mod_PQN
 using Statistics
 using ReverseDiff
 using PartitionedStructures, ExpressionTreeForge
+using LinearOperators, LinearAlgebra
 using NLPModels # for show
 using Printf # for show
 using ..Mod_ab_partitioned_data, ..Mod_common
@@ -78,6 +79,23 @@ mutable struct PartitionedDataTRPQN{G, T <: Number, P <: Part_mat{T}} <:
   # the result of pB*v will be store and build from pv
   # name is the name of the partitioned quasi-Newton applied on pB
   name::Symbol
+end
+
+function partitionedMulOp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, res, v, α, β) where {G, T, P}
+  epv = get_pv(pd_pqn)
+  epv_from_v!(epv, v)
+  epv_res = get_phv(pd_pqn)
+  pB = get_pB(pd_pqn)
+  mul_epm_epv!(epv_res, pB, epv)
+  build_v!(epv_res)
+  mul!(res, I, PartitionedStructures.get_v(epv_res), 1, 0)
+  return epv_res
+end
+
+function LinearOperators.LinearOperator(pd_pqn::PartitionedDataTRPQN{G, T, P}) where {G, T, P}
+  n = get_n(pd_pqn) 
+  B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> partitionedMulOp!(pd_pqn, res, v, α, β))
+  return B
 end
 
 """

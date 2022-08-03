@@ -1,6 +1,7 @@
 module Mod_partitionedNLPModel
 
 using ExpressionTreeForge
+using LinearOperators
 using ADNLPModels, NLPModels, NLPModelsJuMP
 using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
@@ -99,6 +100,8 @@ function NLPModels.hprod!(
   increment!(nlp, :neval_hprod)
   hprod!(nlp.part_data, x, obj_weight .* v, Hv)
 end
+
+LinearOperators.LinearOperator(nlp::PartiallySeparableNLPModel) = LinearOperator(nlp.part_data)
 
 show(psnlp::PartiallySeparableNLPModel) = show(stdout, psnlp)
 
