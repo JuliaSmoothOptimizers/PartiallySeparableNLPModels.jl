@@ -333,7 +333,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
 
   @printf(io, "\n %28s: %s %28s: \n", "Element function dimensions", " "^12, "Variable overlaps")
   length_element_functions = (elt_fun -> length(elt_fun.variable_indices)).(element_functions)
-  mean_length_element_functions = round(mean(length_element_functions), digits=4)
+  mean_length_element_functions = round(mean(length_element_functions), digits = 4)
   min_length_element_functions = minimum(length_element_functions)
   max_length_element_functions = maximum(length_element_functions)
 
@@ -344,7 +344,7 @@ function show(io::IO, part_data::PartitionedDataTRPQN)
   pv = part_data.pv
   component_list = PartitionedStructures.get_component_list(pv)
   length_by_variable = (elt_list_var -> length(elt_list_var)).(component_list)
-  mean_length_variable = round(mean(length_by_variable), digits=4)
+  mean_length_variable = round(mean(length_by_variable), digits = 4)
   min_length_variable = minimum(length_by_variable)
   max_length_variable = maximum(length_by_variable)
   S2 = ["min", "mean", "max"]
