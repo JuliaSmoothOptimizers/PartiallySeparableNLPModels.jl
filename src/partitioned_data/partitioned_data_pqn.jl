@@ -81,6 +81,11 @@ mutable struct PartitionedDataTRPQN{G, T <: Number, P <: Part_mat{T}} <:
   name::Symbol
 end
 
+"""
+    partitionedMulOp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, res, v, α, β) where {G, T, P}
+
+Partitioned 5-arg `mul!` for `pd_pqn` using the partitioned matrix and partitioned vectors to destribute and collect the result of element matrix-vector products.
+"""
 function partitionedMulOp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, res, v, α, β) where {G, T, P}
   epv = get_pv(pd_pqn)
   epv_from_v!(epv, v)
@@ -88,7 +93,7 @@ function partitionedMulOp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, res, v, α, β
   pB = get_pB(pd_pqn)
   mul_epm_epv!(epv_res, pB, epv)
   build_v!(epv_res)
-  mul!(res, I, PartitionedStructures.get_v(epv_res), 1, 0)
+  mul!(res, I, PartitionedStructures.get_v(epv_res), α, β)
   return epv_res
 end
 
