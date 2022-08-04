@@ -3,7 +3,6 @@ module Mod_partitionedNLPModel
 using ExpressionTreeForge
 using LinearOperators
 using ADNLPModels, NLPModels, NLPModelsJuMP
-using JuMP, MathOptInterface, ModelingToolkit
 using ..Mod_ab_partitioned_data
 using ..Mod_PQN
 
