@@ -28,7 +28,6 @@ function PartiallySeparableNLPModel(nlp::SupportedNLPModel; kwargs...)
   n = nlp.meta.nvar
   x0 = nlp.meta.x0
   ex = get_expression_tree(nlp)
-  @show ex
   part_data_plbfgs = build_PartitionedDataTRPQN(ex, n; x0 = x0, kwargs...)
   meta = nlp.meta
   counters = NLPModels.Counters()
