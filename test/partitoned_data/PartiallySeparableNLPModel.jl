@@ -28,7 +28,7 @@
   B_plbfgs = update_nlp(plbfgsnlp, x, s)
   py = get_py(pbfgsnlp.part_data)
   build_v!(py)
-  y = get_v(py)
+  y = PartitionedStructures.get_v(py)
 end
 
 @testset "test PartiallySeparableNLPModel (PBFGS, PLBFGS) MathOptNLPModel" begin
@@ -55,12 +55,14 @@ end
   @test NLPModels.hprod(nlp, x, v; obj_weight = 1.5) ≈
         NLPModels.hprod(plbfgsnlp, x, v; obj_weight = 1.5)
 
+  @test NLPModels.hprod(plbfgsnlp, x, v) == NLPModels.hprod(plbfgsnlp.part_data, x, v)
+
   s = (si -> 0.5 * si).(ones(n))
   B_pbfgs = update_nlp(pbfgsnlp, x, s)
   B_plbfgs = update_nlp(plbfgsnlp, x, s)
   py = get_py(pbfgsnlp.part_data)
   build_v!(py)
-  y = get_v(py)
+  y = PartitionedStructures.get_v(py)
 end
 
 @testset "show" begin
