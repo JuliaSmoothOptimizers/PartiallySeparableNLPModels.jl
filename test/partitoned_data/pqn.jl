@@ -182,10 +182,16 @@ end
   set_pv!(part_data, onesn)
   @test get_pv(part_data) == epv
 
+  set_pv!(part_data, epv)
+  @test get_pv(part_data) == epv
+
   set_ps!(part_data, onesn)
   @test get_ps(part_data) == epv
 
   set_pg!(part_data, onesn)
+  @test get_pg(part_data) == epv
+
+  set_pg!(part_data, epv)
   @test get_pg(part_data) == epv
 
   set_py!(part_data, onesn)
