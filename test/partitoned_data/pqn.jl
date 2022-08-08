@@ -69,7 +69,7 @@ end
   @test res ≈ Bk1 * x
 end
 
-@testset "PartiallySeparableNLPModels" begin
+@testset "PartiallySeparableNLPModels, update_nlp!(part_data, x, s)" begin
   n = 40
 
   (m, evaluator, obj, x0) = create_Rosenbrock_JuMP_Model(n)
@@ -85,23 +85,23 @@ end
   ps_data_pse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pse)
   ps_data_pcs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pcs)
 
-  update_nlp!(ps_data_plbfgs, x, s)
+  update_nlp!(ps_data_plbfgs, x, s; verbose=false)
+  update_nlp!(ps_data_plse, x, s; verbose=false)
+  update_nlp!(ps_data_pbfgs, x, s; verbose=false)
+  update_nlp!(ps_data_psr1, x, s; verbose=false)
+  update_nlp!(ps_data_pse, x, s; verbose=false)
+  update_nlp!(ps_data_pcs, x, s; verbose=false)
   # update_nlp!(ps_data_plbfgs_damped, x, s)
   # update_nlp!(ps_data_plsr1, x, s)
-  update_nlp!(ps_data_plse, x, s)
-  update_nlp!(ps_data_pbfgs, x, s)
-  update_nlp!(ps_data_psr1, x, s)
-  update_nlp!(ps_data_pse, x, s)
-  update_nlp!(ps_data_pcs, x, s)
-
-  # @test ps_data_plsr1.py == ps_data_plbfgs.py
+  
   @test ps_data_plbfgs.py == ps_data_plse.py
-  # @test ps_data_plbfgs.py != ps_data_plbfgs_damped.py
   @test ps_data_plbfgs.py == ps_data_pbfgs.py
   @test ps_data_plbfgs.py == ps_data_psr1.py
   @test ps_data_plbfgs.py == ps_data_pse.py
   @test ps_data_plbfgs.py == ps_data_pcs.py
-
+  # @test ps_data_plsr1.py == ps_data_plbfgs.py
+  # @test ps_data_plbfgs.py != ps_data_plbfgs_damped.py
+  
   epv_y = ps_data_plbfgs.py
   PartitionedStructures.build_v!(epv_y)
   y = PartitionedStructures.get_v(epv_y)
@@ -116,6 +116,55 @@ end
   @test isapprox(norm(partitioned_matrix(ps_data_plbfgs) * s - y), 0, atol = 1e-10)
   # @test isapprox(norm(partitioned_matrix(ps_data_plbfgs_damped)*s - y_damped), 0, atol=1e-10)
   # @test isapprox(norm(partitioned_matrix(ps_data_plsr1)*s - y), 0, atol=1e-10)
+  @test isapprox(norm(partitioned_matrix(ps_data_plse) * s - y), 0, atol = 1e-10)
+  @test isapprox(norm(partitioned_matrix(ps_data_pbfgs) * s - y), 0, atol = 1e-10)
+  @test isapprox(norm(partitioned_matrix(ps_data_psr1) * s - y), 0, atol = 1e-10)
+  @test isapprox(norm(partitioned_matrix(ps_data_pse) * s - y), 0, atol = 1e-10)
+  @test isapprox(norm(partitioned_matrix(ps_data_pcs) * s - y), 0, atol = 1e-10)
+end
+
+@testset "PartiallySeparableNLPModels, update_nlp!(part_data, s)" begin
+  n = 40
+
+  (m, evaluator, obj, x0) = create_Rosenbrock_JuMP_Model(n)
+  x = (x -> 2 * x).(ones(n))
+  s = rand(n)
+
+  ps_data_plbfgs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :plbfgs)
+  ps_data_plse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :plse)
+  ps_data_pbfgs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pbfgs)
+  ps_data_psr1 = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :psr1)
+  ps_data_pse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pse)
+  ps_data_pcs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pcs)
+
+  evaluate_grad_part_data!(ps_data_plbfgs)
+  evaluate_grad_part_data!(ps_data_plse)
+  evaluate_grad_part_data!(ps_data_pbfgs)
+  evaluate_grad_part_data!(ps_data_psr1)
+  evaluate_grad_part_data!(ps_data_pse)
+  evaluate_grad_part_data!(ps_data_pcs)
+
+  update_nlp!(ps_data_plbfgs, s; verbose=false)
+  update_nlp!(ps_data_plse, s; verbose=false)
+  update_nlp!(ps_data_pbfgs, s; verbose=false)
+  update_nlp!(ps_data_psr1, s; verbose=false)
+  update_nlp!(ps_data_pse, s; verbose=false)
+  update_nlp!(ps_data_pcs, s; verbose=false)
+
+  @test ps_data_plbfgs.py == ps_data_plse.py
+  @test ps_data_plbfgs.py == ps_data_pbfgs.py
+  @test ps_data_plbfgs.py == ps_data_psr1.py
+  @test ps_data_plbfgs.py == ps_data_pse.py
+  @test ps_data_plbfgs.py == ps_data_pcs.py
+
+  epv_y = ps_data_plbfgs.py
+  PartitionedStructures.build_v!(epv_y)
+  y = PartitionedStructures.get_v(epv_y)
+
+  partitioned_matrix(nlp) = Matrix(nlp.pB)
+
+  # in the case of the Rosenbrock equation, for the given x,s and induces y, every partitioned update ensure the secant equation.
+  @test isapprox(norm(partitioned_matrix(ps_data_plbfgs) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_plse) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_pbfgs) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_psr1) * s - y), 0, atol = 1e-10)

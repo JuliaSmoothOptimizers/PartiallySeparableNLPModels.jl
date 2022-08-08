@@ -30,3 +30,16 @@
   build_v!(py)
   y = get_v(py)
 end
+
+@testset "show" begin
+  n = 10
+  nlp = arwhead(; n)
+
+  x = ones(n)
+
+  pbfgsnlp = PartiallySeparableNLPModel(nlp; name = :pbfgs)
+  
+  res = show(pbfgsnlp)
+
+  @test res == nothing
+end
