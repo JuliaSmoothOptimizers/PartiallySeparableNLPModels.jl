@@ -1,3 +1,5 @@
+using PartiallySeparableNLPModels.Mod_ab_partitioned_data
+
 @testset "PQN structure" begin
   n = 20
   adnlp = ADNLPProblems.rosenbrock(;n)
@@ -139,4 +141,62 @@ end
   @test isapprox(norm(partitioned_matrix(ps_data_psr1) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_pse) * s - y), 0, atol = 1e-10)
   @test isapprox(norm(partitioned_matrix(ps_data_pcs) * s - y), 0, atol = 1e-10)
+end
+
+@testset "methods" begin
+  n = 20
+  adnlp = ADNLPProblems.rosenbrock(;n)
+  obj = ExpressionTreeForge.get_expression_tree(adnlp)
+
+  x = (x -> 2 * x).(ones(n))
+  s = rand(n)
+
+  part_data = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pbfgs)
+  
+  @test get_vec_elt_fun(part_data) == part_data.vec_elt_fun
+  @test get_vec_elt_complete_expr_tree(part_data) == part_data.vec_elt_complete_expr_tree
+  @test get_element_expr_tree_table(part_data) == part_data.element_expr_tree_table
+  @test get_vec_compiled_element_gradients(part_data) == part_data.vec_compiled_element_gradients
+  
+  s = rand(n)
+  set_s!(part_data, s)
+  @test get_s(part_data) == s
+
+  set_n!(part_data, n+1)
+  @test get_n(part_data) == n+1
+  set_n!(part_data, n)
+  
+  N = get_N(part_data)
+  set_N!(part_data, N+1)
+  @test get_N(part_data) == N+1
+  set_N!(part_data, N)
+    
+  v = rand(n)
+  set_v!(part_data, v)
+  @test Mod_ab_partitioned_data.get_v(part_data) == v
+
+  onesn = ones(n)
+  epv = similar(get_pv(part_data))
+  epv_from_v!(epv, onesn)
+
+  set_pv!(part_data, onesn)
+  @test get_pv(part_data) == epv
+
+  set_ps!(part_data, onesn)
+  @test get_ps(part_data) == epv
+
+  set_pg!(part_data, onesn)
+  @test get_pg(part_data) == epv
+
+  set_py!(part_data, onesn)
+  @test get_py(part_data) == epv
+
+  set_phv!(part_data, onesn)
+  @test get_phv(part_data) == epv
+
+  epm = epm_from_epv(epv)
+
+  set_pB!(part_data, epm)
+  @test get_pB(part_data) == epm
+
 end

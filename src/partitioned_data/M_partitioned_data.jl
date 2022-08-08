@@ -136,7 +136,7 @@ abstract type PartitionedData end
 ) where {Y <: Number} = PartitionedStructures.epv_from_epv!(part_data.ps, ps)
 
 @inline set_pg!(part_data::PartitionedData, x::AbstractVector{Y}) where {Y <: Number} =
-  PartitionedStructures.epv_from_v!(part_data.px, x)
+  PartitionedStructures.epv_from_v!(part_data.pg, x)
 
 @inline set_pv!(part_data::PartitionedData, v::AbstractVector{Y}) where {Y <: Number} =
   PartitionedStructures.epv_from_v!(part_data.pv, v)
@@ -148,7 +148,7 @@ abstract type PartitionedData end
   PartitionedStructures.epv_from_v!(part_data.ps, s)
 
 @inline set_phv!(part_data::PartitionedData, s::AbstractVector{Y}) where {Y <: Number} =
-  PartitionedStructures.epv_from_v!(part_data.ps, s)
+  PartitionedStructures.epv_from_v!(part_data.phv, s)
 
 @inline set_pB!(
   part_data::PartitionedData,

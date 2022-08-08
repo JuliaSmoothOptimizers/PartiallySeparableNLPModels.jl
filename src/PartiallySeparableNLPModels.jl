@@ -33,7 +33,7 @@ export set_n!,
   set_index_element_tree!,
   set_vec_compiled_element_gradients!
 export set_x!,
-  set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_ps!, set_phv!, set_pB!, set_fx!
+  set_v!, set_s!, set_pg!, set_pv!, set_ps!, set_pg!, set_pv!, set_py!, set_ps!, set_phv!, set_pB!, set_fx!
 export update_nlp, update_nlp!, update_PQN, update_PQN!
 export hess_approx
 
