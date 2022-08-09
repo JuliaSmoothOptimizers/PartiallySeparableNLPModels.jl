@@ -24,8 +24,8 @@
         NLPModels.hprod(plbfgsnlp, x, v; obj_weight = 1.5)
 
   s = (si -> 0.5 * si).(ones(n))
-  B_pbfgs = update_nlp(pbfgsnlp, x, s)
-  B_plbfgs = update_nlp(plbfgsnlp, x, s)
+  B_pbfgs = update_nlp(pbfgsnlp, x, s; verbose=false)
+  B_plbfgs = update_nlp(plbfgsnlp, x, s; verbose=false)
   py = get_py(pbfgsnlp.part_data)
   build_v!(py)
   y = PartitionedStructures.get_v(py)
