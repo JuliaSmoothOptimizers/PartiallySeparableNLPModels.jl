@@ -41,4 +41,4 @@ PartitionedStructures = "a6683cb1-4e99-4d03-b5b5-b79ed0acabcf"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ADNLPModels", "ExpressionTreeForge", "LinearAlgebra", "OptimizationProblems", "NLPModels", "PartitionedStructures", "Test"]
+test = ["ADNLPModels", "JuMP", "LinearAlgebra", "LinearOperators", "OptimizationProblems", "NLPModels", "NLPModelsJuMP", "PartitionedStructures", "Test"]
