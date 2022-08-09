@@ -98,7 +98,7 @@ function partitionedMulOp!(pd_pqn::PartitionedDataTRPQN{G, T, P}, res, v, α, β
 end
 
 function LinearOperators.LinearOperator(pd_pqn::PartitionedDataTRPQN{G, T, P}) where {G, T, P}
-  n = get_n(pd_pqn) 
+  n = get_n(pd_pqn)
   B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> partitionedMulOp!(pd_pqn, res, v, α, β))
   return B
 end

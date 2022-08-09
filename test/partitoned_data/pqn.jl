@@ -2,14 +2,14 @@ using PartiallySeparableNLPModels.Mod_ab_partitioned_data
 
 @testset "PQN structure" begin
   n = 20
-  adnlp = ADNLPProblems.rosenbrock(;n)
+  adnlp = ADNLPProblems.rosenbrock(; n)
   obj = ExpressionTreeForge.get_expression_tree(adnlp)
 
   x = (x -> 2 * x).(ones(n))
   y = rand(n)
 
   ps_data = build_PartitionedDataTRPQN(obj, n; x0 = x)
-  
+
   objx = evaluate_obj_part_data(ps_data, x)
   @test objx == NLPModels.obj(adnlp, x)
 
@@ -40,7 +40,7 @@ end
 
 @testset "PartiallySeparableNLPModels, update_nlp!(part_data, x, s)" begin
   n = 20
-  adnlp = ADNLPProblems.rosenbrock(;n)
+  adnlp = ADNLPProblems.rosenbrock(; n)
   obj = ExpressionTreeForge.get_expression_tree(adnlp)
 
   x = (x -> 2 * x).(ones(n))
@@ -55,15 +55,15 @@ end
   ps_data_pse = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pse)
   ps_data_pcs = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pcs)
 
-  update_nlp!(ps_data_plbfgs, x, s; verbose=false)
-  update_nlp!(ps_data_plse, x, s; verbose=false)
-  update_nlp!(ps_data_pbfgs, x, s; verbose=false)
-  update_nlp!(ps_data_psr1, x, s; verbose=false)
-  update_nlp!(ps_data_pse, x, s; verbose=false)
-  update_nlp!(ps_data_pcs, x, s; verbose=false)
+  update_nlp!(ps_data_plbfgs, x, s; verbose = false)
+  update_nlp!(ps_data_plse, x, s; verbose = false)
+  update_nlp!(ps_data_pbfgs, x, s; verbose = false)
+  update_nlp!(ps_data_psr1, x, s; verbose = false)
+  update_nlp!(ps_data_pse, x, s; verbose = false)
+  update_nlp!(ps_data_pcs, x, s; verbose = false)
   # update_nlp!(ps_data_plbfgs_damped, x, s)
   # update_nlp!(ps_data_plsr1, x, s)
-  
+
   @test ps_data_plbfgs.py == ps_data_plse.py
   @test ps_data_plbfgs.py == ps_data_pbfgs.py
   @test ps_data_plbfgs.py == ps_data_psr1.py
@@ -71,7 +71,7 @@ end
   @test ps_data_plbfgs.py == ps_data_pcs.py
   # @test ps_data_plsr1.py == ps_data_plbfgs.py
   # @test ps_data_plbfgs.py != ps_data_plbfgs_damped.py
-  
+
   epv_y = ps_data_plbfgs.py
   PartitionedStructures.build_v!(epv_y)
   y = PartitionedStructures.get_v(epv_y)
@@ -95,7 +95,7 @@ end
 
 @testset "PartiallySeparableNLPModels, update_nlp!(part_data, s)" begin
   n = 20
-  adnlp = ADNLPProblems.rosenbrock(;n)
+  adnlp = ADNLPProblems.rosenbrock(; n)
   obj = ExpressionTreeForge.get_expression_tree(adnlp)
 
   x = (x -> 2 * x).(ones(n))
@@ -115,12 +115,12 @@ end
   evaluate_grad_part_data!(ps_data_pse)
   evaluate_grad_part_data!(ps_data_pcs)
 
-  update_nlp!(ps_data_plbfgs, s; verbose=false)
-  update_nlp!(ps_data_plse, s; verbose=false)
-  update_nlp!(ps_data_pbfgs, s; verbose=false)
-  update_nlp!(ps_data_psr1, s; verbose=false)
-  update_nlp!(ps_data_pse, s; verbose=false)
-  update_nlp!(ps_data_pcs, s; verbose=false)
+  update_nlp!(ps_data_plbfgs, s; verbose = false)
+  update_nlp!(ps_data_plse, s; verbose = false)
+  update_nlp!(ps_data_pbfgs, s; verbose = false)
+  update_nlp!(ps_data_psr1, s; verbose = false)
+  update_nlp!(ps_data_pse, s; verbose = false)
+  update_nlp!(ps_data_pcs, s; verbose = false)
 
   @test ps_data_plbfgs.py == ps_data_plse.py
   @test ps_data_plbfgs.py == ps_data_pbfgs.py
@@ -145,32 +145,32 @@ end
 
 @testset "methods" begin
   n = 20
-  adnlp = ADNLPProblems.rosenbrock(;n)
+  adnlp = ADNLPProblems.rosenbrock(; n)
   obj = ExpressionTreeForge.get_expression_tree(adnlp)
 
   x = (x -> 2 * x).(ones(n))
   s = rand(n)
 
   part_data = build_PartitionedDataTRPQN(obj, n; x0 = x, name = :pbfgs)
-  
+
   @test get_vec_elt_fun(part_data) == part_data.vec_elt_fun
   @test get_vec_elt_complete_expr_tree(part_data) == part_data.vec_elt_complete_expr_tree
   @test get_element_expr_tree_table(part_data) == part_data.element_expr_tree_table
   @test get_vec_compiled_element_gradients(part_data) == part_data.vec_compiled_element_gradients
-  
+
   s = rand(n)
   set_s!(part_data, s)
   @test get_s(part_data) == s
 
-  set_n!(part_data, n+1)
-  @test get_n(part_data) == n+1
+  set_n!(part_data, n + 1)
+  @test get_n(part_data) == n + 1
   set_n!(part_data, n)
-  
+
   N = get_N(part_data)
-  set_N!(part_data, N+1)
-  @test get_N(part_data) == N+1
+  set_N!(part_data, N + 1)
+  @test get_N(part_data) == N + 1
   set_N!(part_data, N)
-    
+
   v = rand(n)
   set_v!(part_data, v)
   @test Mod_ab_partitioned_data.get_v(part_data) == v
@@ -204,5 +204,4 @@ end
 
   set_pB!(part_data, epm)
   @test get_pB(part_data) == epm
-
 end

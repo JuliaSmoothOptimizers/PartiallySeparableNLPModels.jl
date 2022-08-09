@@ -38,7 +38,7 @@ function update_nlp(
   nlp::PartiallySeparableNLPModel,
   x::AbstractVector{T},
   s::AbstractVector{T};
-  kwargs...
+  kwargs...,
 ) where {T}
   update_nlp!(nlp, x, s; kwargs...)
   return Matrix(get_pB(nlp.part_data))
@@ -48,7 +48,7 @@ function Mod_PQN.update_nlp!(
   nlp::PartiallySeparableNLPModel,
   x::AbstractVector{T},
   s::AbstractVector{T};
-  kwargs...
+  kwargs...,
 ) where {T}
   part_data = nlp.part_data
   update_PQN!(part_data, x, s; kwargs...)
