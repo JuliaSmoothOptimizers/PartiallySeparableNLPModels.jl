@@ -25,7 +25,9 @@ mutable struct PartiallySeparableNLPModel{
 end
 
 function PartiallySeparableNLPModel(nlp::SupportedNLPModel; kwargs...)
-  ex, n, x0 = get_expr_tree(nlp)
+  n = nlp.meta.nvar
+  x0 = nlp.meta.x0
+  ex = get_expression_tree(nlp)
   part_data_plbfgs = build_PartitionedDataTRPQN(ex, n; x0 = x0, kwargs...)
   meta = nlp.meta
   counters = NLPModels.Counters()
@@ -35,19 +37,21 @@ end
 function update_nlp(
   nlp::PartiallySeparableNLPModel,
   x::AbstractVector{T},
-  s::AbstractVector{T},
+  s::AbstractVector{T};
+  kwargs...
 ) where {T}
-  update_nlp!(nlp, x, s)
+  update_nlp!(nlp, x, s; kwargs...)
   return Matrix(get_pB(nlp.part_data))
 end
 
 function Mod_PQN.update_nlp!(
   nlp::PartiallySeparableNLPModel,
   x::AbstractVector{T},
-  s::AbstractVector{T},
+  s::AbstractVector{T};
+  kwargs...
 ) where {T}
   part_data = nlp.part_data
-  update_PQN!(part_data, x, s)
+  update_PQN!(part_data, x, s; kwargs...)
   return part_data
 end
 
