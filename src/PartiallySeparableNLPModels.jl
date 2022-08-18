@@ -3,15 +3,22 @@ module PartiallySeparableNLPModels
 using ExpressionTreeForge
 using PartitionedStructures
 
-include("partitioned_data/_include.jl")
+# include("partitioned_data/_include.jl")
 
-using .Mod_ab_partitioned_data, .Mod_PQN
-using .Mod_partitionedNLPModel
+# using .Mod_ab_partitioned_data, .Mod_PQN
+# using .Mod_partitionedNLPModel
+# export PartitionedData, PartitionedDataTRPQN, build_PartitionedDataTRPQN
+# export PartiallySeparableNLPModel
 
-export PartitionedData, PartitionedDataTRPQN, build_PartitionedDataTRPQN
+
+include("new/_include.jl")
+using .ModPSNLPModels
+using .ModPBFGSNLPModels
+
 export PartiallySeparableNLPModel
-
 export element_function
+export PBFGSNLPModel
+
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 export product_part_data_x!,
   evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data!
