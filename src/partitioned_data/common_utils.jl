@@ -52,6 +52,8 @@ function distinct_element_expr_tree(
   ) # evaluate as first equality test
   working_array = map((val_elt_fun_ones, i) -> (val_elt_fun_ones, i), vec_val_elt_fun_ones, 1:N)
   current_expr_tree_index = 1
+  # Filter working_array with its current first element tree (val).
+  # After an iterate, working_array doesn't possess anymore expression tree similarto val. 
   while isempty(working_array) == false
     val = working_array[1][1]
     comparator_value_elt_fun(val_elt_fun) = val_elt_fun[1] == val

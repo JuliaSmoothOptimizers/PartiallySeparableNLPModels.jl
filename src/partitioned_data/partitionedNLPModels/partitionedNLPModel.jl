@@ -10,6 +10,7 @@ export PartiallySeparableNLPModel
 export update_nlp, hess_approx
 
 abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S} end
+abstract type AbstractPQNNLPModel{T,S} <: AbstractPartiallySeparableNLPModel{T, S} end
 
 """ Accumulate the supported NLPModels. """
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
