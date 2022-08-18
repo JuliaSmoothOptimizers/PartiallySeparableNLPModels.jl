@@ -4,6 +4,7 @@ using ExpressionTreeForge
 using LinearOperators
 using ADNLPModels, NLPModels, NLPModelsJuMP
 using Printf
+using Statistics
 # using ..Mod_ab_partitioned_data
 # using ..Mod_PQN
 
