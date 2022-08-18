@@ -1,4 +1,4 @@
-module ModPLSENLPModels
+module ModPCSNLPModels
 
 using ..Utils
 using ..ModAbstractPSNLPModels
@@ -6,9 +6,9 @@ using ExpressionTreeForge, PartitionedStructures
 using NLPModels
 using ReverseDiff
 
-export PLSENLPModel
+export PCSNLPModel
 
-mutable struct PLSENLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+mutable struct PCSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
   nlp::M
   meta::Meta
   counters::NLPModels.Counters
@@ -44,13 +44,13 @@ mutable struct PLSENLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: Abs
 end 
 
 
-function PLSENLPModel(nlp::SupportedNLPModel)
+function PCSNLPModel(nlp::SupportedNLPModel)
   n = nlp.meta.nvar
   x0 = nlp.meta.x0
   ex = get_expression_tree(nlp)
   T = eltype(x0)
 
-  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name) = partially_separable_structure(ex, n; name=:plse, x0)
+  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name) = partially_separable_structure(ex, n; name=:pcs, x0)
   P = typeof(pB)
 
   meta = nlp.meta
@@ -59,8 +59,8 @@ function PLSENLPModel(nlp::SupportedNLPModel)
 
   counters = NLPModels.Counters()
   S = typeof(x)
-  plsenlp = PLSENLPModel{ExpressionTreeForge.Complete_expr_tree, P, T, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name)
-  return plsenlp
+  pcsnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, T, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name)
+  return pcsnlp
 end
   
 end

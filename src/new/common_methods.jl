@@ -233,7 +233,7 @@ function evaluate_obj_part_data!(psnlp::AbstractPartiallySeparableNLPModel)
     acc += fix
   end
   set_fx!(psnlp, acc)
-  return part_data
+  return get_fx(psnlp)
 end
 
 """
@@ -252,7 +252,7 @@ function evaluate_y_part_data!(
   set_x!(psnlp, x)
   evaluate_grad_part_data!(psnlp)
   evaluate_y_part_data!(psnlp, s)
-  return part_data
+  return get_py(psnlp)
 end
 
 function evaluate_y_part_data!(psnlp::AbstractPartiallySeparableNLPModel, s::AbstractVector{Y}) where {Y <: Number}
@@ -262,7 +262,7 @@ function evaluate_y_part_data!(psnlp::AbstractPartiallySeparableNLPModel, s::Abs
   set_x!(psnlp, get_x(psnlp) + s)
   evaluate_grad_part_data!(psnlp)
   PartitionedStructures.add_epv!(get_pg(psnlp), get_py(psnlp))
-  return part_data
+  return get_py(psnlp)
 end
 
 """
@@ -311,5 +311,5 @@ function evaluate_grad_part_data!(psnlp::AbstractPartiallySeparableNLPModel)
     ReverseDiff.gradient!(gi, compiled_tape, Uix)
   end
   PartitionedStructures.build_v!(pg)
-  return part_data
+  return pg
 end

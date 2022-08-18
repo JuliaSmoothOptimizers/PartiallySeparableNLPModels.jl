@@ -1,4 +1,4 @@
-module ModPLSENLPModels
+module ModPSNLPModels
 
 using ..Utils
 using ..ModAbstractPSNLPModels
@@ -6,9 +6,9 @@ using ExpressionTreeForge, PartitionedStructures
 using NLPModels
 using ReverseDiff
 
-export PLSENLPModel
+export PSNLPModel
 
-mutable struct PLSENLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+mutable struct PSNLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPartiallySeparableNLPModel{T,S}
   nlp::M
   meta::Meta
   counters::NLPModels.Counters
@@ -34,7 +34,6 @@ mutable struct PLSENLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: Abs
   py::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
   ps::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
   phv::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
-  pB::P # partitioned B
 
   fx::T
   # g is build directly from pg
@@ -44,14 +43,13 @@ mutable struct PLSENLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: Abs
 end 
 
 
-function PLSENLPModel(nlp::SupportedNLPModel)
+function PSNLPModel(nlp::SupportedNLPModel)
   n = nlp.meta.nvar
   x0 = nlp.meta.x0
   ex = get_expression_tree(nlp)
   T = eltype(x0)
 
-  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name) = partially_separable_structure(ex, n; name=:plse, x0)
-  P = typeof(pB)
+  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name) = partially_separable_structure(ex, n; name=:phv, x0)
 
   meta = nlp.meta
   Meta = typeof(meta)
@@ -59,8 +57,8 @@ function PLSENLPModel(nlp::SupportedNLPModel)
 
   counters = NLPModels.Counters()
   S = typeof(x)
-  plsenlp = PLSENLPModel{ExpressionTreeForge.Complete_expr_tree, P, T, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name)
-  return plsenlp
+  psnlp = PSNLPModel{ExpressionTreeForge.Complete_expr_tree, T, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, fx, name)
+  return psnlp
 end
   
 end
