@@ -12,12 +12,12 @@ using PartitionedStructures
 
 
 include("new/_include.jl")
-using .ModPSNLPModels
-using .ModPBFGSNLPModels
+using .ModAbstractPSNLPModels
+using .ModPBFGSNLPModels, .ModPLBFGSNLPModels, .ModPCSNLPModels, .ModPLSR1NLPModels, .ModPLSENLPModels, .ModPSR1NLPModels, .ModPSENLPModels, .ModPSNLPModels
 
 export PartiallySeparableNLPModel
 export element_function
-export PBFGSNLPModel
+export PBFGSNLPModel, PCSNLPModel, PLBFGSNLPModel, PLSR1NLPModel, PLSENLPModel, PSR1NLPModel, PSENLPModel, PSNLPModel
 
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 export product_part_data_x!,
@@ -52,7 +52,7 @@ export set_x!,
   set_phv!,
   set_pB!,
   set_fx!
-export update_nlp, update_nlp!, update_PQN, update_PQN!
+export update_nlp, update_nlp!
 export hess_approx
 
 end

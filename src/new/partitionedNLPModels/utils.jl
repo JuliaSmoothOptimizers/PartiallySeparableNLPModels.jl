@@ -4,7 +4,7 @@ using ReverseDiff, LinearAlgebra
 using ExpressionTreeForge, PartitionedStructures
 using ExpressionTreeForge.M_implementation_convexity_type
 
-using ..ModPSNLPModels
+using ..ModAbstractPSNLPModels
 
 export distinct_element_expr_tree, compiled_grad_element_function
 export partially_separable_structure

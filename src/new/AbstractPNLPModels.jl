@@ -1,12 +1,9 @@
-module ModPSNLPModels
+module ModAbstractPSNLPModels
 
 using ExpressionTreeForge
 using LinearOperators
 using ADNLPModels, NLPModels, NLPModelsJuMP
-using Printf
-using Statistics
-# using ..Mod_ab_partitioned_data
-# using ..Mod_PQN
+using Printf, Statistics, LinearAlgebra
 
 import Base.show
 
@@ -52,7 +49,7 @@ function NLPModels.obj(
   x::AbstractVector{T},
 ) where {T, S, P <: AbstractPartiallySeparableNLPModel{T, S}} 
   increment!(nlp, :neval_obj)
-  evaluate_obj_part_data(nlp.part_data, x)
+  evaluate_obj_part_data(nlp, x)
 end
 
 """
@@ -66,7 +63,7 @@ function NLPModels.grad!(
   g::AbstractVector{T},
 ) where {T, S, P <: AbstractPartiallySeparableNLPModel{T, S}} 
   increment!(nlp, :neval_grad)
-  evaluate_grad_part_data!(g, nlp.part_data, x)
+  evaluate_grad_part_data!(g, nlp, x)
   return g
 end
 
@@ -143,7 +140,6 @@ function show(io::IO, psnlp::AbstractPartiallySeparableNLPModel)
   return nothing
 end
 
-
 """
     partitionedMulOp!(pqn_nlp::AbstractPQNNLPModel, res, v, α, β)
 
@@ -160,10 +156,28 @@ function partitionedMulOp!(pqn_nlp::AbstractPQNNLPModel, res, v, α, β)
   return epv_res
 end
 
-function LinearOperators.LinearOperator(pqn_nlp::AbstractPQNNLPModel)
+function LinearOperators.LinearOperator(pqn_nlp::AbstractPQNNLPModel{T,S}) where {T, S}
   n = get_n(pqn_nlp)
   B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> partitionedMulOp!(pqn_nlp, res, v, α, β))
   return B
+end
+
+"""
+    update_nlp(pqn_nlp::AbstractPQNNLPModel{T,S}, x::Vector{T}, s::Vector{T})
+
+Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
+When `x` is omitted, `update_PQN!` consider that `pqn_nlp` has the current point in pqn_nlp.x`.
+Moreover, it assumes that the partitioned gradient at `x` is already computed in `pqn_nlp.pg`.
+Will be replace by `push!` when `PartitionedVector` are implemented.
+"""
+function update_nlp(
+  pqn_nlp::AbstractPQNNLPModel{T,S},
+  x::Vector{T},
+  s::Vector{T};
+  kwargs...,
+) where {T <: Number, S}
+  update_nlp!(pqn_nlp, x, s; kwargs...)
+  return Matrix(get_pB(pqn_nlp))
 end
 
 """
@@ -173,45 +187,9 @@ end
 Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
 When `x` is omitted, `update_PQN!` consider that `pqn_nlp` has the current point in pqn_nlp.x`.
 Moreover, it assumes that the partitioned gradient at `x` is already computed in `pqn_nlp.pg`.
-Will be replace by `push!` when `PartitionedVector` are implemented. 
+Will be replace by `push!` when `PartitionedVector` are implemented.
 """
-update_nlp!(
-  pqn_nlp::AbstractPQNNLPModel{T,S},
-  s::Vector{T};
-  kwargs...,
-) where {T <: Number, S} = update_PQN!(pqn_nlp, s; kwargs...)
-
-update_nlp!(
-  pqn_nlp::AbstractPQNNLPModel{T,S},
-  x::Vector{T},
-  s::Vector{T};
-  kwargs...,
-) where {T <: Number, S} = update_PQN!(pqn_nlp, x, s; kwargs...)
-
-"""
-    B = update_PQN(pqn_nlp::AbstractPQNNLPModel{T,S}, x::Vector{T}, s::Vector{T};
-
-Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
-"""
-update_PQN(
-  pqn_nlp::AbstractPQNNLPModel{T,S},
-  x::Vector{T},
-  s::Vector{T};
-  kwargs...,
-) where {T <: Number, S} = begin
-  update_PQN!(pqn_nlp, x, s; kwargs...)
-  return Matrix(get_pB(pqn_nlp))
-end
-
-"""
-    update_PQN!(pqn_nlp::AbstractPQNNLPModel{T,S}, s::Vector{T})
-    update_PQN!(pqn_nlp::AbstractPQNNLPModel{T,S}, x::Vector{T}, s::Vector{T})
-
-Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
-When `x` is omitted, `update_PQN!` consider that `pqn_nlp` has the current point in pqn_nlp.x`.
-Moreover, it assumes that the partitioned gradient at `x` is already computed in `pqn_nlp.pg`.
-"""
-function update_PQN!(
+function update_nlp!(
   pqn_nlp::AbstractPQNNLPModel{T,S},
   x::Vector{T},
   s::Vector{T};
@@ -219,10 +197,10 @@ function update_PQN!(
 ) where {T <: Number, S}
   set_x!(pqn_nlp, x)
   evaluate_grad_part_data!(pqn_nlp)
-  update_PQN!(pqn_nlp, s; kwargs...)
+  update_nlp!(pqn_nlp, s; kwargs...)
 end
 
-function update_PQN!(
+function update_nlp!(
   pqn_nlp::AbstractPQNNLPModel{T,S},
   s::Vector{T};
   reset = 0,
@@ -236,7 +214,6 @@ function update_PQN!(
   PartitionedStructures.update!(pB, py, ps; name = pqn_nlp.name, kwargs...)
   return pqn_nlp
 end
-
 
 """
     hprod!(nlp::PartiallySeparableNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
