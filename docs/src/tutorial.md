@@ -25,12 +25,12 @@ example_model(n :: Int) = ADNLPModel(example, start_example(n), name="Example " 
 n = 4 # size of the problem
 model = example_model(n)
 ```
-and call `PartiallySeparableNLPModel` to define a partitioned `NLPModel`:
+and call `PSNLPModel<:AbstractPartiallySeparableNLPModel` to define a partitioned `NLPModel`:
 ```@example PSNLP
-pqn_adnlp = PartiallySeparableNLPModel(model)
+pqn_adnlp = PSNLPModel(model)
 ```
 
-Then, you can apply the usual methods `obj` and `grad` from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
+Then, you can apply the usual methods `obj` and `grad`, `hprod` from [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl):
 ```@example PSNLP
 using NLPModels
 x = ones(n)
@@ -44,8 +44,13 @@ gx = NLPModels.grad(pqn_adnlp, x) # compute the gradient
 ```@example PSNLP
 gx == NLPModels.grad(model, x)
 ```
-`fx` and `gx` compute and accumulate the element functions $f_i$ and the element gradients $\nabla f_i$, respectively.
-In addition, a `PartiallySeparableNLPModel` stores the value of each element gradient to perform partitioned quasi-Newton updates afterward (see below).
+
+```@example PSNLP
+v = ones(n)
+hv = NLPModels.hprod(model, x, v)
+```
+`fx`, `gx` and `hv` accumulate respectively the element functions $f_i$, the element gradients $\nabla f_i$, respectively and element Hessian-vector $\nabla^2 f_i(U_i x) U_i v$ contributions.
+In addition, a `PSNLPModel` stores the value of each element gradient and element Hessian-vector product.
 
 The same procedure can be applied to `MathOptNLPModel`s:
 ```@example PSNLP
@@ -65,15 +70,27 @@ function jump_example(n::Int)
 end
 
 jumpnlp_example = jump_example(n)
-pqn_jumpnlp = PartiallySeparableNLPModel(jumpnlp_example)
+pqn_jumpnlp = PSNLPModel(jumpnlp_example)
 
 fx = NLPModels.obj(pqn_jumpnlp, x) # compute the obective function
 gx = NLPModels.grad(pqn_jumpnlp, x) # compute the gradient
 ```
 In version v0.2.0, [`ManualNLPModel`](https://github.com/JuliaSmoothOptimizers/ManualNLPModels.jl)s will be supported.
 
-## A partitioned quasi-Newton `NLPModel`
-When defining a `PartiallySeparableNLPModel`, you allocate storage for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl`.
+## Partitioned quasi-Newton `NLPModel`s
+A model deriving from `AbstractPQNNLPModel<:AbstractPartiallySeparableNLPModel` allocates storage required for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl` (see the [PartitionedStructures.jl tutorial](https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/) for more details).
+There are several variants:
+* 'PBFGSNLPModel': every element-Hessian approximation is updated with BFGS;
+* 'PSR1NLPModel': every element-Hessian approximation is updated with SR1;
+* 'PSENLPModel': every element-Hessian approximation is updated with BFGS if the curvature condition holds, or withSR1 otherwise;
+* 'PCSNLPModel': each element-Hessian approximation with BFGS if it is classified as `convex`, or with SR1 otherwise;
+* 'PLBFGSNLP': every element-Hessian approximations is a LBFGS operator;
+* 'PLSR1NLPModel': every element-Hessian approximations is a LSR1 operator;
+* 'PLSENLPModel': by default, every element-Hessian approximations is a LBFGS operator as long as the curvature condition holds, otherwise it becomes a LSR1 operator.
+
+```@example PSNLP
+pbfgsnlp = PBFGSNLPModel(jumpnlp_example)
+```
 
 The Hessian approximation of each element function $f_i (y) = (y_1 + y_2)^2$ is initially set to an identity matrix. 
 The contribution of every element Hessian approximation is accumulated as
@@ -113,29 +130,24 @@ The contribution of every element Hessian approximation is accumulated as
 ```
 The accumulated matrix can be visualized with:
 ```@example PSNLP
-Matrix(hess_approx(pqn_jumpnlp))
+Matrix(hess_approx(pbfgsnlp))
 ```
-
-You can specify the partitioned quasi-Newton update with the optional argument `name`:
-```julia
-PartiallySeparableNLPModel(jumpnlp_example; name=:plse) # by default
-```
-The possible variants are: `:pbfgs, :psr1, :pse, :plbfgs, :plsr1` and `:plse`, see the [PartitionedStructures.jl tutorial](https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/) for more details.
 
 Then, you can update the partitioned quasi-Newton approximation with the pair `x,s`:
 ```@example PSNLP
 s = rand(n)
-update_nlp(pqn_adnlp, x, s)
+update_nlp(pbfgsnlp, x, s)
 ```
 and you can perform a partitioned-matrix-vector product with:
 ```@example PSNLP
 v = ones(n)
-Bv = hprod(pqn_adnlp, x, v)
+Bv = hprod(pbfgsnlp, x, v)
 ```
 
-An in-place variant helps define a `LinearOperator` (see [LinearOperators](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl)) from a `PartiallySeparableNLPModel`:
+Moreover, there is an interface to `LinearOperator` (see [LinearOperators](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl)) from any `AbstractPQNNLPModel`:
 ```@example PSNLP
-B = hess_op(pqn_adnlp, x)
+using LinearOperators
+B = LinearOperator(pbfgsnlp)
 B*v
 ```
 which can be paired with iterative solvers (see [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl)).

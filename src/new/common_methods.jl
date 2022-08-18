@@ -183,7 +183,7 @@ function product_part_data_x!(
   product_part_data_x!(epv_res, pB, epv)
   PartitionedStructures.build_v!(epv_res)
   res .= PartitionedStructures.get_v(epv_res)
-  return part_data
+  return res
 end
 
 @inline product_part_data_x!(

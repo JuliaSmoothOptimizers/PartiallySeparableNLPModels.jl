@@ -8,6 +8,34 @@ using ReverseDiff
 
 export PSNLPModel
 
+"""
+    PSNLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+
+Deduct and allocate the partitioned structures of a NLPModel using partitioned BFGS Hessian approximation.
+`PSNLPModel` has fields:
+
+* `nlp`: the original model;
+* `meta`: gather information about the `PartiallySeparableNLPModel`;
+* `counters`: count how many standards methods of `NLPModels` are called;
+* `n`: the size of the problem;
+* `N`: the number of element functions;
+* `vec_elt_fun`: a `ElementFunction` vector, of size `N`;
+* `M`: the number of distinct element-function expression trees;
+* `vec_elt_complete_expr_tree`: a `Complete_expr_tree` vector, of size `M`;
+* `element_expr_tree_table`: a vector of size `M`, the i-th element `element_expr_tree_table[i]::Vector{Int}` informs which element functions use the `vec_elt_complete_expr_tree[i]` expression tree;
+* `index_element_tree`: a vector of size `N` where each component indicates which `Complete_expr_tree` from `vec_elt_complete_expr_tree` is used for the corresponding element;
+* `vec_compiled_element_gradients`: the vector gathering the compiled tapes for every element gradient evaluations;
+* `x`: the current point;
+* `v`: a temporary vector;
+* `s`: the current step;
+* `pg`: the partitioned gradient;
+* `pv`: a temporary partitioned vector;
+* `py`: the partitioned gradient difference;
+* `ps`: the partitioned step;
+* `phv`: the partitioned Hessian-vector product;
+* `fx`: the current value of the objective function;
+* `name`: the name of partitioned quasi-Newton update performed
+"""
 mutable struct PSNLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPartiallySeparableNLPModel{T,S}
   nlp::M
   meta::Meta
