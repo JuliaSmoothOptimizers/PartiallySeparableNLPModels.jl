@@ -141,15 +141,21 @@ function PBFGSNLPModel(nlp::SupportedNLPModel)
 
   name = :pbfgs
   pB = epm_from_epv(pg)
+  P = typeof(pB)
+
   fx = (T)(-1)
   
   # (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name) = partially_separable_structure(ex, n; name=:pbfgs, x0)
   # @show x
   # println(x)
   meta = nlp.meta
+  Meta = typeof(meta)
+  Model = typeof(nlp)
+
   counters = NLPModels.Counters()
-  sleep(2)
-  PBFGSNLPModel(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name)
+  S = typeof(x)
+  pbfgsnlp = PBFGSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, T, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name)
+  return pbfgsnlp
 end
   
 end
