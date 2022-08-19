@@ -7,7 +7,7 @@ using PartiallySeparableNLPModels.ModAbstractPSNLPModels
   n = adnlp.meta.nvar 
 
   x = (x -> 2 * x).(ones(n))
-  y = rand(n)
+  y = (x -> 0.5 * x).(ones(n))
 
   pbfgsnlp = PBFGSNLPModel(adnlp)
 
@@ -45,7 +45,7 @@ end
   n = adnlp.meta.nvar 
 
   x = (x -> 2 * x).(ones(n))
-  s = rand(n)
+  s = (x -> 0.5 * x).(ones(n))
 
   pbfgsnlp = PBFGSNLPModel(adnlp)
   pcsnlp = PCSNLPModel(adnlp)
@@ -55,7 +55,6 @@ end
   psr1nlp = PSR1NLPModel(adnlp)
   psenlp = PSENLPModel(adnlp)
 
-  @show length(x), length(s)
   update_nlp!(pbfgsnlp, x, s; verbose = false)
   update_nlp!(pcsnlp, x, s; verbose = false)
   update_nlp!(plbfgsnlp, x, s; verbose = false)
@@ -84,56 +83,6 @@ end
   @test isapprox(norm(partitioned_matrix(psr1nlp) * s - y), 0, atol = 1e-10)
 end
 
-# @testset "PartiallySeparableNLPModels, update_nlp!(psnlp, s)" begin
-#   n = 20
-#   adnlp = ADNLPProblems.rosenbrock(; n)
-#   n = adnlp.meta.nvar 
-
-#   x = (x -> 2 * x).(ones(n))
-#   s = ones(n)
-
-#   pbfgsnlp = PBFGSNLPModel(adnlp)
-#   pcsnlp = PCSNLPModel(adnlp)
-#   plbfgsnlp = PLBFGSNLPModel(adnlp)
-#   plsenlp = PLSENLPModel(adnlp)
-#   psr1nlp = PSR1NLPModel(adnlp)
-#   psenlp = PSENLPModel(adnlp)
-
-#   evaluate_grad_part_data!(pbfgsnlp)
-#   evaluate_grad_part_data!(pcsnlp)
-#   evaluate_grad_part_data!(plbfgsnlp)
-#   evaluate_grad_part_data!(plsenlp)
-#   evaluate_grad_part_data!(psr1nlp)
-#   evaluate_grad_part_data!(psenlp)
-
-#   update_nlp!(pbfgsnlp, s; verbose = false)
-#   update_nlp!(pcsnlp, s; verbose = false)
-#   update_nlp!(plbfgsnlp, s; verbose = false)
-#   update_nlp!(plsenlp, s; verbose = false)
-#   update_nlp!(psr1nlp, s; verbose = false)
-#   update_nlp!(psenlp, s; verbose = false)
-
-#   @test pbfgsnlp.py == pcsnlp.py
-#   @test pbfgsnlp.py == plbfgsnlp.py
-#   @test pbfgsnlp.py == plsenlp.py
-#   @test pbfgsnlp.py == psr1nlp.py
-#   @test pbfgsnlp.py == psenlp.py
-
-#   epv_y = pbfgsnlp.py
-#   PartitionedStructures.build_v!(epv_y)
-#   y = PartitionedStructures.get_v(epv_y)
-
-#   partitioned_matrix(nlp) = Matrix(nlp.pB)
-
-#   # in the case of the Rosenbrock equation, for the given x,s and induces y, every partitioned update ensure the secant equation.
-#   @test isapprox(norm(partitioned_matrix(pbfgsnlp) * s - y), 0, atol = 1e-10)
-#   @test isapprox(norm(partitioned_matrix(pcsnlp) * s - y), 0, atol = 1e-10)
-#   @test isapprox(norm(partitioned_matrix(plbfgsnlp) * s - y), 0, atol = 1e-10)
-#   @test isapprox(norm(partitioned_matrix(plsenlp) * s - y), 0, atol = 1e-10)
-#   @test isapprox(norm(partitioned_matrix(psr1nlp) * s - y), 0, atol = 1e-10)
-#   @test isapprox(norm(partitioned_matrix(psenlp) * s - y), 0, atol = 1e-10)
-# end
-
 @testset "methods" begin
   n = 20
   adnlp = ADNLPProblems.rosenbrock(; n)
@@ -142,14 +91,13 @@ end
   pbfgsnlp = PBFGSNLPModel(adnlp)
 
   x = (x -> 2 * x).(ones(n))
-  s = rand(n)
+  s = (x -> 0.5 * x).(ones(n))
 
   @test get_vec_elt_fun(pbfgsnlp) == pbfgsnlp.vec_elt_fun
   @test get_vec_elt_complete_expr_tree(pbfgsnlp) == pbfgsnlp.vec_elt_complete_expr_tree
   @test get_element_expr_tree_table(pbfgsnlp) == pbfgsnlp.element_expr_tree_table
   @test get_vec_compiled_element_gradients(pbfgsnlp) == pbfgsnlp.vec_compiled_element_gradients
 
-  s = rand(n)
   set_s!(pbfgsnlp, s)
   @test get_s(pbfgsnlp) == s
 
