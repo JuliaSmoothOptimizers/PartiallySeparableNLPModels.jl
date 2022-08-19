@@ -161,18 +161,18 @@ Partitioned structure summary:
  0.0  0.0  2.0  0.0
  0.0  0.0  0.0  1.0</pre><p>Then, you can update the partitioned quasi-Newton approximation with the pair <code>x,s</code>:</p><pre><code class="language-julia">s = rand(n)
 update_nlp(pbfgsnlp, x, s)</code></pre><pre class="documenter-example-output">4×4 Matrix{Float64}:
- 2.88829  1.685    0.0      0.0
- 1.685    4.55965  1.50272  0.0
- 0.0      1.50272  5.29539  1.56321
- 0.0      0.0      1.56321  2.25667</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
+ 2.28131  1.55036  0.0      0.0
+ 1.55036  5.30285  1.50713  0.0
+ 0.0      1.50713  4.41777  1.95613
+ 0.0      0.0      1.95613  2.99807</pre><p>and you can perform a partitioned-matrix-vector product with:</p><pre><code class="language-julia">v = ones(n)
 Bv = hprod(pbfgsnlp, x, v)</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
- 4.573289378403437
- 7.747361883296215
- 8.36131245171303
- 3.8198731723918535</pre><p>Moreover, there is an interface to <code>LinearOperator</code> (see <a href="https://github.com/JuliaSmoothOptimizers/LinearOperators.jl">LinearOperators</a>) from any <code>AbstractPQNNLPModel</code>:</p><pre><code class="language-julia">using LinearOperators
+ 3.8316736891433463
+ 8.360342407800562
+ 7.881033997290168
+ 4.954206536419838</pre><p>Moreover, there is an interface to <code>LinearOperator</code> (see <a href="https://github.com/JuliaSmoothOptimizers/LinearOperators.jl">LinearOperators</a>) from any <code>AbstractPQNNLPModel</code>:</p><pre><code class="language-julia">using LinearOperators
 B = LinearOperator(pbfgsnlp)
 B*v</code></pre><pre class="documenter-example-output">4-element Vector{Float64}:
- 4.573289378403437
- 7.747361883296215
- 8.36131245171303
- 3.8198731723918535</pre><p>which can be paired with iterative solvers (see <a href="https://github.com/JuliaSmoothOptimizers/Krylov.jl">Krylov.jl</a>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 19 August 2022 00:05">Friday 19 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 3.8316736891433463
+ 8.360342407800562
+ 7.881033997290168
+ 4.954206536419838</pre><p>which can be paired with iterative solvers (see <a href="https://github.com/JuliaSmoothOptimizers/Krylov.jl">Krylov.jl</a>).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 19 August 2022 03:13">Friday 19 August 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
