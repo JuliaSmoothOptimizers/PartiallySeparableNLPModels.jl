@@ -33,7 +33,7 @@ export set_x!,
   set_pB!,
   set_fx!
 
-export product_part_data_x, evaluate_obj_psnlp, evaluate_grad_part_data
+export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
 export product_part_data_x!,
   evaluate_obj_part_data!, evaluate_y_part_data!, evaluate_grad_part_data!
 export update_nlp!
