@@ -81,7 +81,7 @@ end
 
   pbfgsnlp = PBFGSNLPModel(nlp)
   pcsnlp = PCSNLPModel(nlp)
-  plbfgsnlp =PLBFGSNLPModel(nlp)
+  plbfgsnlp = PLBFGSNLPModel(nlp)
   plsr1nlp = PLSR1NLPModel(nlp)
   plsenlp = PLSENLPModel(nlp)
   psr1nlp = PSR1NLPModel(nlp)
@@ -106,7 +106,6 @@ end
   @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(psenlp, x)
   @test NLPModels.grad(nlp, x) ≈ NLPModels.grad(psnlp, x)
 
-
   v = [i % 2 == 0 ? 1.0 : 0.0 for i = 1:n]
   @test NLPModels.hprod(pbfgsnlp, x, v) == NLPModels.hprod(pbfgsnlp, x, v)
   @test NLPModels.hprod(pbfgsnlp, x, v) == NLPModels.hprod(pcsnlp, x, v)
@@ -126,7 +125,6 @@ end
   @test NLPModels.hprod(pbfgsnlp, x, v; obj_weight = 1.5) == NLPModels.hprod(psenlp, x, v; obj_weight = 1.5)
   @test NLPModels.hprod(nlp, x, v; obj_weight = 1.5) ≈
         NLPModels.hprod(psnlp, x, v; obj_weight = 1.5)
-
 
   s = (si -> 0.5 * si).(ones(n))
   
@@ -170,7 +168,6 @@ end
   B_plse = LinearOperator(plsenlp)
   B_psr1 = LinearOperator(psr1nlp)
 
-
   B_pbfgsv = B_pbfgs * v
   @test B_pbfgsv == [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 9.0]
   B_pcsv = B_pcs * v
@@ -185,13 +182,6 @@ end
   @test B_psr1v == [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 9.0]
 
   epm_bfgs = get_pB(pbfgsnlp)
-  # epm_pcsnlp = get_pB(pcsnlp)
-  # epm_plbfgsnlp = get_pB(plbfgsnlp)
-  # epm_plsr1nlp = get_pB(plsr1nlp)
-  # epm_plsenlp = get_pB(plsenlp)
-  # epm_psr1nlp = get_pB(psr1nlp)
-
-  # epv = epv_from_epm(epm_bfgs)
   
   update_nlp!(pbfgsnlp, x0, ones(n); verbose = false)
   update_nlp!(pcsnlp, x0, ones(n); verbose = false)
@@ -208,8 +198,41 @@ end
   # @test B_plsr1 * v != B_plsr1v
   @test B_plse * v != B_plsev
   @test B_psr1 * v != B_psr1v
-
 end
+
+@testset "hessop" begin
+  n = 10
+  nlp = ADNLPProblems.arwhead(; n)
+  x = nlp.meta.x0
+  v = ones(n)
+
+  pbfgsnlp = PBFGSNLPModel(nlp)
+  pcsnlp = PCSNLPModel(nlp)
+  plbfgsnlp = PLBFGSNLPModel(nlp)
+  plsr1nlp = PLSR1NLPModel(nlp)
+  plsenlp = PLSENLPModel(nlp)
+  psr1nlp = PSR1NLPModel(nlp)
+  psenlp = PSENLPModel(nlp)
+  psnlp = PSNLPModel(nlp)
+
+
+  B_pbfgs = NLPModels.hess_op(pbfgsnlp, x)
+  B_pcs = NLPModels.hess_op(pcsnlp, x)
+  B_plbfgs = NLPModels.hess_op(plbfgsnlp, x)
+  B_plsr1 = NLPModels.hess_op(plsr1nlp, x)
+  B_plse = NLPModels.hess_op(plsenlp, x)
+  B_psr1 = NLPModels.hess_op(psr1nlp, x)
+  H_ps = NLPModels.hess_op(psnlp, x)
+
+  B_pbfgs * v
+  B_pcs * v
+  B_plbfgs * v
+  B_plsr1 * v
+  B_plse * v
+  B_psr1 * v
+  H_ps   * v
+end
+
 
 @testset "show" begin
   n = 10
