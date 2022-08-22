@@ -82,7 +82,7 @@ A model deriving from `AbstractPQNNLPModel<:AbstractPartiallySeparableNLPModel` 
 There are several variants:
 * 'PBFGSNLPModel': every element-Hessian approximation is updated with BFGS;
 * 'PSR1NLPModel': every element-Hessian approximation is updated with SR1;
-* 'PSENLPModel': every element-Hessian approximation is updated with BFGS if the curvature condition holds, or withSR1 otherwise;
+* 'PSENLPModel': every element-Hessian approximation is updated with BFGS if the curvature condition holds, or with SR1 otherwise;
 * 'PCSNLPModel': each element-Hessian approximation with BFGS if it is classified as `convex`, or with SR1 otherwise;
 * 'PLBFGSNLP': every element-Hessian approximations is a LBFGS operator;
 * 'PLSR1NLPModel': every element-Hessian approximations is a LSR1 operator;
