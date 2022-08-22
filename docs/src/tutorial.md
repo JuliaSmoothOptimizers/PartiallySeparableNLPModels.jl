@@ -84,7 +84,7 @@ There are several variants:
 * 'PSR1NLPModel': every element-Hessian approximation is updated with SR1;
 * 'PSENLPModel': every element-Hessian approximation is updated with BFGS if the curvature condition holds, or with SR1 otherwise;
 * 'PCSNLPModel': each element-Hessian approximation with BFGS if it is classified as convex, or with SR1 otherwise;
-* 'PLBFGSNLP': every element-Hessian approximations is a LBFGS operator;
+* 'PLBFGSNLPModel': every element-Hessian approximations is a LBFGS operator;
 * 'PLSR1NLPModel': every element-Hessian approximations is a LSR1 operator;
 * 'PLSENLPModel': by default, every element-Hessian approximations is a LBFGS operator as long as the curvature condition holds, otherwise it becomes a LSR1 operator.
 
