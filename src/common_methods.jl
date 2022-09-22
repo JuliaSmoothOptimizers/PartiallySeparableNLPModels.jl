@@ -173,9 +173,9 @@ The first partitioned vector `epv` is created from `v` and the results are store
 """
 function product_part_data_x!(
   res::AbstractVector{Y},
-  psnlp::AbstractPartiallySeparableNLPModel,
+  psnlp::AbstractPartiallySeparableNLPModel{Y,S},
   v::AbstractVector{Y},
-) where {Y <: Number}
+) where {Y <: Number, S}
   pB = get_pB(psnlp)
   epv = get_ps(psnlp) # a first temporary partitioned vector
   PartitionedStructures.epv_from_v!(epv, v)
@@ -188,15 +188,15 @@ end
 
 @inline product_part_data_x!(
   epv_res::PartitionedStructures.Elemental_pv{Y},
-  psnlp::AbstractPartiallySeparableNLPModel,
+  psnlp::AbstractPartiallySeparableNLPModel{Y,S},
   epv::PartitionedStructures.Elemental_pv{Y},
-) where {Y <: Number} = PartitionedStructures.mul_epm_epv!(epv_res, get_pB(psnlp), epv)
+) where {Y <: Number, S} = PartitionedStructures.mul_epm_epv!(epv_res, get_pB(psnlp), epv)
 
 @inline product_part_data_x!(
   epv_res::PartitionedStructures.Elemental_pv{Y},
-  pB::T,
+  pB::PartitionedStructures.Part_mat{Y},
   epv::PartitionedStructures.Elemental_pv{Y},
-) where {Y <: Number, T <: PartitionedStructures.Part_mat{Y}} =
+) where {Y <: Number} =
   PartitionedStructures.mul_epm_epv!(epv_res, pB, epv)
 
 """
@@ -205,9 +205,9 @@ end
 Return the partially separable objective at `x`.
 """
 function evaluate_obj_part_data(
-  psnlp::AbstractPartiallySeparableNLPModel,
+  psnlp::AbstractPartiallySeparableNLPModel{Y,S},
   x::AbstractVector{Y},
-) where {Y <: Number}
+) where {Y <: Number, S}
   set_x!(psnlp, x)
   evaluate_obj_part_data!(psnlp)
   return get_fx(psnlp)
@@ -245,17 +245,17 @@ Store the results in `psnlp.py`.
 When `x` is ommited, consider `psnlp.x` as `x` and `psnlp.pg` as the partitioned gradient at `x`.
 """
 function evaluate_y_part_data!(
-  psnlp::AbstractPartiallySeparableNLPModel,
+  psnlp::AbstractPartiallySeparableNLPModel{Y,S},
   x::AbstractVector{Y},
   s::AbstractVector{Y},
-) where {Y <: Number}
+) where {Y <: Number, S}
   set_x!(psnlp, x)
   evaluate_grad_part_data!(psnlp)
   evaluate_y_part_data!(psnlp, s)
   return get_py(psnlp)
 end
 
-function evaluate_y_part_data!(psnlp::AbstractPartiallySeparableNLPModel, s::AbstractVector{Y}) where {Y <: Number}
+function evaluate_y_part_data!(psnlp::AbstractPartiallySeparableNLPModel{Y,S}, s::AbstractVector{Y}) where {Y <: Number, S}
   set_s!(psnlp, s)
   set_py!(psnlp, get_pg(psnlp))
   PartitionedStructures.minus_epv!(get_py(psnlp))
@@ -272,9 +272,9 @@ Return the gradient vector `g` at `x`.
 After the computation of the element gradients (stored in `psnlp.pg`), `g` is built by accumulating their contributions.
 """
 function evaluate_grad_part_data(
-  psnlp::AbstractPartiallySeparableNLPModel,
+  psnlp::AbstractPartiallySeparableNLPModel{Y,S},
   x::AbstractVector{Y},
-) where {Y <: Number}
+) where {Y <: Number, S}
   g = similar(x)
   evaluate_grad_part_data!(g, psnlp, x)
   return g
@@ -290,9 +290,9 @@ When `g` and `x` are omitted, consider that `psnlp.g` and `psnlp.x` are `g` and 
 """
 function evaluate_grad_part_data!(
   g::AbstractVector{Y},
-  psnlp::AbstractPartiallySeparableNLPModel,
+  psnlp::AbstractPartiallySeparableNLPModel{Y,S},
   x::AbstractVector{Y},
-) where {Y <: Number}
+) where {Y <: Number, S}
   x != get_x(psnlp) && set_x!(psnlp, x)
   evaluate_grad_part_data!(psnlp)
   g .= PartitionedStructures.get_v(get_pg(psnlp))

@@ -46,9 +46,9 @@ include("common_methods.jl")
 Evaluate `f(x)`, the objective function of `nlp` at `x`.
 """
 function NLPModels.obj(
-  nlp::P,
+  nlp::AbstractPartiallySeparableNLPModel{T, S},
   x::AbstractVector{T},
-) where {T, S, P <: AbstractPartiallySeparableNLPModel{T, S}} 
+) where {T, S} 
   increment!(nlp, :neval_obj)
   evaluate_obj_part_data(nlp, x)
 end
@@ -59,10 +59,10 @@ end
 Evaluate `∇f(x)`, the gradient of the objective function at `x` in place.
 """
 function NLPModels.grad!(
-  nlp::P,
+  nlp::AbstractPartiallySeparableNLPModel{T, S},
   x::AbstractVector{T},
   g::AbstractVector{T},
-) where {T, S, P <: AbstractPartiallySeparableNLPModel{T, S}} 
+) where {T, S} 
   increment!(nlp, :neval_grad)
   evaluate_grad_part_data!(g, nlp, x)
   return g
