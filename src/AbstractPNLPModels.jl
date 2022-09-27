@@ -267,7 +267,7 @@ function show(io::IO, psnlp::AbstractPartiallySeparableNLPModel)
   V1 = [min_length_element_functions, mean_length_element_functions, max_length_element_functions]
   LH1 = NLPModels.lines_of_hist(S1, V1)
 
-  pv = psnlp.pv
+  pv = psnlp.meta.x0.epv
   component_list = PartitionedStructures.get_component_list(pv)
   length_by_variable = (elt_list_var -> length(elt_list_var)).(component_list)
   mean_length_variable = round(mean(length_by_variable), digits = 4)

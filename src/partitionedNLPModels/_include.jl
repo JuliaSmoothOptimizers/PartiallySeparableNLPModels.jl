@@ -1,5 +1,6 @@
 include("utils.jl")
 
+include("meta.jl")
 include("workingNLPModel.jl")
 
 # include("PBFGSNLPModels.jl")
