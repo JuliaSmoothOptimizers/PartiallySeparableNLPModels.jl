@@ -1,8 +1,8 @@
 module ModPVQNPModels
 
-using ..Utils
+using ..Utils, ..Meta
 using ..ModAbstractPSNLPModels
-using ExpressionTreeForge, PartitionedStructures
+using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
 using NLPModels
 using ReverseDiff
 
@@ -37,7 +37,7 @@ Deduct and allocate the partitioned structures of a NLPModel using partitioned B
 * `fx`: the current value of the objective function;
 * `name`: the name of partitioned quasi-Newton update performed
 """
-mutable struct PVQNPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+mutable struct PVQNPModel{G, P, T, S, M <: AbstractNLPModel{T, Vector{T}}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
   nlp::M
   meta::Meta
   counters::NLPModels.Counters
@@ -59,11 +59,6 @@ mutable struct PVQNPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: Abstr
   # v::Vector{T} # length(v)==n
   # s::Vector{T} # length(v)==n
   x::PartitionedVector{T}
-  v::PartitionedVector{T}
-  s::PartitionedVector{T}
-  g::PartitionedVector{T}
-  y::PartitionedVector{T}
-  Hv::PartitionedVector{T}
   
   # pg::PartitionedStructures.Elemental_pv{T} # partitioned gradient
   # pv::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
@@ -79,25 +74,82 @@ mutable struct PVQNPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: Abstr
   name::Symbol
 end 
 
-
-function PVQNPModel(nlp::SupportedNLPModel)
+function PVQNPModel(nlp::SupportedNLPModel; type::DataType=Float64)
   n = nlp.meta.nvar
-  
   ex = get_expression_tree(nlp)
-  T = eltype(x0)
 
-  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name) = partially_separable_structure(ex, n; name=:pbfgs)
-  x = set!(x, nlp.meta.x0)
+  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, pB, fx, name) = partitioned_structure(ex, n; type, name=:pbfgs)
   P = typeof(pB)
 
-  meta = nlp.meta
+  meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
   Model = typeof(nlp)
+  S = typeof(x)
 
   counters = NLPModels.Counters()
-  S = typeof(x)
-  pbfgsnlp = PVQNPModel{ExpressionTreeForge.Complete_expr_tree, P, T, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, v, s, pg, pv, py, ps, phv, pB, fx, name)
-  return pbfgsnlp
+  pvqnlp = PVQNPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, pB, fx, name)
+  return pvqnlp
 end
   
 end
+
+
+# mutable struct TrunkSolver{
+#   T,
+#   V <: AbstractVector{T},
+#   Sub <: KrylovSolver{T, T, V},
+#   Op <: AbstractLinearOperator{T},
+# } <: AbstractOptimizationSolver
+#   x::V
+#   xt::V
+#   gx::V
+#   gt::V
+#   gn::V
+#   Hs::V
+#   subsolver::Sub
+#   H::Op
+#   tr::TrustRegion{T, V}
+# end
+
+# function TrunkSolver(
+#   nlp::AbstractNLPModel{T, V};
+#   subsolver_type::Type{<:KrylovSolver} = CgSolver,
+# ) where {T, V <: AbstractVector{T}}
+#   nvar = nlp.meta.nvar
+#   x = V(undef, nvar)
+#   xt = V(undef, nvar)
+#   gx = V(undef, nvar)
+#   gt = V(undef, nvar)
+#   gn = isa(nlp, QuasiNewtonModel) ? V(undef, nvar) : V(undef, 0)
+#   Hs = V(undef, nvar)
+#   subsolver = subsolver_type(nvar, nvar, V)
+#   Sub = typeof(subsolver)
+#   H = hess_op!(nlp, x, Hs)
+#   Op = typeof(H)
+#   tr = TrustRegion(gt, one(T))
+#   return TrunkSolver{T, V, Sub, Op}(x, xt, gx, gt, gn, Hs, subsolver, H, tr)
+# end
+
+
+# function NLPModelMeta{T, S}(
+#   nvar::Int;
+#   x0::S = fill!(S(undef, nvar), zero(T)),
+#   lvar::S = fill!(S(undef, nvar), T(-Inf)),
+#   uvar::S = fill!(S(undef, nvar), T(Inf)), 
+#   nlvb = nvar,
+#   nlvo = nvar,
+#   nlvc = nvar,
+#   ncon = 0,
+#   y0::S = fill!(S(undef, ncon), zero(T)),
+#   lcon::S = fill!(S(undef, nstcon), T(-Inf)),
+#   ucon::S = fill!(S(undef, ncon), T(Inf)),
+#   nnzo = nvar,
+#   nnzj = nvar * ncon,
+#   lin_nnzj = 0,
+#   nln_nnzj = nvar * ncon,
+#   nnzh = nvar * (nvar + 1) / 2,
+#   lin = Int[],
+#   minimize = true,
+#   islp = false,
+#   name = "Generic",
+# ) where {T, S}

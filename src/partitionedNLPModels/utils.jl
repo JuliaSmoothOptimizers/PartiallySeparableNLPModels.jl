@@ -1,13 +1,13 @@
 module Utils
 
 using ReverseDiff, LinearAlgebra
-using ExpressionTreeForge, PartitionedStructures
+using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
 using ExpressionTreeForge.M_implementation_convexity_type
 
 using ..ModAbstractPSNLPModels
 
 export distinct_element_expr_tree, compiled_grad_element_function
-export partially_separable_structure
+export partially_separable_structure, partitioned_structure
 
 """
     (element_expr_trees, indices_element_tree) = distinct_element_expr_tree(vec_element_expr_tree::Vector{T}, vec_element_variables::Vector{Vector{Int}}; N::Int = length(vec_element_expr_tree)) where {T}
@@ -232,13 +232,13 @@ It finds the partially-separable structure of an expression tree `expr_tree` rep
 Then it allocates the partitioned structures required.
 To define properly the sparse matrix of the partitioned matrix we need the size of the problem: `n`.
 """
-function partially_separable_structure(
+function partitioned_structure(
   tree::G,
   n::Int;
-  x0::Vector{T} = rand(Float64, n),
+  type::DataType=Float64,
   name = :plse,
   kwargs...,
-) where {G, T <: Number}
+) where {G}
 
   # Transform the expression tree of type G into an expression tree of type Type_expr_tree (the standard type used by my algorithms)
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
@@ -277,7 +277,7 @@ function partially_separable_structure(
   vec_elt_complete_expr_tree = ExpressionTreeForge.complete_tree.(element_expr_tree)
   # Cast the constant of the complete trees
   vec_type_complete_element_tree =
-    map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, T), vec_elt_complete_expr_tree)
+    map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, type), vec_elt_complete_expr_tree)
 
   ExpressionTreeForge.set_bounds!.(vec_type_complete_element_tree) # Propagate the bounds 
   ExpressionTreeForge.set_convexity!.(vec_type_complete_element_tree) # deduce the convexity status 
@@ -310,12 +310,9 @@ function partially_separable_structure(
   end
 
   vec_compiled_element_gradients =
-    map((tree -> compiled_grad_element_function(tree; type = T)), element_expr_tree)
+    map((tree -> compiled_grad_element_function(tree; type = type)), element_expr_tree)
 
-    epv = PartitionedStructures.create_epv(element_variables, n, type = T)
-  
-    # x = copy(x0)
-    x = PartitionedVector(epv; T, simulate_vector=true)
+  x = PartitionedVector(element_variables; T=type, n, simulate_vector=true)
 
   # convex_expr_tree = map(convexity_status -> is_convex(convexity_status), convexity_wrapper)
   convex_vector = zeros(Bool, N)
@@ -326,16 +323,18 @@ function partially_separable_structure(
     )
   end
 
-  (name == :pbfgs) && (pB = epm_from_epv(pg))
-  (name == :psr1) && (pB = epm_from_epv(pg))
-  (name == :pse) && (pB = epm_from_epv(pg))
-  (name == :pcs) && (pB = epm_from_epv(pg; convex_vector))
-  (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(pg; kwargs...))
-  (name == :plsr1) && (pB = eplo_lsr1_from_epv(pg))
-  (name == :plse) && (pB = eplo_lose_from_epv(pg; kwargs...))
+  epv = PartitionedStructures.create_epv(element_variables, n, type = type)
+
+  (name == :pbfgs) && (pB = epm_from_epv(epv))
+  (name == :psr1) && (pB = epm_from_epv(epv))
+  (name == :pse) && (pB = epm_from_epv(epv))
+  (name == :pcs) && (pB = epm_from_epv(epv; convex_vector))
+  (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; kwargs...))
+  (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv))
+  (name == :plse) && (pB = eplo_lose_from_epv(epv; kwargs...))
   (name == :phv) && (pB = nothing)
 
-  fx = (T)(-1)
+  fx = (type)(-1)
   return (
     n,
     N,
@@ -346,13 +345,6 @@ function partially_separable_structure(
     index_element_tree,
     vec_compiled_element_gradients,
     x,
-    v,
-    s,
-    pg,
-    pv,
-    py,
-    ps,
-    phv,
     pB,
     fx,
     name,
