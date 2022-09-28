@@ -1,2 +1,3 @@
-include("methods.jl")
-include("pqn.jl")
+# include("methods.jl")
+# include("pqn.jl")
+include("tmp.jl")

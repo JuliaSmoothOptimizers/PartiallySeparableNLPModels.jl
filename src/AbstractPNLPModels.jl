@@ -45,13 +45,6 @@ include("common_methods.jl")
 
 Evaluate `f(x)`, the objective function of `nlp` at `x`.
 """
-# function NLPModels.obj(
-#   nlp::P,
-#   x::AbstractVector{T},
-# ) where {T, S, P <: AbstractPartiallySeparableNLPModel{T, S}} 
-#   increment!(nlp, :neval_obj)
-#   evaluate_obj_part_data(nlp, x)
-# end
 function NLPModels.obj(
   psnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S, # PartitionedVector
@@ -79,12 +72,35 @@ end
 Evaluate `∇f(x)`, the gradient of the objective function at `x` in place.
 """
 function NLPModels.grad!(
-  nlp::AbstractPartiallySeparableNLPModel{T, S},
-  x::AbstractVector{T},
-  g::AbstractVector{T},
-) where {T, S} 
-  increment!(nlp, :neval_grad)
-  evaluate_grad_part_data!(g, nlp, x)
+  psnlp::AbstractPartiallySeparableNLPModel{T, S},
+  x::S, # PartitionedVector
+  g::S, # PartitionedVector
+) where {T, S<:AbstractVector{T}} 
+  increment!(psnlp, :neval_grad)  
+  epv_x = x.epv
+  epv_g = g.epv
+  index_element_tree = get_index_element_tree(psnlp)
+  N = get_N(psnlp)
+  for i = 1:N
+    compiled_tape = get_vec_compiled_element_gradients(psnlp, index_element_tree[i])
+    Uix = PartitionedStructures.get_eev_value(epv_x, i)
+    gi = PartitionedStructures.get_eev_value(epv_g, i)
+    ReverseDiff.gradient!(gi, compiled_tape, Uix)
+  end
+  return g
+end
+
+"""
+    g = grad(nlp, x)
+
+Evaluate `∇f(x)`, the gradient of the objective function at `x`.
+"""
+function NLPModels.grad(
+  psnlp::AbstractPartiallySeparableNLPModel{T, S},
+  x::S, # PartitionedVector  
+) where {T, S<:AbstractVector{T}} 
+  g = similar(x; simulate_vector=false)
+  grad!(psnlp, x, g)
   return g
 end
 
