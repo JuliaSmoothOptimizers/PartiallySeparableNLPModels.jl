@@ -45,13 +45,33 @@ include("common_methods.jl")
 
 Evaluate `f(x)`, the objective function of `nlp` at `x`.
 """
+# function NLPModels.obj(
+#   nlp::P,
+#   x::AbstractVector{T},
+# ) where {T, S, P <: AbstractPartiallySeparableNLPModel{T, S}} 
+#   increment!(nlp, :neval_obj)
+#   evaluate_obj_part_data(nlp, x)
+# end
 function NLPModels.obj(
-  nlp::AbstractPartiallySeparableNLPModel{T, S},
-  x::AbstractVector{T},
-) where {T, S} 
-  increment!(nlp, :neval_obj)
-  evaluate_obj_part_data(nlp, x)
+  psnlp::AbstractPartiallySeparableNLPModel{T, S},
+  x::S, # PartitionedVector
+) where {T, S<:AbstractVector{T}} 
+  increment!(psnlp, :neval_obj)
+  epv = x.epv
+  index_element_tree = get_index_element_tree(psnlp)
+  N = get_N(psnlp)
+  f = 0
+  for i = 1:N
+    elt_expr_tree = get_vec_elt_complete_expr_tree(psnlp, index_element_tree[i])
+    fᵢx = ExpressionTreeForge.evaluate_expr_tree( 
+      elt_expr_tree,
+      PartitionedStructures.get_eev_value(epv, i), # i-th element
+    )
+    f += fᵢx
+  end  
+  return f
 end
+
 
 """
     g = grad!(nlp, x, g)
