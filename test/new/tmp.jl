@@ -11,5 +11,10 @@ NLPModels.hprod!(adnlp, adnlp.meta.x0, v, hv)
 
 Vector(Hv) == hv
 
-
+#not true because pqnnlp is a PQN NLPmodel
 Vector(NLPModels.hprod(pqnnlp, pqnnlp.meta.x0, pv)) == NLPModels.hprod(adnlp, adnlp.meta.x0, v)
+
+
+NLPModels.hprod!(pqnnlp, pqnnlp.meta.x0, pv, Hv)
+hv = Matrix(pqnnlp.pB) * v
+Vector(Hv) == hv

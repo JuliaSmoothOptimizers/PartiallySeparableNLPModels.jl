@@ -1,9 +1,8 @@
 module ModAbstractPSNLPModels
 
+using Printf, Statistics, LinearAlgebra, FastClosures
+using ADNLPModels, LinearOperators, NLPModels, NLPModelsJuMP
 using ExpressionTreeForge
-using LinearOperators
-using ADNLPModels, NLPModels, NLPModelsJuMP
-using Printf, Statistics, LinearAlgebra
 
 import Base.show
 
@@ -65,6 +64,19 @@ function NLPModels.obj(
   return f
 end
 
+"""
+    g = grad(nlp, x)
+
+Evaluate `∇f(x)`, the gradient of the objective function at `x`.
+"""
+function NLPModels.grad(
+  psnlp::AbstractPartiallySeparableNLPModel{T, S},
+  x::S, # PartitionedVector  
+) where {T, S<:AbstractVector{T}} 
+  g = similar(x; simulate_vector=false)
+  grad!(psnlp, x, g)
+  return g
+end
 
 """
     g = grad!(nlp, x, g)
@@ -91,18 +103,22 @@ function NLPModels.grad!(
 end
 
 """
-    g = grad(nlp, x)
+    hprod!(nlp::AbstractPartiallySeparableNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
 
-Evaluate `∇f(x)`, the gradient of the objective function at `x`.
+Evaluate the product of the objective Hessian at `x` with the vector `v`,
+with objective function scaled by `obj_weight`.
 """
-function NLPModels.grad(
-  psnlp::AbstractPartiallySeparableNLPModel{T, S},
-  x::S, # PartitionedVector  
+function NLPModels.hprod(
+  psnlp::AbstractPartiallySeparableNLPModel{T,S},
+  x::S,
+  v::S;
+  obj_weight = 1.0,
+  β = 0.0,
 ) where {T, S<:AbstractVector{T}} 
-  g = similar(x; simulate_vector=false)
-  grad!(psnlp, x, g)
-  return g
-end
+  Hv = similar(x; simulate_vector=false)
+  NLPModels.hprod!(psnlp, x, v, Hv; obj_weight, β)
+  return Hv
+end 
 
 """
     hprod!(nlp::AbstractPartiallySeparableNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
@@ -140,42 +156,57 @@ function NLPModels.hprod!(
   return Hv 
 end
 
-function NLPModels.hprod(
-  psnlp::AbstractPartiallySeparableNLPModel{T,S},
+function NLPModels.hprod!(
+  pqnnlp::AbstractPQNNLPModel{T,S},
   x::S,
-  v::S;
+  v::S,
+  Hv::S;
   obj_weight = 1.0,
-  β = 0.0,
+) where {T, S<:AbstractVector{T}} 
+  increment!(pqnnlp, :neval_hprod)
+  epv_Hv = Hv.epv
+  epv_v = v.epv
+  pB = get_pB(pqnnlp)
+  mul_epm_epv!(epv_Hv, pB, epv_v)
+  Hv .*= obj_weight
+  return Hv
+end
+
+# function NLPModels.hess_op(ps_nlp::AbstractPartiallySeparableNLPModel{T,S}, x::AbstractVector; kwargs...) where {T, S}
+#   n = get_n(ps_nlp)
+#   B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> NLPModels.hprod!(ps_nlp, x, v, res; obj_weight=α, β))
+#   return B
+# end
+ 
+function NLPModels.hess_op(
+  pqnnlp::AbstractPartiallySeparableNLPModel{T,S},
+  x::S;
+  obj_weight = 1.0,
 ) where {T, S<:AbstractVector{T}} 
   Hv = similar(x; simulate_vector=false)
-  NLPModels.hprod!(psnlp, x, v, Hv; obj_weight, β)
-  return Hv
-end 
+  return hess_op!(pqnnlp, x, Hv; obj_weight)
+end
 
-function NLPModels.hess_op(ps_nlp::AbstractPartiallySeparableNLPModel{T,S}, x::AbstractVector; kwargs...) where {T, S}
-  n = get_n(ps_nlp)
-  B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> NLPModels.hprod!(ps_nlp, x, v, res; obj_weight=α, β))
+function NLPModels.hess_op!(
+  pqnnlp::AbstractPartiallySeparableNLPModel{T,S},
+  x::S,
+  Hv::S;
+  obj_weight = 1.0,
+) where {T, S<:AbstractVector{T}} 
+  n = get_n(pqnnlp)
+  prod! = @closure (res, v, α, β) -> begin
+    hprod!(pqnnlp, x, v, Hv; obj_weight = obj_weight)
+    if β == 0
+      @. res = α * Hv
+    else
+      @. res = α * Hv + β * res
+    end
+  end
+  B = LinearOperator(T, n, n, true, true, prod!)
   return B
 end
 
-# # NLPModels interface for AbstractPQNNLPModel
-# """
-#     hprod!(nlp::AbstractPQNNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
-
-# Evaluate the product of the objective Hessian at `x` with the vector `v`,
-# with objective function scaled by `obj_weight`.
-# """
-# function NLPModels.hprod!(
-#   pqn_nlp::AbstractPQNNLPModel,
-#   x::AbstractVector,
-#   v::AbstractVector,
-#   Hv::AbstractVector;
-#   obj_weight = 1.0,
-# )
-#   increment!(pqn_nlp, :neval_hprod)
-#   partitionedMulOp!(pqn_nlp, Hv, v, obj_weight, 0)
-#   return Hv
-# end
+# NLPModels interface for AbstractPQNNLPModel
 
 """
     B = hess_approx(nlp::AbstractPQNNLPModel)
@@ -184,29 +215,33 @@ Return the Hessian approximation of `nlp`.
 """
 hess_approx(pqn_nlp::AbstractPQNNLPModel) = get_pB(pqn_nlp)
 
-NLPModels.hess_op(nlp::AbstractPQNNLPModel, x::AbstractVector; kwargs...) = LinearOperator(nlp)
+# NLPModels.hess_op(pqnnlp::AbstractPQNNLPModel{T,S}, x::S; kwargs...) = LinearOperator(pqnnlp)
 
-"""
-    partitionedMulOp!(pqn_nlp::AbstractPQNNLPModel, res, v, α, β)
+# """
+#     partitionedMulOp!(pqn_nlp::AbstractPQNNLPModel, res, v, α, β)
 
-Partitioned 5-arg `mul!` for `pqn_nlp` using the partitioned matrix and partitioned vectors to destribute and collect the result of element matrix-vector products.
-"""
-function partitionedMulOp!(pqn_nlp::AbstractPQNNLPModel, res, v, α, β)
-  epv = get_pv(pqn_nlp)
-  epv_from_v!(epv, v)
-  epv_res = get_phv(pqn_nlp)
-  pB = get_pB(pqn_nlp)
-  mul_epm_epv!(epv_res, pB, epv)
-  build_v!(epv_res)
-  mul!(res, I, PartitionedStructures.get_v(epv_res), α, β)
-  return epv_res
-end
+# Partitioned 5-arg `mul!` for `pqn_nlp` using the partitioned matrix and partitioned vectors to destribute and collect the result of element matrix-vector products.
+# """
+# function partitionedMulOp!(pqnnlp::AbstractPQNNLPModel{T,S}, res::S, v::S, α, β) where {T, S<:AbstractVector{T}} 
+#   epv = v.epv
+#   epv_res = res.epv
+#   pB = get_pB(pqnnlp)
+#   mul_epm_epv!(epv_res, pB, epv)
+#   if β == 0
+#     @. res = α * res
+#   else
+#     @. res = α * Hv + β * res
+#   end
+#   return res
+#   mul!(res, I, PartitionedStructures.get_v(epv_res), α, β)
+#   return epv_res
+# end
 
-function LinearOperators.LinearOperator(pqn_nlp::AbstractPQNNLPModel{T,S}) where {T, S}
-  n = get_n(pqn_nlp)
-  B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> partitionedMulOp!(pqn_nlp, res, v, α, β))
-  return B
-end
+# function LinearOperators.LinearOperator(pqn_nlp::AbstractPQNNLPModel{T,S}) where {T, S}
+#   n = get_n(pqn_nlp)
+#   B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> partitionedMulOp!(pqn_nlp, res, v, α, β))
+#   return B
+# end
 
 """
     update_nlp(pqn_nlp::AbstractPQNNLPModel{T,S}, x::Vector{T}, s::Vector{T})
