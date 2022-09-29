@@ -5,10 +5,12 @@ using PartitionedStructures
 
 include("AbstractPNLPModels.jl")
 include("partitionedNLPModels/_include.jl")
+include("trunk.jl")
 
 using .ModAbstractPSNLPModels
 # using .ModPBFGSNLPModels, .ModPLBFGSNLPModels, .ModPCSNLPModels, .ModPLSR1NLPModels, .ModPLSENLPModels, .ModPSR1NLPModels, .ModPSENLPModels, .ModPSNLPModels
 using .ModPVQNPModels
+using .TrunkInterface
 
 export PartiallySeparableNLPModel
 export element_function
