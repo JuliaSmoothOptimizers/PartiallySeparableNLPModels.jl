@@ -111,16 +111,17 @@ Evaluate the product of the objective Hessian at `x` with the vector `v`,
 with objective function scaled by `obj_weight`.
 """
 function NLPModels.hprod!(
-  psnlp::AbstractPartiallySeparableNLPModel,
-  x::AbstractVector,
-  v::AbstractVector,
-  Hv::AbstractVector;
+  psnlp::AbstractPartiallySeparableNLPModel{T,S},
+  x::S,
+  v::S,
+  Hv::S;
   obj_weight = 1.0,
   β = 0.0,
-)
+) where {T, S<:AbstractVector{T}} 
   increment!(psnlp, :neval_hprod)
-  set_ps!(psnlp, x)
-  set_pv!(psnlp, v)
+  epv_x = x.epv
+  epv_v = v.epv
+  epv_Hv = Hv.epv
 
   index_element_tree = get_index_element_tree(psnlp)
   N = get_N(psnlp)
@@ -131,17 +132,25 @@ function NLPModels.hprod!(
     complete_tree = get_vec_elt_complete_expr_tree(psnlp, index_element_tree[i])
     elf_fun = ExpressionTreeForge.evaluate_expr_tree(complete_tree)
 
-    Uix = PartitionedStructures.get_eev_value(get_ps(psnlp), i)
-    Uiv = PartitionedStructures.get_eev_value(get_pv(psnlp), i)
-
-    Hvi = PartitionedStructures.get_eev_value(get_phv(psnlp), i)
+    Uix = PartitionedStructures.get_eev_value(epv_x, i)
+    Uiv = PartitionedStructures.get_eev_value(epv_v, i)
+    Hvi = PartitionedStructures.get_eev_value(epv_Hv, i)
     ∇²fv!(Uix, Uiv, Hvi; f = elf_fun)
   end
-  PartitionedStructures.build_v!(get_phv(psnlp))
-  mul!(Hv, I, PartitionedStructures.get_v(get_phv(psnlp)), obj_weight, β)
-
-  return Hv
+  return Hv 
 end
+
+function NLPModels.hprod(
+  psnlp::AbstractPartiallySeparableNLPModel{T,S},
+  x::S,
+  v::S;
+  obj_weight = 1.0,
+  β = 0.0,
+) where {T, S<:AbstractVector{T}} 
+  Hv = similar(x; simulate_vector=false)
+  NLPModels.hprod!(psnlp, x, v, Hv; obj_weight, β)
+  return Hv
+end 
 
 function NLPModels.hess_op(ps_nlp::AbstractPartiallySeparableNLPModel{T,S}, x::AbstractVector; kwargs...) where {T, S}
   n = get_n(ps_nlp)
@@ -149,24 +158,24 @@ function NLPModels.hess_op(ps_nlp::AbstractPartiallySeparableNLPModel{T,S}, x::A
   return B
 end
 
-# NLPModels interface for AbstractPQNNLPModel
-"""
-    hprod!(nlp::AbstractPQNNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
+# # NLPModels interface for AbstractPQNNLPModel
+# """
+#     hprod!(nlp::AbstractPQNNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
 
-Evaluate the product of the objective Hessian at `x` with the vector `v`,
-with objective function scaled by `obj_weight`.
-"""
-function NLPModels.hprod!(
-  pqn_nlp::AbstractPQNNLPModel,
-  x::AbstractVector,
-  v::AbstractVector,
-  Hv::AbstractVector;
-  obj_weight = 1.0,
-)
-  increment!(pqn_nlp, :neval_hprod)
-  partitionedMulOp!(pqn_nlp, Hv, v, obj_weight, 0)
-  return Hv
-end
+# Evaluate the product of the objective Hessian at `x` with the vector `v`,
+# with objective function scaled by `obj_weight`.
+# """
+# function NLPModels.hprod!(
+#   pqn_nlp::AbstractPQNNLPModel,
+#   x::AbstractVector,
+#   v::AbstractVector,
+#   Hv::AbstractVector;
+#   obj_weight = 1.0,
+# )
+#   increment!(pqn_nlp, :neval_hprod)
+#   partitionedMulOp!(pqn_nlp, Hv, v, obj_weight, 0)
+#   return Hv
+# end
 
 """
     B = hess_approx(nlp::AbstractPQNNLPModel)
