@@ -9,12 +9,14 @@ include("trunk.jl")
 
 using .ModAbstractPSNLPModels
 # using .ModPBFGSNLPModels, .ModPLBFGSNLPModels, .ModPCSNLPModels, .ModPLSR1NLPModels, .ModPLSENLPModels, .ModPSR1NLPModels, .ModPSENLPModels, .ModPSNLPModels
+using .ModPSNLPModels
 using .ModPVQNPModels
 using .TrunkInterface
 
 export PartiallySeparableNLPModel, AbstractPQNNLPModel
 export element_function
 export PVQNPModel
+export PSNLPModel
 # export PBFGSNLPModel, PCSNLPModel, PLBFGSNLPModel, PLSR1NLPModel, PLSENLPModel, PSR1NLPModel, PSENLPModel, PSNLPModel
 
 export product_part_data_x, evaluate_obj_part_data, evaluate_grad_part_data
