@@ -12,7 +12,7 @@ using .ModAbstractPSNLPModels
 using .ModPVQNPModels
 using .TrunkInterface
 
-export PartiallySeparableNLPModel
+export PartiallySeparableNLPModel, AbstractPQNNLPModel
 export element_function
 export PVQNPModel
 # export PBFGSNLPModel, PCSNLPModel, PLBFGSNLPModel, PLSR1NLPModel, PLSENLPModel, PSR1NLPModel, PSENLPModel, PSNLPModel

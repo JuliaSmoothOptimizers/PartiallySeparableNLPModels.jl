@@ -1,5 +1,5 @@
 
-adnlp = ADNLPProblems.rosenbrock(; n)
+adnlp = ADNLPProblems.chainwoo(; n)
 pqnnlp = PVQNPModel(adnlp)
 
 @test NLPModels.obj(adnlp, adnlp.meta.x0) == NLPModels.obj(pqnnlp, pqnnlp.meta.x0)
@@ -26,3 +26,21 @@ Hv2 = similar(Hv)
 B = hess_op!(pqnnlp, pqnnlp.meta.x0, Hv2)
 Hv2 == Hv
 Vector(Hv2) == hv
+
+
+x0 = pqnnlp.meta.x0
+s  = similar(x0)
+s .= 1
+g  = similar(x0; simulate_vector=false)
+g1  = similar(x0; simulate_vector=false)
+y  = similar(x0; simulate_vector=false)
+
+NLPModels.grad!(pqnnlp, x0, g)
+NLPModels.grad!(pqnnlp, x0+s, g1)
+
+y .= g1 .- g
+push!(pqnnlp, s, y)
+
+pB = pqnnlp.pB
+res = Matrix(pB) * Vector(s) - Vector(y)
+@test norm(res) == 0
