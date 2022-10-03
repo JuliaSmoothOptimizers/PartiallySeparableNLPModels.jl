@@ -55,16 +55,6 @@ mutable struct PVQNPModel{G, P, T, S, M <: AbstractNLPModel{T, Vector{T}}, Meta 
 
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
 
-  # x::Vector{T} # length(x)==n
-  # v::Vector{T} # length(v)==n
-  # s::Vector{T} # length(v)==n
-  x::PartitionedVector{T}
-  
-  # pg::PartitionedStructures.Elemental_pv{T} # partitioned gradient
-  # pv::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
-  # py::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
-  # ps::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
-  # phv::PartitionedStructures.Elemental_pv{T} # partitioned vector, temporary partitioned vector
   pB::P # partitioned B
 
   fx::T
@@ -78,6 +68,7 @@ function PVQNPModel(nlp::SupportedNLPModel; type::DataType=Float64)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
+  # (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, pB, fx, name) = partitioned_structure(ex, n; type, name=:pse)
   (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, pB, fx, name) = partitioned_structure(ex, n; type, name=:pbfgs)
   P = typeof(pB)
 
@@ -87,7 +78,7 @@ function PVQNPModel(nlp::SupportedNLPModel; type::DataType=Float64)
   S = typeof(x)
 
   counters = NLPModels.Counters()
-  pvqnlp = PVQNPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, pB, fx, name)
+  pvqnlp = PVQNPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, pB, fx, name)
   return pvqnlp
 end
   

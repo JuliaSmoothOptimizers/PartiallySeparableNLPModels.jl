@@ -11,6 +11,7 @@ export ElementFunction
 export update_nlp, hess_approx, update_nlp!
 
 abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S} end
+# abstract type AbstractPartiallySeparableNLPModel{T, S} <: QuasiNewtonModel{T, S} end
 abstract type AbstractPQNNLPModel{T,S} <: AbstractPartiallySeparableNLPModel{T, S} end
 
 """ Accumulate the supported NLPModels. """
@@ -216,34 +217,6 @@ Return the Hessian approximation of `nlp`.
 """
 hess_approx(pqn_nlp::AbstractPQNNLPModel) = get_pB(pqn_nlp)
 
-# NLPModels.hess_op(pqnnlp::AbstractPQNNLPModel{T,S}, x::S; kwargs...) = LinearOperator(pqnnlp)
-
-# """
-#     partitionedMulOp!(pqn_nlp::AbstractPQNNLPModel, res, v, α, β)
-
-# Partitioned 5-arg `mul!` for `pqn_nlp` using the partitioned matrix and partitioned vectors to destribute and collect the result of element matrix-vector products.
-# """
-# function partitionedMulOp!(pqnnlp::AbstractPQNNLPModel{T,S}, res::S, v::S, α, β) where {T, S<:AbstractVector{T}} 
-#   epv = v.epv
-#   epv_res = res.epv
-#   pB = get_pB(pqnnlp)
-#   mul_epm_epv!(epv_res, pB, epv)
-#   if β == 0
-#     @. res = α * res
-#   else
-#     @. res = α * Hv + β * res
-#   end
-#   return res
-#   mul!(res, I, PartitionedStructures.get_v(epv_res), α, β)
-#   return epv_res
-# end
-
-# function LinearOperators.LinearOperator(pqn_nlp::AbstractPQNNLPModel{T,S}) where {T, S}
-#   n = get_n(pqn_nlp)
-#   B = LinearOperator(T, n, n, true, true, (res, v, α, β) -> partitionedMulOp!(pqn_nlp, res, v, α, β))
-#   return B
-# end
-
 function Base.push!(
   pqn_nlp::AbstractPQNNLPModel{T,S},
   s::S,
@@ -253,63 +226,9 @@ function Base.push!(
   epv_s = s.epv
   epv_y = y.epv
   pB = get_pB(pqn_nlp)
-  PartitionedStructures.update!(pB, epv_y, epv_s; name = pqn_nlp.name, kwargs...)
+  PartitionedStructures.update!(pB, epv_y, epv_s; name = pqn_nlp.name, verbose=false, kwargs...)
   return pB
 end
-
-# """
-#     update_nlp(pqn_nlp::AbstractPQNNLPModel{T,S}, x::Vector{T}, s::Vector{T})
-
-# Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
-# When `x` is omitted, `update_PQN!` consider that `pqn_nlp` has the current point in pqn_nlp.x`.
-# Moreover, it assumes that the partitioned gradient at `x` is already computed in `pqn_nlp.pg`.
-# Will be replace by `push!` when `PartitionedVector` are implemented.
-# """
-# function update_nlp(
-#   pqn_nlp::AbstractPQNNLPModel{T,S},
-#   x::Vector{T},
-#   s::Vector{T};
-#   kwargs...,
-# ) where {T <: Number, S}
-#   update_nlp!(pqn_nlp, x, s; kwargs...)
-#   return Matrix(get_pB(pqn_nlp))
-# end
-
-# """
-#     update_nlp!(pqn_nlp::AbstractPQNNLPModel{T,S}, s::Vector{T})
-#     update_nlp!(pqn_nlp::AbstractPQNNLPModel{T,S}, x::Vector{T}, s::Vector{T})
-
-# Perform the partitioned quasi-Newton update given the current point `x` and the step `s`.
-# When `x` is omitted, `update_PQN!` consider that `pqn_nlp` has the current point in pqn_nlp.x`.
-# Moreover, it assumes that the partitioned gradient at `x` is already computed in `pqn_nlp.pg`.
-# Will be replace by `push!` when `PartitionedVector` are implemented.
-# """
-# function update_nlp!(
-#   pqn_nlp::AbstractPQNNLPModel{T,S},
-#   x::Vector{T},
-#   s::Vector{T};
-#   kwargs...,
-# ) where {T <: Number, S}
-#   set_x!(pqn_nlp, x)
-#   evaluate_grad_part_data!(pqn_nlp)
-#   update_nlp!(pqn_nlp, s; kwargs...)
-# end
-
-# function update_nlp!(
-#   pqn_nlp::AbstractPQNNLPModel{T,S},
-#   s::Vector{T};
-#   reset = 0,
-#   kwargs...,
-# ) where {T <: Number, S}
-#   evaluate_y_part_data!(pqn_nlp, s)
-#   py = get_py(pqn_nlp)
-#   set_ps!(pqn_nlp, s)
-#   ps = get_ps(pqn_nlp)
-#   pB = get_pB(pqn_nlp)
-#   PartitionedStructures.update!(pB, py, ps; name = pqn_nlp.name, kwargs...)
-#   return pqn_nlp
-# end
-
 
 show(psnlp::AbstractPartiallySeparableNLPModel) = show(stdout, psnlp)
 
@@ -375,6 +294,18 @@ function show(io::IO, psnlp::AbstractPartiallySeparableNLPModel)
   print(io, join(LH, "\n"))
 
   return nothing
+end
+
+function NLPModels.reset_data!(pqnnlp::AbstractPQNNLPModel; name=pqnnlp.name)
+  (name == :pbfgs) && (pB = epm_from_epv(epv))
+  (name == :psr1) && (pB = epm_from_epv(epv))
+  (name == :pse) && (pB = epm_from_epv(epv))
+  (name == :pcs) && (pB = epm_from_epv(epv))
+  (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; kwargs...))
+  (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv))
+  (name == :plse) && (pB = eplo_lose_from_epv(epv; kwargs...))
+  pqnnlp.pB = pB
+  return pqnnlp
 end
 
 end
