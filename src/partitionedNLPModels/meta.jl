@@ -3,7 +3,11 @@ module Meta
 using NLPModels, PartitionedVectors
 export partitioned_meta
 
+"""    
+    meta = partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::PartitionedVector{T})
 
+Return an `NLPModelMeta` dedicated to `PartitionedVector`s, i.e. `meta.x0` is a `PartitionedVector`.
+"""
 function partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::PartitionedVector{T}) where T
   n = length(meta.x0)
   set!(x0, meta.x0)
@@ -55,7 +59,7 @@ function partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::Partit
   return psmeta
 end
 
-Base.show(io::IO, psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where T = println("youhou")
+Base.show(io::IO, psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where T = println("not done yet")
 
 Base.show(psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where T = show(stdout, psnlp)
 

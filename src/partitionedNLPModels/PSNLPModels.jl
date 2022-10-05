@@ -9,13 +9,13 @@ using ReverseDiff
 export PSNLPModel
 
 """
-    PSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPartiallySeparableNLPModel{T,S}
+    PSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
 
-Deduct and allocate the partitioned structures of a NLPModel using partitioned BFGS Hessian approximation.
+Deduct and allocate the partitioned structures of a NLPModel using partitioned hessian-vector product.
 `PSNLPModel` has fields:
 
-* `nlp`: the original model;
-* `meta`: gather information about the `PartiallySeparableNLPModel`;
+* `model`: the original model;
+* `meta`: gather information about the `PSNLPModel`;
 * `counters`: count how many standards methods of `NLPModels` are called;
 * `n`: the size of the problem;
 * `N`: the number of element functions;
@@ -25,16 +25,7 @@ Deduct and allocate the partitioned structures of a NLPModel using partitioned B
 * `element_expr_tree_table`: a vector of size `M`, the i-th element `element_expr_tree_table[i]::Vector{Int}` informs which element functions use the `vec_elt_complete_expr_tree[i]` expression tree;
 * `index_element_tree`: a vector of size `N` where each component indicates which `Complete_expr_tree` from `vec_elt_complete_expr_tree` is used for the corresponding element;
 * `vec_compiled_element_gradients`: the vector gathering the compiled tapes for every element gradient evaluations;
-* `x`: the current point;
-* `v`: a temporary vector;
-* `s`: the current step;
-* `pg`: the partitioned gradient;
-* `pv`: a temporary partitioned vector;
-* `py`: the partitioned gradient difference;
-* `ps`: the partitioned step;
-* `phv`: the partitioned Hessian-vector product;
-* `pB`: the partitioned matrix (main memory cost);
-* `fx`: the current value of the objective function;
+* `op`: the partitioned matrix (main memory cost);
 * `name`: the name of partitioned quasi-Newton update performed
 """
 mutable struct PSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, Vector{T}}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPartiallySeparableNLPModel{T,S}

@@ -1,10 +1,10 @@
 using Test
-using PartiallySeparableNLPModels
+
 using LinearAlgebra
-
-using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
-using ADNLPModels, NLPModels, NLPModelsJuMP
+using ADNLPModels, NLPModels, NLPModelsJuMP, LinearOperators
 using OptimizationProblems, OptimizationProblems.ADNLPProblems, OptimizationProblems.PureJuMP
-using LinearOperators
+using JSOSolvers
+using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
+using PartiallySeparableNLPModels
 
-include("new/_include.jl")
+include("new/pqnnlp.jl")

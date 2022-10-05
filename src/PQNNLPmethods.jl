@@ -72,10 +72,9 @@ function NLPModels.hprod(
   x::S,
   v::S;
   obj_weight = 1.0,
-  β = 0.0,
 ) where {T, S<:AbstractVector{T}} 
   Hv = similar(x; simulate_vector=false)
-  NLPModels.hprod!(pqnnlp, x, v, Hv; obj_weight, β)
+  NLPModels.hprod!(pqnnlp, x, v, Hv; obj_weight)
   return Hv
 end 
 
@@ -143,10 +142,12 @@ function Base.push!(
 end
 
 function NLPModels.reset_data!(pqnnlp::AbstractPQNNLPModel; name=pqnnlp.name)
+  convex_vector = map(eem -> PartitionedStructures.get_convex(eem),pqnnlp.op.eem_set)
+  epv = pqnnlp.meta.x0.epv
   (name == :pbfgs) && (op = epm_from_epv(epv))
   (name == :psr1) && (op = epm_from_epv(epv))
   (name == :pse) && (op = epm_from_epv(epv))
-  (name == :pcs) && (op = epm_from_epv(epv))
+  (name == :pcs) && (op = epm_from_epv(epv); convex_vector)
   (name == :plbfgs) && (op = eplo_lbfgs_from_epv(epv; kwargs...))
   (name == :plsr1) && (op = eplo_lsr1_from_epv(epv))
   (name == :plse) && (op = eplo_lose_from_epv(epv; kwargs...))
