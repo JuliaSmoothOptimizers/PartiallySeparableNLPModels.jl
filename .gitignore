@@ -24,9 +24,4 @@ docs/site/
 Manifest.toml
 
 dvpt/**
-
-*pbfgs.jl
-*plbfgs.jl
-src/old_version/*
-test/premier_test.jl
-test/compare_MOI_JuMP.jl
+.vscode/**

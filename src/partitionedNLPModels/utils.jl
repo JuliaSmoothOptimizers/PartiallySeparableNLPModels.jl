@@ -7,7 +7,7 @@ using ExpressionTreeForge.M_implementation_convexity_type
 using ..ModAbstractPSNLPModels
 
 export distinct_element_expr_tree, compiled_grad_element_function
-export partially_separable_structure, partitioned_structure
+export partitioned_structure
 
 """
     (element_expr_trees, indices_element_tree) = distinct_element_expr_tree(vec_element_expr_tree::Vector{T}, vec_element_variables::Vector{Vector{Int}}; N::Int = length(vec_element_expr_tree)) where {T}

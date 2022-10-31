@@ -7,4 +7,5 @@ using JSOSolvers
 using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
 using PartiallySeparableNLPModels
 
-include("new/pqnnlp.jl")
+include("pqnnlp.jl")
+include("methods.jl")
