@@ -112,9 +112,9 @@ function NLPModels.hprod!(
     Hvi = PartitionedStructures.get_eev_value(epv_Hv, i)
     ∇²fv!(Uix, Uiv, Hvi; f = elf_fun)
   end
+  Hv .*= obj_weight
   return Hv 
 end
-
 
 function NLPModels.hess_op(
   pqnnlp::AbstractPartiallySeparableNLPModel{T,S},

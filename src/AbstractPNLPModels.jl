@@ -106,9 +106,9 @@ function show(io::IO, psnlp::AbstractPartiallySeparableNLPModel)
   return nothing
 end
 
-show(psnlp::QuasiNewtonModel) = show(stdout, psnlp)
+show(psnlp::AbstractPQNNLPModel) = show(stdout, psnlp)
 
-function show(io::IO, psnlp::QuasiNewtonModel)
+function show(io::IO, psnlp::AbstractPQNNLPModel)
   show(io, psnlp.model)
   println(io, "\nPartitioned structure summary:")
   n = get_n(psnlp)
