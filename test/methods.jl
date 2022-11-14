@@ -156,7 +156,7 @@ end
   plse_s.simulate_vector = false
   psr1_s.simulate_vector = false
 
-  # They di not all satisfy the secant equation because not every elements are updated.
+  # They do not all satisfy the secant equation because not every elements are updated.
   # Limited-memory partitioned quasi-Newton operators rely on damped operators, making them not satisfy secant equation.
   # @test isapprox(norm(Vector(pbfgs_s) - Vector(py)), 0, atol = 1e-10)  
   # @test isapprox(norm(Vector(pcs_s) - Vector(py)), 0, atol = 1e-10)  
