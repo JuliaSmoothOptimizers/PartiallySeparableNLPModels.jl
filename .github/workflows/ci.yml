@@ -36,13 +36,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - name: Installing non-registered dependencies
-        run: |
-          using Pkg
-          pkg = PackageSpec(url = "https://github.com/paraynaud/PartitionedVectors.jl.git")
-          pkg_list = [pkg]
-          Pkg.add(pkg_list)
-        shell: julia --project=docs --color=yes {0}
       - uses: actions/cache@v1
         env:
           cache-name: cache-artifacts
