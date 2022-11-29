@@ -138,11 +138,11 @@ The accumulated matrix can be visualized with:
 Matrix(pbfgsnlp.op)
 ```
 
-Then, you can update the partitioned quasi-Newton approximation with the pair `x,s`:
+Then, you can update the partitioned quasi-Newton approximation with the pair `y,s`:
 ```@example PSNLP
 s = similar(x)
 s .= 0.5
-y = grad(pbfgsnlp, x+s) - pbfgsnlpgrad(pbfgsnlp, x)
+y = grad(pbfgsnlp, x+s) - grad(pbfgsnlp, x)
 push!(pbfgsnlp, y, s)
 ```
 and you can perform a partitioned-matrix-vector product with:
@@ -151,12 +151,16 @@ Bv = similar(x; simulate_vector=false)
 hprod!(pbfgsnlp, x, s, Bv)
 Vector(Bv)
 ```
+Again, see the PartitionedVectors.jl's tutorial to understand both usages of PartitionedVectors.
 
-Finally you can build a `TrunkSolver` from a `PartiallySeparableNLPModel`:
+Finally, you can build a `TrunkSolver` (from [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)) from a `PartiallySeparableNLPModel`:
 ```@example PSNLP
 trunk_solver = TrunkSolver(pbfgsnlp)
 ```
-which can be `solve`:
+which define properly the PartitionedVectors mandatory for running `trunk`
+`turnk_solver` can be `solve` afterward with:
 ```@example PSNLP
 solve!(trunk_solver, pbfgsnlp)
 ```
+
+For now, `TrunkSolver` is the sole `Solver` defined for `PartiallySeparableNLPModel`s, if you want to add another `Solver`, you should define it similarly to `TrunkSolver` in `src/trunk.jl`.
