@@ -54,7 +54,7 @@ function partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::Partit
     meta.nln, #nln::Vector{Int} (Int[])
     true, #minimize::Bool
     false, #islp::Bool
-    "PS (WIP)", #name::String
+    meta.name * " (PS)", #name::String
   )
   return psmeta
 end
