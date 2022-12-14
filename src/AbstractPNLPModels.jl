@@ -2,7 +2,7 @@ module ModAbstractPSNLPModels
 
 using Printf, Statistics, LinearAlgebra, FastClosures
 using ADNLPModels, LinearOperators, NLPModels, NLPModelsJuMP, NLPModelsModifiers
-using ExpressionTreeForge
+using ExpressionTreeForge, PartitionedVectors
 
 import Base.show
 
