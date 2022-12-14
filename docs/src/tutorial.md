@@ -5,11 +5,12 @@ PartiallySeparableNLPModels.jl defines a subtype of `AbstractNLPModel` to exploi
 ```math
  f(x) = \sum_{i=1}^N f_i (U_i x) , \; f_i : \R^{n_i} \to \R, \; U_i \in \R^{n_i \times n},\; n_i \ll n,
 ```
-as the sum of element functions $f_i$.
+as a sum of element functions $f_i$.
 
-PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure and defines the suitable partitioned structures using [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) and [PartitionedVectors.jl](https://github.com/paraynaud/PartitionedVectors.jl).
+PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure. Then, it defines suitable partitioned structures using [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) and [PartitionedVectors.jl](https://github.com/paraynaud/PartitionedVectors.jl).
 Any `NLPModels` from PartiallySeparableNLPModels.jl rely on `PartitionedVector <: AbstractVector` instead of `Vector`.
-Howver, as a user, you need only define an `NLPModel`, for instance, one may use an `ADNLPModel`:
+Any model from PartiallySeparableNLPModels.jl may be defined either from a `ADNLPModel` or a `MathOptNLPModel`.
+Let starts with an example using an `ADNLPModel` (`MathOptNLPModel` will follow):
 ```@example PSNLP
 using PartiallySeparableNLPModels, ADNLPModels
 
@@ -24,7 +25,7 @@ example_model(n :: Int) = ADNLPModel(example, start_example(n), name="Example " 
 n = 4 # size of the problem
 model = example_model(n)
 ```
-and call `PSNLPModel <: AbstractPartiallySeparableNLPModel` to define a partitioned `NLPModel`:
+and call `PSNLPModel <: AbstractPartiallySeparableNLPModel` to define a partitioned `NLPModel` using exact second derivatives:
 ```@example PSNLP
 psnlp = PSNLPModel(model)
 ```
@@ -50,7 +51,7 @@ v = similar(x)
 v .= 1
 hv = NLPModels.hprod(psnlp, x, v)
 ```
-`fx`, `gx` and `hv` accumulate contributions from element functions, either its evaluation $f_i(U_ix)$, its gradient $\nabla f_i(U_ix)$ or its  element Hessian-vector $\nabla^2 f_i(U_i x) U_i v$.
+`fx`, `gx` and `hv` accumulate contributions from element functions, either its evaluation $f_i(U_ix)$, its gradient $\nabla f_i(U_ix)$ or its element Hessian-vector $\nabla^2 f_i(U_i x) U_i v$.
 You can get the `Vector` value of `gx` and `hv` with 
 ```@example PSNLP
 Vector(hv)
@@ -75,15 +76,15 @@ function jump_example(n::Int)
   return nlp
 end
 
-jumpnlp_example = jump_example(n)
-psnlp = PSNLPModel(jumpnlp_example)
+jumpnlp = jump_example(n)
+psnlp = PSNLPModel(jumpnlp)
 
-fx = NLPModels.obj(psnlp, x) # compute the obective function
+fx = NLPModels.obj(psnlp, x) # compute the objective function
 gx = NLPModels.grad(psnlp, x) # compute the gradient
 ```
 
 ## Partitioned quasi-Newton `NLPModel`s
-A model deriving from `AbstractPQNNLPModel<:QuasiNewtonModel` allocates storage required for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl` (see the [PartitionedStructures.jl tutorial](https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/dev/tutorial/) for more details).
+A model deriving from `AbstractPQNNLPModel<:QuasiNewtonModel` allocates storage required for partitioned quasi-Newton updates, which are implemented in `PartitionedStructures.jl` (see the [PartitionedStructures.jl tutorial](https://juliasmoothoptimizers.github.io/PartitionedStructures.jl/stable/tutorial/) for more details).
 There are several variants:
 * `PBFGSNLPModel`: every element-Hessian approximation is updated with BFGS;
 * `PSR1NLPModel`: every element-Hessian approximation is updated with SR1;
@@ -94,7 +95,7 @@ There are several variants:
 * `PLSENLPModel`: by default, every element-Hessian approximations is a LBFGS operator as long as the curvature condition holds, otherwise it becomes a LSR1 operator.
 
 ```@example PSNLP
-pbfgsnlp = PBFGSNLPModel(jumpnlp_example)
+pbfgsnlp = PBFGSNLPModel(jumpnlp)
 ```
 
 The Hessian approximation of each element function $f_i (y) = (y_1 + y_2)^2$ is initially set to an identity matrix. 
@@ -155,6 +156,8 @@ Again, see the PartitionedVectors.jl's tutorial to understand both usages of Par
 
 Finally, you can build a `TrunkSolver` (from [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)) from a `PartiallySeparableNLPModel`:
 ```@example PSNLP
+using JSOSolvers
+
 trunk_solver = TrunkSolver(pbfgsnlp)
 ```
 which define properly the PartitionedVectors mandatory for running `trunk`

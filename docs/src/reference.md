@@ -13,5 +13,5 @@ Pages = ["reference.md"]
 ```
 ​
 ```@autodocs
-Modules = [PartiallySeparableNLPModels, ModAbstractPSNLPModels, Utils, ModPBFGSNLPModels, ModPCSNLPModels, ModPLBFGSNLPModels, ModPLSENLPModels, ModPLSR1NLPModels, ModPSENLPModels, ModPSNLPModels, ModPSR1NLPModels]
+Modules = [PartiallySeparableNLPModels, ModAbstractPSNLPModels, Utils, Meta, ModPBFGSNLPModels, ModPCSNLPModels, ModPLBFGSNLPModels, ModPLSENLPModels, ModPLSR1NLPModels, ModPSENLPModels, ModPSNLPModels, ModPSR1NLPModels]
 ```
