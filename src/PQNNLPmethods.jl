@@ -8,19 +8,8 @@ function NLPModels.obj(
   x::S, # PartitionedVector
 ) where {T, S<:AbstractVector{T}} 
   increment!(pqnnlp, :neval_obj)
-  epv = x.epv
-  index_element_tree = get_index_element_tree(pqnnlp)
-  N = get_N(pqnnlp)
-  f = 0
-  for i = 1:N
-    elt_expr_tree = get_vec_elt_complete_expr_tree(pqnnlp, index_element_tree[i])
-    fᵢx = ExpressionTreeForge.evaluate_expr_tree( 
-      elt_expr_tree,
-      PartitionedStructures.get_eev_value(epv, i), # i-th element
-    )
-    f += fᵢx
-  end  
-  return f
+  PartitionedVectors.build!(x)
+  NLPModels.obj(pqnnlp.model, x.epv.v)
 end
 
 """
