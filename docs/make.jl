@@ -1,12 +1,13 @@
 using Documenter
 using PartiallySeparableNLPModels
-using PartiallySeparableNLPModels: ModAbstractPSNLPModels, Utils, ModPBFGSNLPModels, ModPCSNLPModels, ModPLBFGSNLPModels, ModPLSENLPModels, ModPLSR1NLPModels, ModPSENLPModels, ModPSNLPModels, ModPSR1NLPModels
+using PartiallySeparableNLPModels: ModAbstractPSNLPModels, Utils, Meta, ModPBFGSNLPModels, ModPCSNLPModels, ModPLBFGSNLPModels, ModPLSENLPModels, ModPLSR1NLPModels, ModPSENLPModels, ModPSNLPModels, ModPSR1NLPModels
 
 makedocs(
   modules = [
     PartiallySeparableNLPModels,
     ModAbstractPSNLPModels,
     Utils,
+    Meta,
     ModPBFGSNLPModels,
     ModPCSNLPModels,
     ModPLBFGSNLPModels,
