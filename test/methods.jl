@@ -164,6 +164,20 @@ end
   # @test isapprox(norm(Vector(plsr1_s) - Vector(py)), 0, atol = 1e-10)  
   # @test isapprox(norm(Vector(plse_s) - Vector(py)), 0, atol = 1e-10)  
   @test isapprox(norm(Vector(psr1_s) - Vector(py)), 0, atol = 1e-10)  
+
+  @testset "reset data" begin    
+    NLPModels.reset_data!(pbfgsnlp)
+    NLPModels.reset_data!(pcsnlp)
+    NLPModels.reset_data!(plbfgsnlp)
+    NLPModels.reset_data!(plsr1nlp)
+    NLPModels.reset_data!(plsenlp)
+    NLPModels.reset_data!(psr1nlp)
+    NLPModels.reset_data!(psenlp)
+        
+    @test Matrix(pcsnlp.op) == Matrix(pbfgsnlp.op)
+    @test Matrix(psr1nlp.op) == Matrix(pbfgsnlp.op)
+    @test Matrix(psenlp.op) == Matrix(pbfgsnlp.op)
+  end
 end
 
 @testset "show" begin
@@ -173,5 +187,11 @@ end
   psnlp = PSNLPModel(nlp)
   res = show(psnlp)
 
+  pqnnlp = PBFGSNLPModel(nlp)
+  res = show(pqnnlp)
+  
   @test res == nothing
+
+  meta = psnlp.meta
+  show(meta)
 end

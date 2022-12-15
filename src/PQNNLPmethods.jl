@@ -130,16 +130,18 @@ function Base.push!(
   return op
 end
 
-function NLPModels.reset_data!(pqnnlp::AbstractPQNNLPModel; name=pqnnlp.name)
-  convex_vector = map(eem -> PartitionedStructures.get_convex(eem),pqnnlp.op.eem_set)
+function NLPModels.reset_data!(pqnnlp::AbstractPQNNLPModel; name=pqnnlp.name, kwargs...)  
   epv = pqnnlp.meta.x0.epv
   (name == :pbfgs) && (op = epm_from_epv(epv))
   (name == :psr1) && (op = epm_from_epv(epv))
   (name == :pse) && (op = epm_from_epv(epv))
-  (name == :pcs) && (op = epm_from_epv(epv); convex_vector)
   (name == :plbfgs) && (op = eplo_lbfgs_from_epv(epv; kwargs...))
   (name == :plsr1) && (op = eplo_lsr1_from_epv(epv))
   (name == :plse) && (op = eplo_lose_from_epv(epv; kwargs...))
+  if name == :pcs
+    convex_vector = map(eem -> PartitionedStructures.get_convex(eem),pqnnlp.op.eem_set)
+    op = epm_from_epv(epv; convex_vector)
+  end
   pqnnlp.op = op
   return pqnnlp
 end
