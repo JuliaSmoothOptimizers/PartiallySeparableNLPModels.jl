@@ -148,11 +148,9 @@ push!(pbfgsnlp, y, s)
 ```
 and you can perform a partitioned-matrix-vector product with:
 ```@example PSNLP
-Bv = similar(x; simulate_vector=false)
-hprod!(pbfgsnlp, x, s, Bv)
+Bv = hprod(pbfgsnlp, x, s)
 Vector(Bv)
 ```
-Again, see the PartitionedVectors.jl's tutorial to understand both usages of PartitionedVectors.
 
 Finally, you can build a `TrunkSolver` (from [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)) from a `PartiallySeparableNLPModel`:
 ```@example PSNLP
