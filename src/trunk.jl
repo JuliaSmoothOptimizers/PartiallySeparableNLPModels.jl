@@ -13,13 +13,14 @@ function JSOSolvers.TrunkSolver(
   x .= 0
   xt = similar(x)
   xt .= 0
-  gx = similar(x; simulate_vector=false)
+  gx = similar(x; simulate_vector = false)
   gx .= 0
-  gt = similar(x; simulate_vector=false)
+  gt = similar(x; simulate_vector = false)
   gt .= 0
-  gn = isa(nlp, AbstractPQNNLPModel) ? similar(x; simulate_vector=false) : PartitionedVector([Int[]])
+  gn =
+    isa(nlp, AbstractPQNNLPModel) ? similar(x; simulate_vector = false) : PartitionedVector([Int[]])
   gn .= 0
-  Hs = similar(x; simulate_vector=false)
+  Hs = similar(x; simulate_vector = false)
   Hs .= 0
   subsolver = subsolver_type(x)
   Sub = typeof(subsolver)
@@ -38,13 +39,14 @@ function JSOSolvers.TrunkSolver(
   x .= 0
   xt = similar(x)
   xt .= 0
-  gx = similar(x; simulate_vector=false)
+  gx = similar(x; simulate_vector = false)
   gx .= 0
-  gt = similar(x; simulate_vector=false)
+  gt = similar(x; simulate_vector = false)
   gt .= 0
-  gn = isa(nlp, AbstractPQNNLPModel) ? similar(x; simulate_vector=false) : PartitionedVector([Int[]])
+  gn =
+    isa(nlp, AbstractPQNNLPModel) ? similar(x; simulate_vector = false) : PartitionedVector([Int[]])
   gn .= 0
-  Hs = similar(x; simulate_vector=false)
+  Hs = similar(x; simulate_vector = false)
   Hs .= 0
   subsolver = subsolver_type(x)
   Sub = typeof(subsolver)
@@ -53,6 +55,5 @@ function JSOSolvers.TrunkSolver(
   tr = TrustRegion(gt, one(T))
   return TrunkSolver{T, S, Sub, Op}(x, xt, gx, gt, gn, Hs, subsolver, H, tr)
 end
-
 
 end

@@ -8,13 +8,16 @@ export partitioned_meta
 
 Return an `NLPModelMeta` dedicated to `PartitionedVector`s, i.e. `meta.x0` is a `PartitionedVector`.
 """
-function partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::PartitionedVector{T}) where T
+function partitioned_meta(
+  meta::NLPModels.NLPModelMeta{T, Vector{T}},
+  x0::PartitionedVector{T},
+) where {T}
   n = length(meta.x0)
   set!(x0, meta.x0)
   lvar = similar(x0)
   uvar = similar(x0)
-  constraint_partition = [Vector{Int}(undef,0)]
-  empty_pv = PartitionedVector(constraint_partition; T=T)
+  constraint_partition = [Vector{Int}(undef, 0)]
+  empty_pv = PartitionedVector(constraint_partition; T = T)
   y0 = similar(empty_pv)
   lcon = similar(empty_pv)
   ucon = similar(empty_pv)
@@ -43,7 +46,7 @@ function partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::Partit
     Int[], #jrng::Vector{Int}
     Int[], #jfree::Vector{Int}
     Int[], #jinf::Vector{Int}
-    n ,#nnzo::Int
+    n,#nnzo::Int
     meta.nnzj, #nvar * ncon, nnzj::Int (0)
     meta.lin_nnzj, #lin_nnzj::Int (0)
     meta.nln_nnzj, #nln_nnzj::Int (0)
@@ -59,8 +62,9 @@ function partitioned_meta(meta::NLPModels.NLPModelMeta{T, Vector{T}}, x0::Partit
   return psmeta
 end
 
-Base.show(io::IO, psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where T = println("not done yet")
+Base.show(io::IO, psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where {T} =
+  println("not done yet")
 
-Base.show(psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where T = show(stdout, psnlp)
+Base.show(psnlp::NLPModels.NLPModelMeta{T, PartitionedVector{T}}) where {T} = show(stdout, psnlp)
 
 end

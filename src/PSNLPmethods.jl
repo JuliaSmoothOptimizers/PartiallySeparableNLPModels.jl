@@ -6,7 +6,7 @@ Evaluate `f(x)`, the objective function of `nlp` at `x`.
 function NLPModels.obj(
   psnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S, # PartitionedVector
-) where {T, S<:AbstractVector{T}} 
+) where {T, S <: AbstractVector{T}}
   increment!(psnlp, :neval_obj)
   build!(x)
   NLPModels.obj(psnlp.nlp, x.epv.v)
@@ -20,8 +20,8 @@ Evaluate `∇f(x)`, the gradient of the objective function at `x`.
 function NLPModels.grad(
   psnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S, # PartitionedVector  
-) where {T, S<:AbstractVector{T}} 
-  g = similar(x; simulate_vector=false)
+) where {T, S <: AbstractVector{T}}
+  g = similar(x; simulate_vector = false)
   grad!(psnlp, x, g)
   return g
 end
@@ -35,8 +35,8 @@ function NLPModels.grad!(
   psnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S, # PartitionedVector
   g::S, # PartitionedVector
-) where {T, S<:AbstractVector{T}} 
-  increment!(psnlp, :neval_grad)  
+) where {T, S <: AbstractVector{T}}
+  increment!(psnlp, :neval_grad)
   epv_x = x.epv
   epv_g = g.epv
   index_element_tree = get_index_element_tree(psnlp)
@@ -57,16 +57,16 @@ Evaluate the product of the objective Hessian at `x` with the vector `v`,
 with objective function scaled by `obj_weight`.
 """
 function NLPModels.hprod(
-  psnlp::AbstractPartiallySeparableNLPModel{T,S},
+  psnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S,
   v::S;
   obj_weight = 1.0,
   β = 0.0,
-) where {T, S<:AbstractVector{T}} 
-  Hv = similar(x; simulate_vector=false)
+) where {T, S <: AbstractVector{T}}
+  Hv = similar(x; simulate_vector = false)
   NLPModels.hprod!(psnlp, x, v, Hv; obj_weight, β)
   return Hv
-end 
+end
 
 """
     hprod!(nlp::AbstractPartiallySeparableNLPModel, x::AbstractVector, v::AbstractVector, Hv::AbstractVector; obj_weight=1.)
@@ -75,13 +75,13 @@ Evaluate the product of the objective Hessian at `x` with the vector `v`,
 with objective function scaled by `obj_weight`.
 """
 function NLPModels.hprod!(
-  psnlp::AbstractPartiallySeparableNLPModel{T,S},
+  psnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S,
   v::S,
   Hv::S;
   obj_weight = 1.0,
   β = 0.0,
-) where {T, S<:AbstractVector{T}} 
+) where {T, S <: AbstractVector{T}}
   increment!(psnlp, :neval_hprod)
   epv_x = x.epv
   epv_v = v.epv
@@ -102,24 +102,24 @@ function NLPModels.hprod!(
     ∇²fv!(Uix, Uiv, Hvi; f = elf_fun)
   end
   Hv .*= obj_weight
-  return Hv 
+  return Hv
 end
 
 function NLPModels.hess_op(
-  pqnnlp::AbstractPartiallySeparableNLPModel{T,S},
+  pqnnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S;
   obj_weight = 1.0,
-) where {T, S<:AbstractVector{T}} 
-  Hv = similar(x; simulate_vector=false)
+) where {T, S <: AbstractVector{T}}
+  Hv = similar(x; simulate_vector = false)
   return hess_op!(pqnnlp, x, Hv; obj_weight)
 end
 
 function NLPModels.hess_op!(
-  pqnnlp::AbstractPartiallySeparableNLPModel{T,S},
+  pqnnlp::AbstractPartiallySeparableNLPModel{T, S},
   x::S,
   Hv::S;
   obj_weight = 1.0,
-) where {T, S<:AbstractVector{T}} 
+) where {T, S <: AbstractVector{T}}
   n = get_n(pqnnlp)
   prod! = @closure (res, v, α, β) -> begin
     hprod!(pqnnlp, x, v, Hv; obj_weight = obj_weight)
@@ -132,4 +132,3 @@ function NLPModels.hess_op!(
   B = LinearOperator(T, n, n, true, true, prod!)
   return B
 end
-

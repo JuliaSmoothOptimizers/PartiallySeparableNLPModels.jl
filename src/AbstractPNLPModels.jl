@@ -11,7 +11,7 @@ export ElementFunction
 export update_nlp, hess_approx, update_nlp!
 
 abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S} end
-abstract type AbstractPQNNLPModel{T,S} <: QuasiNewtonModel{T, S} end
+abstract type AbstractPQNNLPModel{T, S} <: QuasiNewtonModel{T, S} end
 
 """ Accumulate the supported NLPModels. """
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
