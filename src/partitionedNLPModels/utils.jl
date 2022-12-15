@@ -94,7 +94,7 @@ To define properly the sparse matrix of the partitioned matrix we need the size 
 function partitioned_structure(
   tree::G,
   n::Int;
-  type::DataType=Float64,
+  type::DataType = Float64,
   name = :plse,
   kwargs...,
 ) where {G}
@@ -171,7 +171,7 @@ function partitioned_structure(
   vec_compiled_element_gradients =
     map((tree -> compiled_grad_element_function(tree; type = type)), element_expr_tree)
 
-  x = PartitionedVector(element_variables; T=type, n, simulate_vector=true)
+  x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 
   # convex_expr_tree = map(convexity_status -> is_convex(convexity_status), convexity_wrapper)
   convex_vector = zeros(Bool, N)
@@ -209,6 +209,5 @@ function partitioned_structure(
     name,
   )
 end
-
 
 end

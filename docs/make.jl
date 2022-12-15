@@ -1,6 +1,17 @@
 using Documenter
 using PartiallySeparableNLPModels
-using PartiallySeparableNLPModels: ModAbstractPSNLPModels, Utils, Meta, ModPBFGSNLPModels, ModPCSNLPModels, ModPLBFGSNLPModels, ModPLSENLPModels, ModPLSR1NLPModels, ModPSENLPModels, ModPSNLPModels, ModPSR1NLPModels
+using PartiallySeparableNLPModels:
+  ModAbstractPSNLPModels,
+  Utils,
+  Meta,
+  ModPBFGSNLPModels,
+  ModPCSNLPModels,
+  ModPLBFGSNLPModels,
+  ModPLSENLPModels,
+  ModPLSR1NLPModels,
+  ModPSENLPModels,
+  ModPSNLPModels,
+  ModPSR1NLPModels
 
 makedocs(
   modules = [
@@ -15,7 +26,7 @@ makedocs(
     ModPLSR1NLPModels,
     ModPSENLPModels,
     ModPSNLPModels,
-    ModPSR1NLPModels
+    ModPSR1NLPModels,
   ],
   doctest = true,
   # linkcheck = true,

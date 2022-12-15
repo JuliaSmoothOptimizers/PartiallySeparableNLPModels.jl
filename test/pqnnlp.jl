@@ -12,7 +12,7 @@
 
   pv = similar(psnlp.meta.x0)
   pv .= 1
-  Hv = similar(psnlp.meta.x0, simulate_vector=false)
+  Hv = similar(psnlp.meta.x0, simulate_vector = false)
   v = similar(adnlp.meta.x0)
   v .= 1
   hv = similar(adnlp.meta.x0)
@@ -20,7 +20,8 @@
   NLPModels.hprod!(adnlp, adnlp.meta.x0, v, hv)
 
   @test Vector(Hv) == hv
-  @test Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv)) == NLPModels.hprod(adnlp, adnlp.meta.x0, v)
+  @test Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv)) ==
+        NLPModels.hprod(adnlp, adnlp.meta.x0, v)
 
   #PQN NLPModels
   psenlp = PSENLPModel(adnlp)
@@ -32,14 +33,14 @@
   Vector(NLPModels.hprod(psenlp, psenlp.meta.x0, pv)) == hv
 
   x0 = psenlp.meta.x0
-  s  = similar(x0)
+  s = similar(x0)
   s .= 1
-  g  = similar(x0; simulate_vector=false)
-  g1  = similar(x0; simulate_vector=false)
-  y  = similar(x0; simulate_vector=false)
+  g = similar(x0; simulate_vector = false)
+  g1 = similar(x0; simulate_vector = false)
+  y = similar(x0; simulate_vector = false)
 
   NLPModels.grad!(psenlp, x0, g)
-  NLPModels.grad!(psenlp, x0+s, g1)
+  NLPModels.grad!(psenlp, x0 + s, g1)
 
   y .= g1 .- g
   push!(psenlp, s, y)
@@ -47,7 +48,6 @@
   pB = psenlp.op
   res = Matrix(pB) * Vector(s) - Vector(y)
   @test norm(res) == 0
-
 end
 
 @testset "trunk" begin

@@ -28,7 +28,14 @@ Deduct and allocate the partitioned structures of a NLPModel using a PCS Hessian
 * `op`: the partitioned matrix (main memory cost);
 * `name`: the name of partitioned quasi-Newton update performed
 """
-mutable struct PCSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, Vector{T}}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+mutable struct PCSNLPModel{
+  G,
+  P,
+  T,
+  S,
+  M <: AbstractNLPModel{T, Vector{T}},
+  Meta <: AbstractNLPModelMeta{T, S},
+} <: AbstractPQNNLPModel{T, S}
   model::M
   meta::Meta
   counters::NLPModels.Counters
@@ -50,13 +57,26 @@ mutable struct PCSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, Vector{T}}, Meta
 
   fx::T
   name::Symbol
-end 
+end
 
-function PCSNLPModel(nlp::SupportedNLPModel; type::DataType=Float64)
+function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
-  (n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, x, op, fx, name) = partitioned_structure(ex, n; type, name=:pcs)
+  (
+    n,
+    N,
+    vec_elt_fun,
+    M,
+    vec_elt_complete_expr_tree,
+    element_expr_tree_table,
+    index_element_tree,
+    vec_compiled_element_gradients,
+    x,
+    op,
+    fx,
+    name,
+  ) = partitioned_structure(ex, n; type, name = :pcs)
   P = typeof(op)
 
   meta = partitioned_meta(nlp.meta, x)
@@ -65,8 +85,23 @@ function PCSNLPModel(nlp::SupportedNLPModel; type::DataType=Float64)
   S = typeof(x)
 
   counters = NLPModels.Counters()
-  pvqnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(nlp, meta, counters, n, N, vec_elt_fun, M, vec_elt_complete_expr_tree, element_expr_tree_table, index_element_tree, vec_compiled_element_gradients, op, fx, name)
+  pvqnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(
+    nlp,
+    meta,
+    counters,
+    n,
+    N,
+    vec_elt_fun,
+    M,
+    vec_elt_complete_expr_tree,
+    element_expr_tree_table,
+    index_element_tree,
+    vec_compiled_element_gradients,
+    op,
+    fx,
+    name,
+  )
   return pvqnlp
 end
-  
+
 end
