@@ -29,7 +29,7 @@ Julia ≥ 1.6.
 
 ## How to install
 ```
-pkg> add https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl, https://github.com/JuliaSmoothOptimizers/PartiallySeparableNLPModels.jl
+pkg> add PartiallySeparableNLPModels
 pkg> test PartiallySeparableNLPModels
 ```
 
