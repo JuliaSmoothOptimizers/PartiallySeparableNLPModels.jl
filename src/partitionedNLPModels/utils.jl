@@ -114,6 +114,15 @@ function partitioned_structure(
     1:N,
   )::Vector{Vector{Int}}
 
+  mem = sum((element_var -> length(element_var)^2).(element_variables))
+  max_authorised_mem = n^3/log(n) # mem limit
+  if mem > max_authorised_mem && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
+    @warn "mem usage to important, reduction to a unstructrued structure"
+    N = 1
+    vec_element_function = [expr_tree]
+    element_variables = [[1:n;]]
+  end
+
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
 
