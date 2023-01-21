@@ -59,7 +59,7 @@ mutable struct PSNLPModel{
   name::Symbol
 end
 
-function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64)
+function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::Bool=true)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
@@ -76,7 +76,7 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64)
     pB,
     fx,
     name,
-  ) = partitioned_structure(ex, n; type, name = :phv)
+  ) = partitioned_structure(ex, n; type, name = :phv, merging)
   P = typeof(pB)
 
   meta = partitioned_meta(nlp.meta, x)
