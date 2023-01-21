@@ -1,5 +1,5 @@
 @testset "NLPModels.methods" begin
-  n = 4
+  n = 15
   adnlp = ADNLPProblems.arwhead(; n)
   psnlp = PSNLPModel(adnlp)
   pbfgsnlp = PBFGSNLPModel(adnlp)
@@ -51,7 +51,7 @@
 end
 
 @testset "trunk" begin
-  n = 4
+  n = 15
   adnlp = ADNLPProblems.arwhead(; n)
   pbfgsnlp = PBFGSNLPModel(adnlp)
   pcsnlp = PCSNLPModel(adnlp)
@@ -79,4 +79,24 @@ end
   @test ges_psr1nlp.status == :first_order
   @test ges_psenlp.status == :first_order
   @test ges_psnlp.status == :first_order
+end
+
+
+@testset "Merge, from a limit function" begin
+  function limit(x; n=length(x))
+    sum(sum( sum(x[j] for j in 1:n)^2 * x[i] * x[z] for i in 1:n) for z in 1:n)
+  end
+  start_limit(n :: Int) = ones(n)
+  
+  n = 10
+  adnlp = ADNLPModel(limit, start_limit(n))
+
+  pbfgsnlp = PBFGSNLPModel(adnlp)
+  pcsnlp = PCSNLPModel(adnlp)
+  plbfgsnlp = PLBFGSNLPModel(adnlp)
+  plsr1nlp = PLSR1NLPModel(adnlp)
+  plsenlp = PLSENLPModel(adnlp)
+  psr1nlp = PSR1NLPModel(adnlp)
+  psenlp = PSENLPModel(adnlp)
+  psnlp = PSNLPModel(adnlp)
 end
