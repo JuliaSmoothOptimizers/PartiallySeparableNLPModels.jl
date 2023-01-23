@@ -96,7 +96,7 @@ function partitioned_structure(
   n::Int;
   type::DataType = Float64,
   name = :plse,
-  merging::Bool=true,
+  merging::Bool = true,
   kwargs...,
 ) where {G}
 
@@ -116,14 +116,17 @@ function partitioned_structure(
   )::Vector{Vector{Int}}
 
   mem_dense_elements = sum((element_var -> length(element_var)^2).(element_variables))
-  mem_linear_operator_elements = sum((element_var -> length(element_var)*5*2).(element_variables))
-  max_authorised_mem = n^3/log(n) # mem limit
+  mem_linear_operator_elements =
+    sum((element_var -> length(element_var) * 5 * 2).(element_variables))
+  max_authorised_mem = n^3 / log(n) # mem limit
   if merging && (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
     @warn "mem usage to important, reduction to a unstructrued structure"
     N = 1
     vec_element_function = [expr_tree]
     element_variables = [[1:n;]]
-  elseif merging && (mem_linear_operator_elements > max_authorised_mem) && (name ∈ [:plbfgs, :plse, :plsr1])
+  elseif merging &&
+         (mem_linear_operator_elements > max_authorised_mem) &&
+         (name ∈ [:plbfgs, :plse, :plsr1])
     @warn "mem usage to important, reduction to a unstructrued structure"
     N = 1
     vec_element_function = [expr_tree]

@@ -59,7 +59,7 @@ mutable struct PSENLPModel{
   name::Symbol
 end
 
-function PSENLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::Bool=true)
+function PSENLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::Bool = true)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
