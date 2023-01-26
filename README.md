@@ -1,4 +1,4 @@
-# PartiallySeparableNLPModels: a NLPModel exploiting automatically its partially-separable structure (to define partitioned quasi-Newton models)
+# PartiallySeparableNLPModels: Exploiting the partially-separable structure to define partitioned quasi-Newton NLPModels
 
 | **Documentation** | **Linux/macOS/Windows/FreeBSD** | **Coverage** | **DOI** |
 |:-----------------:|:-------------------------------:|:------------:|:-------:|
@@ -34,7 +34,7 @@ pkg> test PartiallySeparableNLPModels
 ```
 
 ## How to use 
-See the [tutorial](https://JuliaSmoothOptimizers.github.io/PartiallySeparableNLPModels.jl/main/tutorial/).
+See the [tutorial](https://JuliaSmoothOptimizers.github.io/PartiallySeparableNLPModels.jl/stable/tutorial/).
 
 ## Dependencies
 The module uses [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure, [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) to allocate partitioned quasi-Newton approximations and [PartitionedVectors.jl](https://github.com/JuliaSmoothOptimizers/PartitionedVectors.jl) to fit the `AbstractVector` interface mandatory for AbstractNLPModel methods.
