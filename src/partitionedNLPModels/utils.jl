@@ -29,7 +29,7 @@ function distinct_element_expr_tree(
   # evaluate every element functions to reduce the number of comparisons between element expression trees
   vec_val_elt_fun = map(
     (elt_fun, elt_vars) ->
-      ExpressionTreeForge.evaluate_expr_tree(elt_fun, Float64[1:length(elt_vars);]),
+      ExpressionTreeForge.evaluate_expr_tree(elt_fun, collect(Float64,1:length(elt_vars))),
     vec_element_expr_tree,
     vec_element_variables,
   )
