@@ -26,37 +26,52 @@ function distinct_element_expr_tree(
     @error("The sizes vec_element_expr_tree and vec_element_variables are differents")
   indices_element_tree = (xi -> -xi).(ones(Int, N))
   element_expr_trees = Vector{T}(undef, 0)
-  vec_val_elt_fun_ones = map(
+  # evaluate every element functions to reduce the number of comparisons between element expression trees
+  vec_val_elt_fun = map(
     (elt_fun, elt_vars) ->
-      ExpressionTreeForge.evaluate_expr_tree(elt_fun, ones(length(elt_vars))),
+      ExpressionTreeForge.evaluate_expr_tree(elt_fun, Float64[1:length(elt_vars);]),
     vec_element_expr_tree,
     vec_element_variables,
-  ) # evaluate as first equality test
-  working_array = map((val_elt_fun_ones, i) -> (val_elt_fun_ones, i), vec_val_elt_fun_ones, 1:N)
+  )
+  
+  # retain each element function value and its original index
+  working_array = map((val_elt_fun, i) -> (val_elt_fun, i), vec_val_elt_fun, 1:N)
   current_expr_tree_index = 1
-  # Filter working_array with its current first element tree (val).
-  # After an iterate, working_array doesn't possess anymore expression tree similarto val. 
+  # Filter working_array with its current first element tree (value).
+  # After an iterate, working_array doesn't possess an expression tree similar to value. 
   while isempty(working_array) == false
-    val = working_array[1][1]
-    comparator_value_elt_fun(val_elt_fun) = val_elt_fun[1] == val
+    value = working_array[1][1]
+    ni_current_tree = length(vec_element_variables[working_array[1][2]])
+
+    # a predicate filtering the element expression trees that cannot be equal
+    comparator_value_elt_fun(val_elt_fun) = (val_elt_fun[1] == value) && (length(vec_element_variables[val_elt_fun[2]]) == ni_current_tree)
     current_indices_similar_element_functions =
-      findall(comparator_value_elt_fun, working_array[:, 1])
+      findall(comparator_value_elt_fun, working_array)
+
+    # get the real indices of the element trees selected by comparator_value_elt_fun
     real_indices_similar_element_functions =
       (tup -> tup[2]).(working_array[current_indices_similar_element_functions])
+    # get the current element expression tree associated to value
     current_expr_tree = vec_element_expr_tree[working_array[1][2]]
     push!(element_expr_trees, current_expr_tree)
+
+    # a predicate comparing current_expr_tree to an other expression tree node by node
     comparator_elt_expr_tree(expr_tree) = expr_tree == current_expr_tree
     current_indices_equal_element_function = findall(
       comparator_elt_expr_tree,
       vec_element_expr_tree[real_indices_similar_element_functions],
     )
+
+    # get the reals indices (from vec_element_expr_tree) of element expression trees equalt to current_expr_tree
     real_indices_equal_element_function =
       (
         tup -> tup[2]
       ).(
         working_array[current_indices_similar_element_functions[current_indices_equal_element_function]]
       )
+    # set for any element expression tree (from 1 to N) its new index (from 1 to M)
     indices_element_tree[real_indices_equal_element_function] .= current_expr_tree_index
+    # remove the element expression treee treated from the working array
     deleteat!(
       working_array,
       current_indices_similar_element_functions[current_indices_equal_element_function],
@@ -154,11 +169,11 @@ function partitioned_structure(
   # Create complete trees given the remaining expression trees
   vec_elt_complete_expr_tree = ExpressionTreeForge.complete_tree.(element_expr_tree)
   # Cast the constant of the complete trees
-  vec_type_complete_element_tree =
+  vec_typed_complete_element_tree =
     map(tree -> ExpressionTreeForge.cast_type_of_constant(tree, type), vec_elt_complete_expr_tree)
 
-  ExpressionTreeForge.set_bounds!.(vec_type_complete_element_tree) # Propagate the bounds 
-  ExpressionTreeForge.set_convexity!.(vec_type_complete_element_tree) # deduce the convexity status 
+  ExpressionTreeForge.set_bounds!.(vec_typed_complete_element_tree) # Propagate the bounds 
+  ExpressionTreeForge.set_convexity!.(vec_typed_complete_element_tree) # deduce the convexity status 
 
   # Get the convexity status of element functions
   convexity_wrapper = map(
@@ -167,12 +182,12 @@ function partitioned_structure(
         ExpressionTreeForge.get_convexity_status(complete_tree),
       )
     ),
-    vec_type_complete_element_tree,
+    vec_typed_complete_element_tree,
   )
 
   # Get the type of element functions
   type_element_function =
-    map(elt_fun -> ExpressionTreeForge.get_type_tree(elt_fun), vec_type_complete_element_tree)
+    map(elt_fun -> ExpressionTreeForge.get_type_tree(elt_fun), vec_typed_complete_element_tree)
 
   vec_elt_fun = Vector{ElementFunction}(undef, N)
   for i = 1:N  # Define the N element functions
@@ -188,7 +203,7 @@ function partitioned_structure(
   end
 
   vec_compiled_element_gradients =
-    map((tree -> compiled_grad_element_function(tree; type = type)), element_expr_tree)
+    map((tree -> compiled_grad_element_function(tree; type = type)), vec_typed_complete_element_tree)
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 
@@ -218,7 +233,7 @@ function partitioned_structure(
     N,
     vec_elt_fun,
     M,
-    vec_elt_complete_expr_tree,
+    vec_typed_complete_element_tree,
     element_expr_tree_table,
     index_element_tree,
     vec_compiled_element_gradients,
