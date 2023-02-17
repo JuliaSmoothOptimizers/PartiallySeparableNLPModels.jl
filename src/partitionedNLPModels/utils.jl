@@ -124,12 +124,29 @@ function partitioned_structure(
   )::Vector{ExpressionTreeForge.Type_expr_tree}
   N = length(vec_element_function)
 
+  # merge linear element functions
+  type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_function)
+  linears = (elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)).(type_element_functions)
+  indices_linear_elements = filter(i -> linears[i], 1:N)  
+  if !isempty(indices_linear_elements)
+    gathering_linear_elements = ExpressionTreeForge.sum_expr_trees(vec_element_function[indices_linear_elements])
+    indices_nonlinear_elements = filter(i -> !linears[i], 1:N)
+    vec_element_function = vcat(vec_element_function[indices_nonlinear_elements], gathering_linear_elements)
+    N = length(vec_element_function)
+    linear_vector = zeros(Bool, N) # every element function except the last one is nonlinear
+    linear_vector[N] = true # last element function is 
+  else
+    linear_vector = zeros(Bool, N) # every element function is nonlinear
+  end
+
   # Retrieve elemental variables
   element_variables = map(
     (i -> ExpressionTreeForge.get_elemental_variables(vec_element_function[i])),
     1:N,
   )::Vector{Vector{Int}}
 
+  # Basic heuristic checking the memory requirement of a partitioned structure,
+  # if the memory needed is too large, merge every element into a single one.
   mem_dense_elements = sum((element_var -> length(element_var)^2).(element_variables))
   mem_linear_operator_elements =
     sum((element_var -> length(element_var) * 5 * 2).(element_variables))
@@ -218,13 +235,13 @@ function partitioned_structure(
 
   epv = PartitionedStructures.create_epv(element_variables, n, type = type)
 
-  (name == :pbfgs) && (pB = epm_from_epv(epv))
-  (name == :psr1) && (pB = epm_from_epv(epv))
-  (name == :pse) && (pB = epm_from_epv(epv))
-  (name == :pcs) && (pB = epm_from_epv(epv; convex_vector))
-  (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; kwargs...))
-  (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv))
-  (name == :plse) && (pB = eplo_lose_from_epv(epv; kwargs...))
+  (name == :pbfgs) && (pB = epm_from_epv(epv; linear_vector))
+  (name == :psr1) && (pB = epm_from_epv(epv; linear_vector))
+  (name == :pse) && (pB = epm_from_epv(epv; linear_vector))
+  (name == :pcs) && (pB = epm_from_epv(epv; convex_vector, linear_vector))
+  (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; linear_vector, kwargs...))
+  (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv; linear_vector))
+  (name == :plse) && (pB = eplo_lose_from_epv(epv; linear_vector, kwargs...))
   (name == :phv) && (pB = nothing)
 
   fx = (type)(-1)

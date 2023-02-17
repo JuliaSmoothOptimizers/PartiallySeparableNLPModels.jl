@@ -160,9 +160,17 @@ end
   op_psr1 = NLPModels.hess_op(psr1nlp, x)
   op_ps = NLPModels.hess_op(psnlp, x)
 
-  ps = similar(x)
-  py = NLPModels.grad(psnlp, x)
+  x0 = pbfgsnlp.meta.x0
+  ps = similar(x0)
   ps .= 1
+  g = similar(x0; simulate_vector = false)
+  g1 = similar(x0; simulate_vector = false)
+  py = similar(x0; simulate_vector = false)
+
+  NLPModels.grad!(psenlp, x0, g)
+  NLPModels.grad!(psenlp, x0 + ps, g1)
+
+  py .= g1 .- g
 
   push!(pbfgsnlp, ps, py)
   push!(pcsnlp, ps, py)
@@ -188,11 +196,11 @@ end
 
   # They do not all satisfy the secant equation because not every elements are updated.
   # Limited-memory partitioned quasi-Newton operators rely on damped operators, making them not satisfy secant equation.
-  # @test isapprox(norm(Vector(pbfgs_s) - Vector(py)), 0, atol = 1e-10)  
-  # @test isapprox(norm(Vector(pcs_s) - Vector(py)), 0, atol = 1e-10)  
-  # @test isapprox(norm(Vector(plbfgs_s) - Vector(py)), 0, atol = 1e-10)  
+  @test isapprox(norm(Vector(pbfgs_s) - Vector(py)), 0, atol = 1e-10)  
+  @test isapprox(norm(Vector(pcs_s) - Vector(py)), 0, atol = 1e-10)  
+  @test isapprox(norm(Vector(plbfgs_s) - Vector(py)), 0, atol = 1e-10)  
   # @test isapprox(norm(Vector(plsr1_s) - Vector(py)), 0, atol = 1e-10)  
-  # @test isapprox(norm(Vector(plse_s) - Vector(py)), 0, atol = 1e-10)  
+  @test isapprox(norm(Vector(plse_s) - Vector(py)), 0, atol = 1e-10)  
   @test isapprox(norm(Vector(psr1_s) - Vector(py)), 0, atol = 1e-10)
 
   @testset "reset data" begin
