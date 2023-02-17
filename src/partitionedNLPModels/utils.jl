@@ -147,9 +147,10 @@ function partitioned_structure(
 
   # Basic heuristic checking the memory requirement of a partitioned structure,
   # if the memory needed is too large, merge every element into a single one.
-  mem_dense_elements = sum((element_var -> length(element_var)^2).(element_variables))
+  effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)
+  mem_dense_elements = sum((size_element -> length(size_element)^2).(effective_size_element_var))
   mem_linear_operator_elements =
-    sum((element_var -> length(element_var) * 5 * 2).(element_variables))
+    sum((size_element -> length(size_element) * 5 * 2).(effective_size_element_var))
   max_authorised_mem = n^3 / log(n) # mem limit
   if merging && (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
     @warn "mem usage to important, reduction to a unstructrued structure"
