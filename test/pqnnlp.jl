@@ -97,5 +97,5 @@ end
   psenlp = PSENLPModel(adnlp)
   plbfgsnlp = PLBFGSNLPModel(adnlp)
   plsr1nlp = PLSR1NLPModel(adnlp)
-  plsenlp = PLSENLPModel(adnlp)  
+  plsenlp = PLSENLPModel(adnlp)
 end
