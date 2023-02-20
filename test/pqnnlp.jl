@@ -83,19 +83,19 @@ end
 
 @testset "Merge, from a limit function" begin
   function limit(x; n = length(x))
-    sum(sum(sum(x[j] for j = 1:n)^2 * x[i] * x[z] for i = 1:n) for z = 1:n)
+    sum(sum(sum(x[j] for j = 1:n)^2 * x[i] * x[k] for i = 1:n) for k = 1:n)
   end
   start_limit(n::Int) = ones(n)
 
   n = 10
   adnlp = ADNLPModel(limit, start_limit(n))
 
+  psnlp = PSNLPModel(adnlp)
   pbfgsnlp = PBFGSNLPModel(adnlp)
   pcsnlp = PCSNLPModel(adnlp)
-  plbfgsnlp = PLBFGSNLPModel(adnlp)
-  plsr1nlp = PLSR1NLPModel(adnlp)
-  plsenlp = PLSENLPModel(adnlp)
   psr1nlp = PSR1NLPModel(adnlp)
   psenlp = PSENLPModel(adnlp)
-  psnlp = PSNLPModel(adnlp)
+  plbfgsnlp = PLBFGSNLPModel(adnlp)
+  plsr1nlp = PLSR1NLPModel(adnlp)
+  plsenlp = PLSENLPModel(adnlp)  
 end

@@ -98,6 +98,13 @@ function compiled_grad_element_function(
   return compiled_f_tape
 end
 
+"""
+    (vec_element_function, N, linear_vector) = merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree}, N::Int)
+
+Merge every linear element function from `vec_element_function` into a single one.
+Return the new adequate `vec_element_function`, `N` and `linear_vector::Vector{Bool}` of size `N` indicating with `true` which element is linear.
+If the method runs correctly, only `linear_vector[N]` may be set to `true`.
+"""
 function merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree}, N::Int)
   type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_function)
   linears = (elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)).(type_element_functions)
@@ -115,6 +122,16 @@ function merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.
   return vec_element_function, N, linear_vector
 end 
 
+merge_element_heuristic(
+  vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
+  element_variables::Vector{Vector{Int}},
+  expr_tree::ExpressionTreeForge.Type_expr_tree,
+  linear_vector::Vector{Bool},
+  N::Int,
+  n::Int,
+  ::Val{false};
+  name=:plse,
+) = ()
 
 function merge_element_heuristic(
   vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
@@ -122,28 +139,26 @@ function merge_element_heuristic(
   expr_tree::ExpressionTreeForge.Type_expr_tree,
   linear_vector::Vector{Bool},
   N::Int,
-  n::Int;
-  merging=true,
+  n::Int,
+  ::Val{true};
   name=:plse,
-)
-  if merging
-    effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)
-    mem_dense_elements = sum((size_element -> length(size_element)^2).(effective_size_element_var))
-    mem_linear_operator_elements =
-      sum((size_element -> length(size_element) * 5 * 2).(effective_size_element_var))
-    max_authorised_mem = n^3 / log(n) # mem limit
-    if (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
-      @warn "mem usage to important, reduction to an unstructrued structure"
-      N = 1
-      vec_element_function = [expr_tree]
-      element_variables = [[1:n;]]
-    elseif (mem_linear_operator_elements > max_authorised_mem) &&
-          (name ∈ [:plbfgs, :plse, :plsr1])
-      @warn "mem usage to important, reduction to an unstructrued structure"
-      N = 1
-      vec_element_function = [expr_tree]
-      element_variables = [[1:n;]]
-    end
+)  
+  effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)  
+  mem_dense_elements = sum((size_element -> size_element^2).(effective_size_element_var))
+  mem_linear_operator_elements =
+    sum((size_element -> size_element * 5 * 2).(effective_size_element_var))
+  max_authorised_mem = n^3 / log(n) # mem limit
+  if (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
+    @warn "mem usage to important, reduction to an unstructrued structure"
+    N = 1
+    vec_element_function = [expr_tree]
+    element_variables = [[1:n;]]
+  elseif (mem_linear_operator_elements > max_authorised_mem) &&
+        (name ∈ [:plbfgs, :plse, :plsr1])
+    @warn "mem usage to important, reduction to an unstructrued structure"
+    N = 1
+    vec_element_function = [expr_tree]
+    element_variables = [[1:n;]]
   end
   return (vec_element_function, element_variables, N)
 end
@@ -185,7 +200,7 @@ function partitioned_structure(
 
   # Basic heuristic checking the memory requirement of a partitioned structure,
   # if the memory needed is too large, merge every element into a single one.
-  (vec_element_function, element_variables, N) = merge_element_heuristic(vec_element_function, element_variables, expr_tree, linear_vector, N, n; merging, name)
+  (vec_element_function, element_variables, N) = merge_element_heuristic(vec_element_function, element_variables, expr_tree, linear_vector, N, n, Val(merging); name)
  
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
