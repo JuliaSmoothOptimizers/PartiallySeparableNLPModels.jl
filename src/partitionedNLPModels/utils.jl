@@ -98,8 +98,58 @@ function compiled_grad_element_function(
   return compiled_f_tape
 end
 
+function merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree}, N::Int)
+  type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_function)
+  linears = (elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)).(type_element_functions)
+  indices_linear_elements = filter(i -> linears[i], 1:N)  
+  if !isempty(indices_linear_elements)
+    gathering_linear_elements = ExpressionTreeForge.sum_expr_trees(vec_element_function[indices_linear_elements])
+    indices_nonlinear_elements = filter(i -> !linears[i], 1:N)
+    vec_element_function = vcat(vec_element_function[indices_nonlinear_elements], gathering_linear_elements)
+    N = length(vec_element_function)
+    linear_vector = zeros(Bool, N) # every element function except the last one is nonlinear
+    linear_vector[N] = true # last element function is the only one linear
+  else
+    linear_vector = zeros(Bool, N) # every element function is nonlinear
+  end
+  return vec_element_function, N, linear_vector
+end 
+
+
+function merge_element_heuristic(
+  vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
+  element_variables::Vector{Vector{Int}},
+  expr_tree::ExpressionTreeForge.Type_expr_tree,
+  linear_vector::Vector{Bool},
+  N::Int,
+  n::Int;
+  merging=true,
+  name=:plse,
+)
+  if merging
+    effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)
+    mem_dense_elements = sum((size_element -> length(size_element)^2).(effective_size_element_var))
+    mem_linear_operator_elements =
+      sum((size_element -> length(size_element) * 5 * 2).(effective_size_element_var))
+    max_authorised_mem = n^3 / log(n) # mem limit
+    if (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
+      @warn "mem usage to important, reduction to an unstructrued structure"
+      N = 1
+      vec_element_function = [expr_tree]
+      element_variables = [[1:n;]]
+    elseif (mem_linear_operator_elements > max_authorised_mem) &&
+          (name ∈ [:plbfgs, :plse, :plsr1])
+      @warn "mem usage to important, reduction to an unstructrued structure"
+      N = 1
+      vec_element_function = [expr_tree]
+      element_variables = [[1:n;]]
+    end
+  end
+  return (vec_element_function, element_variables, N)
+end
+
 """
-    partitioneddata_tr_pqn = build_PartitionedDataTRPQN(expr_tree, n)
+    partitioned_structure = build_PartitionedDataTRPQN(expr_tree, n)
 
 Return the structure required to run a partitioned quasi-Newton trust-region method. 
 It finds the partially-separable structure of an expression tree `expr_tree` representing f(x) = ∑fᵢ(xᵢ).
@@ -125,20 +175,8 @@ function partitioned_structure(
   N = length(vec_element_function)
 
   # merge linear element functions
-  type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_function)
-  linears = (elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)).(type_element_functions)
-  indices_linear_elements = filter(i -> linears[i], 1:N)  
-  if !isempty(indices_linear_elements)
-    gathering_linear_elements = ExpressionTreeForge.sum_expr_trees(vec_element_function[indices_linear_elements])
-    indices_nonlinear_elements = filter(i -> !linears[i], 1:N)
-    vec_element_function = vcat(vec_element_function[indices_nonlinear_elements], gathering_linear_elements)
-    N = length(vec_element_function)
-    linear_vector = zeros(Bool, N) # every element function except the last one is nonlinear
-    linear_vector[N] = true # last element function is 
-  else
-    linear_vector = zeros(Bool, N) # every element function is nonlinear
-  end
-
+  (vec_element_function, N, linear_vector) = merge_linear_elements(vec_element_function, N)
+  
   # Retrieve elemental variables
   element_variables = map(
     (i -> ExpressionTreeForge.get_elemental_variables(vec_element_function[i])),
@@ -147,25 +185,8 @@ function partitioned_structure(
 
   # Basic heuristic checking the memory requirement of a partitioned structure,
   # if the memory needed is too large, merge every element into a single one.
-  effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)
-  mem_dense_elements = sum((size_element -> length(size_element)^2).(effective_size_element_var))
-  mem_linear_operator_elements =
-    sum((size_element -> length(size_element) * 5 * 2).(effective_size_element_var))
-  max_authorised_mem = n^3 / log(n) # mem limit
-  if merging && (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
-    @warn "mem usage to important, reduction to a unstructrued structure"
-    N = 1
-    vec_element_function = [expr_tree]
-    element_variables = [[1:n;]]
-  elseif merging &&
-         (mem_linear_operator_elements > max_authorised_mem) &&
-         (name ∈ [:plbfgs, :plse, :plsr1])
-    @warn "mem usage to important, reduction to a unstructrued structure"
-    N = 1
-    vec_element_function = [expr_tree]
-    element_variables = [[1:n;]]
-  end
-
+  (vec_element_function, element_variables, N) = merge_element_heuristic(vec_element_function, element_variables, expr_tree, linear_vector, N, n; merging, name)
+ 
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
 
