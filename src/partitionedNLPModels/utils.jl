@@ -29,11 +29,11 @@ function distinct_element_expr_tree(
   # evaluate every element functions to reduce the number of comparisons between element expression trees
   vec_val_elt_fun = map(
     (elt_fun, elt_vars) ->
-      ExpressionTreeForge.evaluate_expr_tree(elt_fun, collect(Float64,1:length(elt_vars))),
+      ExpressionTreeForge.evaluate_expr_tree(elt_fun, collect(Float64, 1:length(elt_vars))),
     vec_element_expr_tree,
     vec_element_variables,
   )
-  
+
   # retain each element function value and its original index
   working_array = map((val_elt_fun, i) -> (val_elt_fun, i), vec_val_elt_fun, 1:N)
   current_expr_tree_index = 1
@@ -44,9 +44,10 @@ function distinct_element_expr_tree(
     ni_current_tree = length(vec_element_variables[working_array[1][2]])
 
     # a predicate filtering the element expression trees that cannot be equal
-    comparator_value_elt_fun(val_elt_fun) = (val_elt_fun[1] == value) && (length(vec_element_variables[val_elt_fun[2]]) == ni_current_tree)
-    current_indices_similar_element_functions =
-      findall(comparator_value_elt_fun, working_array)
+    comparator_value_elt_fun(val_elt_fun) =
+      (val_elt_fun[1] == value) &&
+      (length(vec_element_variables[val_elt_fun[2]]) == ni_current_tree)
+    current_indices_similar_element_functions = findall(comparator_value_elt_fun, working_array)
 
     # get the real indices of the element trees selected by comparator_value_elt_fun
     real_indices_similar_element_functions =
@@ -105,14 +106,22 @@ Merge every linear element function from `vec_element_function` into a single on
 Return the new adequate `vec_element_function`, `N` and `linear_vector::Vector{Bool}` of size `N` indicating with `true` which element is linear.
 If the method runs correctly, only `linear_vector[N]` may be set to `true`.
 """
-function merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree}, N::Int)
+function merge_linear_elements(
+  vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
+  N::Int,
+)
   type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_function)
-  linears = (elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)).(type_element_functions)
-  indices_linear_elements = filter(i -> linears[i], 1:N)  
+  linears =
+    (
+      elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)
+    ).(type_element_functions)
+  indices_linear_elements = filter(i -> linears[i], 1:N)
   if !isempty(indices_linear_elements)
-    gathering_linear_elements = ExpressionTreeForge.sum_expr_trees(vec_element_function[indices_linear_elements])
+    gathering_linear_elements =
+      ExpressionTreeForge.sum_expr_trees(vec_element_function[indices_linear_elements])
     indices_nonlinear_elements = filter(i -> !linears[i], 1:N)
-    vec_element_function = vcat(vec_element_function[indices_nonlinear_elements], gathering_linear_elements)
+    vec_element_function =
+      vcat(vec_element_function[indices_nonlinear_elements], gathering_linear_elements)
     N = length(vec_element_function)
     linear_vector = zeros(Bool, N) # every element function except the last one is nonlinear
     linear_vector[N] = true # last element function is the only one linear
@@ -120,7 +129,7 @@ function merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.
     linear_vector = zeros(Bool, N) # every element function is nonlinear
   end
   return vec_element_function, N, linear_vector
-end 
+end
 
 merge_element_heuristic(
   vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
@@ -130,7 +139,7 @@ merge_element_heuristic(
   N::Int,
   n::Int,
   ::Val{false};
-  name=:plse,
+  name = :plse,
 ) = ()
 
 function merge_element_heuristic(
@@ -141,9 +150,9 @@ function merge_element_heuristic(
   N::Int,
   n::Int,
   ::Val{true};
-  name=:plse,
-)  
-  effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)  
+  name = :plse,
+)
+  effective_size_element_var = map(i -> !linear_vector[i] * length(element_variables[i]), 1:N)
   mem_dense_elements = sum((size_element -> size_element^2).(effective_size_element_var))
   mem_linear_operator_elements =
     sum((size_element -> size_element * 5 * 2).(effective_size_element_var))
@@ -153,8 +162,7 @@ function merge_element_heuristic(
     N = 1
     vec_element_function = [expr_tree]
     element_variables = [[1:n;]]
-  elseif (mem_linear_operator_elements > max_authorised_mem) &&
-        (name ∈ [:plbfgs, :plse, :plsr1])
+  elseif (mem_linear_operator_elements > max_authorised_mem) && (name ∈ [:plbfgs, :plse, :plsr1])
     @warn "mem usage to important, reduction to an unstructrued structure"
     N = 1
     vec_element_function = [expr_tree]
@@ -191,7 +199,7 @@ function partitioned_structure(
 
   # merge linear element functions
   (vec_element_function, N, linear_vector) = merge_linear_elements(vec_element_function, N)
-  
+
   # Retrieve elemental variables
   element_variables = map(
     (i -> ExpressionTreeForge.get_elemental_variables(vec_element_function[i])),
@@ -200,8 +208,17 @@ function partitioned_structure(
 
   # Basic heuristic checking the memory requirement of a partitioned structure,
   # if the memory needed is too large, merge every element into a single one.
-  (vec_element_function, element_variables, N) = merge_element_heuristic(vec_element_function, element_variables, expr_tree, linear_vector, N, n, Val(merging); name)
- 
+  (vec_element_function, element_variables, N) = merge_element_heuristic(
+    vec_element_function,
+    element_variables,
+    expr_tree,
+    linear_vector,
+    N,
+    n,
+    Val(merging);
+    name,
+  )
+
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
 
@@ -256,8 +273,10 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  vec_compiled_element_gradients =
-    map((tree -> compiled_grad_element_function(tree; type = type)), vec_typed_complete_element_tree)
+  vec_compiled_element_gradients = map(
+    (tree -> compiled_grad_element_function(tree; type = type)),
+    vec_typed_complete_element_tree,
+  )
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 

@@ -196,11 +196,11 @@ end
 
   # They do not all satisfy the secant equation because not every elements are updated.
   # Limited-memory partitioned quasi-Newton operators rely on damped operators, making them not satisfy secant equation.
-  @test isapprox(norm(Vector(pbfgs_s) - Vector(py)), 0, atol = 1e-10)  
-  @test isapprox(norm(Vector(pcs_s) - Vector(py)), 0, atol = 1e-10)  
-  @test isapprox(norm(Vector(plbfgs_s) - Vector(py)), 0, atol = 1e-10)  
+  @test isapprox(norm(Vector(pbfgs_s) - Vector(py)), 0, atol = 1e-10)
+  @test isapprox(norm(Vector(pcs_s) - Vector(py)), 0, atol = 1e-10)
+  @test isapprox(norm(Vector(plbfgs_s) - Vector(py)), 0, atol = 1e-10)
   # @test isapprox(norm(Vector(plsr1_s) - Vector(py)), 0, atol = 1e-10)  
-  @test isapprox(norm(Vector(plse_s) - Vector(py)), 0, atol = 1e-10)  
+  @test isapprox(norm(Vector(plse_s) - Vector(py)), 0, atol = 1e-10)
   @test isapprox(norm(Vector(psr1_s) - Vector(py)), 0, atol = 1e-10)
 
   @testset "reset data" begin
