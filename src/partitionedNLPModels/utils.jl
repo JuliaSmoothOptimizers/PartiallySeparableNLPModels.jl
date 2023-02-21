@@ -90,9 +90,10 @@ Return the `elment_gradient_tape::GradientTape` which speed up the gradient comp
 """
 function compiled_grad_element_function(
   element_function::T;
-  ni::Int = length(ExpressionTreeForge.get_elemental_variables(element_function)),
+  element_variables::Vector{Int}=ExpressionTreeForge.get_elemental_variables(element_function),
+  ni::Int = maximum(element_variables),  
   type = Float64,
-) where {T}
+) where {T}  
   f = ExpressionTreeForge.evaluate_expr_tree(element_function)
   f_tape = ReverseDiff.GradientTape(f, rand(type, ni))
   compiled_f_tape = ReverseDiff.compile(f_tape)
@@ -158,15 +159,15 @@ function merge_element_heuristic(
     sum((size_element -> size_element * 5 * 2).(effective_size_element_var))
   max_authorised_mem = n^3 / log(n) # mem limit
   if (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
-    @warn "mem usage to important, reduction to an unstructrued structure"
+    @warn "mem usage to important, reduction to an unstructured structure"
     N = 1
     vec_element_function = [expr_tree]
-    element_variables = [[1:n;]]
+    element_variables = [ExpressionTreeForge.get_elemental_variables(expr_tree)]    
   elseif (mem_linear_operator_elements > max_authorised_mem) && (name ∈ [:plbfgs, :plse, :plsr1])
-    @warn "mem usage to important, reduction to an unstructrued structure"
+    @warn "mem usage to important, reduction to an unstructured structure"
     N = 1
     vec_element_function = [expr_tree]
-    element_variables = [[1:n;]]
+    element_variables = [ExpressionTreeForge.get_elemental_variables(expr_tree)]
   end
   return (vec_element_function, element_variables, N)
 end
@@ -190,7 +191,6 @@ function partitioned_structure(
 
   # Transform the expression tree of type G into an expression tree of type Type_expr_tree (the standard type used by my algorithms)
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
-
   # Get the element functions
   vec_element_function = ExpressionTreeForge.extract_element_functions(
     expr_tree,
@@ -222,13 +222,13 @@ function partitioned_structure(
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
 
-  # Change the indices of the element-function expression trees.
+  # Change the indices of the element-function expression trees.  
   map(
     ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
     vec_element_function,
     element_variables,
-  )
-
+  )  
+  
   # Filter the element expression tree to keep only the distinct expression trees
   (element_expr_tree, index_element_tree) =
     distinct_element_expr_tree(vec_element_function, element_variables)
@@ -274,8 +274,8 @@ function partitioned_structure(
   end
 
   vec_compiled_element_gradients = map(
-    (tree -> compiled_grad_element_function(tree; type = type)),
-    vec_typed_complete_element_tree,
+    element_tree -> compiled_grad_element_function(element_tree; type = type),
+    vec_typed_complete_element_tree,  
   )
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
