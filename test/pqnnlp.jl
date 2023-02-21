@@ -100,7 +100,6 @@ end
   plsenlp = PLSENLPModel(adnlp)
 end
 
-
 @testset "Methods after merging + x[1] may not appear in the expression tree" begin
   n = 10
   nlp = ADNLPProblems.arglinc(; n)
