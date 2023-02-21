@@ -99,3 +99,13 @@ end
   plsr1nlp = PLSR1NLPModel(adnlp)
   plsenlp = PLSENLPModel(adnlp)
 end
+
+
+@testset "Methods after merging + x[1] may not appear in the expression tree" begin
+  n = 10
+  nlp = ADNLPProblems.arglinc(; n)
+  psr1nlp = PSR1NLPModel(nlp)
+
+  @test NLPModels.obj(nlp, nlp.meta.x0) == NLPModels.obj(psr1nlp, psr1nlp.meta.x0)
+  @test NLPModels.grad(nlp, nlp.meta.x0) == Vector(NLPModels.grad(psr1nlp, psr1nlp.meta.x0))
+end
