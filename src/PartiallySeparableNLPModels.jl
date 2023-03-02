@@ -1,5 +1,7 @@
 module PartiallySeparableNLPModels
 
+using MathOptInterface
+
 using ExpressionTreeForge
 using PartitionedStructures
 

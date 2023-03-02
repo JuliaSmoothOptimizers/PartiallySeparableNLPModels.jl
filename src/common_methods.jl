@@ -28,15 +28,30 @@ export get_n,
 @inline get_vec_elt_complete_expr_tree(psnlp::AbstractPQNNLPModel, i::Int) =
   psnlp.vec_elt_complete_expr_tree[i]
 
+@inline get_element_expr_tree_table(psnlp::AbstractPartiallySeparableNLPModel) =
+  psnlp.element_expr_tree_table
+@inline get_element_expr_tree_table(psnlp::AbstractPQNNLPModel) =
+  psnlp.element_expr_tree_table
+
 @inline get_index_element_tree(psnlp::AbstractPartiallySeparableNLPModel) = psnlp.index_element_tree
 @inline get_index_element_tree(psnlp::AbstractPQNNLPModel) = psnlp.index_element_tree
 
-@inline get_vec_compiled_element_gradients(psnlp::AbstractPartiallySeparableNLPModel) =
-  psnlp.vec_compiled_element_gradients
-@inline get_vec_compiled_element_gradients(psnlp::AbstractPQNNLPModel) =
-  psnlp.vec_compiled_element_gradients
+@inline get_evaluators(psnlp::AbstractPartiallySeparableNLPModel) =
+  psnlp.evaluators
+@inline get_evaluators(psnlp::AbstractPQNNLPModel) =
+  psnlp.evaluators
 
-@inline get_vec_compiled_element_gradients(psnlp::AbstractPartiallySeparableNLPModel, i::Int) =
-  psnlp.vec_compiled_element_gradients[i]
-@inline get_vec_compiled_element_gradients(psnlp::AbstractPQNNLPModel, i::Int) =
-  psnlp.vec_compiled_element_gradients[i]
+@inline get_evaluators(psnlp::AbstractPartiallySeparableNLPModel, i::Int) =
+  psnlp.evaluators[i]
+@inline get_evaluators(psnlp::AbstractPQNNLPModel, i::Int) =
+  psnlp.evaluators[i]
+
+# @inline get_vec_compiled_element_gradients(psnlp::AbstractPartiallySeparableNLPModel) =
+#   psnlp.vec_compiled_element_gradients
+# @inline get_vec_compiled_element_gradients(psnlp::AbstractPQNNLPModel) =
+#   psnlp.vec_compiled_element_gradients
+
+# @inline get_vec_compiled_element_gradients(psnlp::AbstractPartiallySeparableNLPModel, i::Int) =
+#   psnlp.vec_compiled_element_gradients[i]
+# @inline get_vec_compiled_element_gradients(psnlp::AbstractPQNNLPModel, i::Int) =
+#   psnlp.vec_compiled_element_gradients[i]

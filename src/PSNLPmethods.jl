@@ -8,8 +8,16 @@ function NLPModels.obj(
   x::S, # PartitionedVector
 ) where {T, S <: AbstractVector{T}}
   increment!(psnlp, :neval_obj)
-  build!(x)
-  NLPModels.obj(psnlp.nlp, x.epv.v)
+  epv_x = x.epv  
+  index_element_tree = get_index_element_tree(psnlp)
+  N = get_N(psnlp)
+  f = (T)(0)
+  for i = 1:N
+    evaluator = get_evaluators(psnlp, index_element_tree[i])
+    Uix = PartitionedStructures.get_eev_value(epv_x, i)
+    f += MathOptInterface.eval_objective(evaluator, Uix)
+  end
+  return f
 end
 
 """
@@ -42,10 +50,10 @@ function NLPModels.grad!(
   index_element_tree = get_index_element_tree(psnlp)
   N = get_N(psnlp)
   for i = 1:N
-    compiled_tape = get_vec_compiled_element_gradients(psnlp, index_element_tree[i])
+    evaluator = get_evaluators(psnlp, index_element_tree[i])
     Uix = PartitionedStructures.get_eev_value(epv_x, i)
     gi = PartitionedStructures.get_eev_value(epv_g, i)
-    ReverseDiff.gradient!(gi, compiled_tape, Uix)
+    MathOptInterface.eval_objective_gradient(evaluator, gi, Uix)
   end
   return g
 end
@@ -86,22 +94,16 @@ function NLPModels.hprod!(
   epv_x = x.epv
   epv_v = v.epv
   epv_Hv = Hv.epv
-
   index_element_tree = get_index_element_tree(psnlp)
   N = get_N(psnlp)
-  ∇f(x; f) = ReverseDiff.gradient(f, x)
-  ∇²fv!(x, v, Hv; f) = ForwardDiff.derivative!(Hv, t -> ∇f(x + t * v; f), 0)
-
   for i = 1:N
-    complete_tree = get_vec_elt_complete_expr_tree(psnlp, index_element_tree[i])
-    elf_fun = ExpressionTreeForge.evaluate_expr_tree(complete_tree)
-
+    evaluator = get_evaluators(psnlp, index_element_tree[i])
     Uix = PartitionedStructures.get_eev_value(epv_x, i)
     Uiv = PartitionedStructures.get_eev_value(epv_v, i)
     Hvi = PartitionedStructures.get_eev_value(epv_Hv, i)
-    ∇²fv!(Uix, Uiv, Hvi; f = elf_fun)
+    MathOptInterface.eval_hessian_lagrangian_product(evaluator, Hvi, Uix, Uiv, obj_weight, 0.)
   end
-  Hv .*= obj_weight
+  # Hv .*= obj_weight
   return Hv
 end
 

@@ -275,10 +275,14 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  vec_compiled_element_gradients = map(
-    element_tree -> compiled_grad_element_function(element_tree; type = type),
-    vec_typed_complete_element_tree,
-  )
+  # vec_compiled_element_gradients = map(
+  #   element_tree -> compiled_grad_element_function(element_tree; type = type),
+  #   vec_typed_complete_element_tree,
+  # )
+
+  evaluators = ExpressionTreeForge.non_linear_JuMP_model_evaluator.(vec_typed_complete_element_tree)
+
+  # MathOptInterface.Nonlinear.Evaluator{MathOptInterface.Nonlinear.ReverseAD.NLPEvaluator}
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 
@@ -311,7 +315,8 @@ function partitioned_structure(
     vec_typed_complete_element_tree,
     element_expr_tree_table,
     index_element_tree,
-    vec_compiled_element_gradients,
+    # vec_compiled_element_gradients,
+    evaluators,
     x,
     pB,
     fx,
