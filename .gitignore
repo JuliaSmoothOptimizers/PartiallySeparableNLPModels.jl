@@ -25,3 +25,5 @@ Manifest.toml
 
 dvpt/**
 .vscode/**
+benchmark/*.json
+benchmark/judgement.md
