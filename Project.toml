@@ -1,7 +1,7 @@
 name = "PartiallySeparableNLPModels"
 uuid = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 authors = ["raynaudp "]
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 ADNLPModels = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
