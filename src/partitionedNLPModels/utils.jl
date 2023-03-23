@@ -194,6 +194,10 @@ function partitioned_structure(
 
   # Transform the expression tree of type G into an expression tree of type Type_expr_tree (the standard type used by my algorithms)
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
+
+  # JuMP.Model of the objective function
+  objective_evaluator = ExpressionTreeForge.non_linear_JuMP_model_evaluator(expr_tree)
+
   # Get the element functions
   vec_element_function = ExpressionTreeForge.extract_element_functions(
     expr_tree,
@@ -225,12 +229,27 @@ function partitioned_structure(
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
 
+  vec_modified_element_functions = copy.(vec_element_function)
   # Change the indices of the element-function expression trees.  
   map(
-    ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
-    vec_element_function,
-    element_variables,
-  )
+      ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
+      vec_element_function,
+      element_variables,
+    )
+
+  acc = 0
+  for i in 1:N
+    elt_fun = vec_modified_element_functions[i]
+    elt_var = element_variables[i]
+    ExpressionTreeForge.normalize_indices!(elt_fun, elt_var; initial_index=acc)
+    acc += length(elt_var)
+  end
+  modified_expr_tree = ExpressionTreeForge.sum_expr_trees(vec_modified_element_functions)
+  modified_objective_evaluator = ExpressionTreeForge.non_linear_JuMP_model_evaluator(modified_expr_tree)
+  #
+  sum_nie = mapreduce(elt_var -> length(elt_var), +, element_variables)
+  x_modified = Vector{type}(undef, sum_nie)
+  v_modified = similar(x_modified)
 
   # Filter the element expression tree to keep only the distinct expression trees
   (element_expr_tree, index_element_tree) =
@@ -275,11 +294,6 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  vec_compiled_element_gradients = map(
-    element_tree -> compiled_grad_element_function(element_tree; type = type),
-    vec_typed_complete_element_tree,
-  )
-
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 
   # convex_expr_tree = map(convexity_status -> is_convex(convexity_status), convexity_wrapper)
@@ -311,7 +325,10 @@ function partitioned_structure(
     vec_typed_complete_element_tree,
     element_expr_tree_table,
     index_element_tree,
-    vec_compiled_element_gradients,
+    objective_evaluator,
+    modified_objective_evaluator,
+    x_modified,
+    v_modified,    
     x,
     pB,
     fx,

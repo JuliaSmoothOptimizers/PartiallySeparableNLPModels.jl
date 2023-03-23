@@ -3,7 +3,7 @@ module ModPSNLPModels
 using ..Utils, ..Meta
 using ..ModAbstractPSNLPModels
 using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
-using NLPModels
+using NLPModels, MathOptInterface
 using ReverseDiff
 
 export PSNLPModel
@@ -51,7 +51,10 @@ mutable struct PSNLPModel{
   element_expr_tree_table::Vector{Vector{Int}} # length(element_expr_tree_table) == M
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
-  vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
+  objective_evaluator::MathOptInterface.Nonlinear.Evaluator{MathOptInterface.Nonlinear.ReverseAD.NLPEvaluator}
+  modified_objective_evaluator::MathOptInterface.Nonlinear.Evaluator{MathOptInterface.Nonlinear.ReverseAD.NLPEvaluator}
+  x_modified::Vector{T}
+  v_modified::Vector{T}
 
   # g is build directly from pg
   # the result of pB*v will be store and build from pv
@@ -71,7 +74,10 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::B
     vec_elt_complete_expr_tree,
     element_expr_tree_table,
     index_element_tree,
-    vec_compiled_element_gradients,
+    objective_evaluator,
+    modified_objective_evaluator,
+    x_modified,
+    v_modified,
     x,
     pB,
     fx,
@@ -96,7 +102,10 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::B
     vec_elt_complete_expr_tree,
     element_expr_tree_table,
     index_element_tree,
-    vec_compiled_element_gradients,
+    objective_evaluator,
+    modified_objective_evaluator,
+    x_modified,
+    v_modified,
     name,
   )
   return pvqnlp

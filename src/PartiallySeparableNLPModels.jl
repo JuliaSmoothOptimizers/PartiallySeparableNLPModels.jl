@@ -22,5 +22,6 @@ export PartiallySeparableNLPModel, AbstractPQNNLPModel
 export element_function, partitioned_structure
 export PBFGSNLPModel,
   PCSNLPModel, PLBFGSNLPModel, PLSR1NLPModel, PLSENLPModel, PSR1NLPModel, PSENLPModel, PSNLPModel
+export set_vector_from_pv!, set_pv_from_vector!
 
 end

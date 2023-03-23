@@ -9,7 +9,7 @@ function NLPModels.obj(
 ) where {T, S <: AbstractVector{T}}
   increment!(pqnnlp, :neval_obj)
   PartitionedVectors.build!(x)
-  NLPModels.obj(pqnnlp.model, x.epv.v)
+  MathOptInterface.eval_objective(get_objective_evaluator(pqnnlp), x.epv.v)
 end
 
 """
@@ -37,16 +37,12 @@ function NLPModels.grad!(
   g::S, # PartitionedVector
 ) where {T, S <: AbstractVector{T}}
   increment!(pqnnlp, :neval_grad)
-  epv_x = x.epv
-  epv_g = g.epv
-  index_element_tree = get_index_element_tree(pqnnlp)
-  N = get_N(pqnnlp)
-  for i = 1:N
-    compiled_tape = get_vec_compiled_element_gradients(pqnnlp, index_element_tree[i])
-    Uix = PartitionedStructures.get_eev_value(epv_x, i)
-    gi = PartitionedStructures.get_eev_value(epv_g, i)
-    ReverseDiff.gradient!(gi, compiled_tape, Uix)
-  end
+  x_modified = get_x_modified(pqnnlp)
+  v_modified = get_v_modified(pqnnlp)
+  set_vector_from_pv!(x_modified, x)
+  modified_evaluator = get_modified_objective_evaluator(pqnnlp)
+  MathOptInterface.eval_objective_gradient(modified_evaluator, v_modified, x_modified)
+  set_pv_from_vector!(g, v_modified)
   return g
 end
 
