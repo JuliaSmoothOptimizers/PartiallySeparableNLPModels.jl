@@ -1,5 +1,5 @@
 using BenchmarkTools
-using NLPModels, ADNLPModels, NLPModelsJuMP, OptimizationProblems
+using NLPModels, ADNLPModels, OptimizationProblems
 using PartiallySeparableNLPModels
 
 

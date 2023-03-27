@@ -2,7 +2,12 @@
 ADNLPModels = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 NLPModels = "a4795742-8479-5a88-8948-cc11e1c8c1a6"
-NLPModelsJuMP = "792afdf1-32c1-5681-94e0-d7bf7a5df49e"
 OptimizationProblems = "5049e819-d29b-5fba-b941-0eee7e64c1c6"
 PartiallySeparableNLPModels = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 PkgBenchmark = "32113eaa-f34f-5b0d-bd6c-c81e245fc73d"
+
+[compat]
+ADNLPModels = "0.4"
+NLPModels = "0.19.2"
+OptimizationProblems = "0.6"
+PkgBenchmark = "0.2"
