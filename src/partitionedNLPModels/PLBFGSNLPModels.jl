@@ -59,7 +59,7 @@ mutable struct PLBFGSNLPModel{
   name::Symbol
 end
 
-function PLBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::Bool = true)
+function PLBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
