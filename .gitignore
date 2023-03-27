@@ -23,7 +23,14 @@ docs/site/
 # environment.
 Manifest.toml
 
+# local developpment
 dvpt/**
 .vscode/**
+
+# Related to BenchmarkCI
+/.benchmarkci
+/benchmark/*.json
+
+# Related to PkgBenchmark
 benchmark/*.json
 benchmark/judgement.md
