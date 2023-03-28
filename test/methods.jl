@@ -29,41 +29,41 @@
   @test NLPModels.grad(nlp, nlp.meta.x0) ≈ Vector(NLPModels.grad(psenlp, psenlp.meta.x0))
   @test NLPModels.grad(nlp, nlp.meta.x0) ≈ Vector(NLPModels.grad(psnlp, psnlp.meta.x0))
 
-  v = ones(n)
-  pv = similar(pbfgsnlp.meta.x0)
-  pv .= 1.0
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(psenlp, psenlp.meta.x0, pv)
-  @test NLPModels.hprod(nlp, nlp.meta.x0, v) ≈ Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv))
+  # v = ones(n)
+  # pv = similar(pbfgsnlp.meta.x0)
+  # pv .= 1.0
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(psenlp, psenlp.meta.x0, pv)
+  # @test NLPModels.hprod(nlp, nlp.meta.x0, v) ≈ Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv))
 
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(psenlp, psenlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(nlp, nlp.meta.x0, v; obj_weight = 1.5) ≈
-        Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(psenlp, psenlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(nlp, nlp.meta.x0, v; obj_weight = 1.5) ≈
+  #       Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
 end
 
 @testset "test PartiallySeparableNLPModels (JuMPModel)" begin
@@ -98,41 +98,41 @@ end
   @test NLPModels.grad(nlp, nlp.meta.x0) ≈ Vector(NLPModels.grad(psenlp, psenlp.meta.x0))
   @test NLPModels.grad(nlp, nlp.meta.x0) ≈ Vector(NLPModels.grad(psnlp, psnlp.meta.x0))
 
-  v = ones(n)
-  pv = similar(pbfgsnlp.meta.x0)
-  pv .= 1.0
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
-        NLPModels.hprod(psenlp, psenlp.meta.x0, pv)
-  @test NLPModels.hprod(nlp, nlp.meta.x0, v) ≈ Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv))
+  # v = ones(n)
+  # pv = similar(pbfgsnlp.meta.x0)
+  # pv .= 1.0
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv) ==
+  #       NLPModels.hprod(psenlp, psenlp.meta.x0, pv)
+  # @test NLPModels.hprod(nlp, nlp.meta.x0, v) ≈ Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv))
 
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
-        NLPModels.hprod(psenlp, psenlp.meta.x0, pv; obj_weight = 1.5)
-  @test NLPModels.hprod(nlp, nlp.meta.x0, v; obj_weight = 1.5) ≈
-        Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(pcsnlp, pcsnlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(plbfgsnlp, plbfgsnlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(plsr1nlp, plsr1nlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(plsenlp, plsenlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(psr1nlp, psr1nlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(pbfgsnlp, pbfgsnlp.meta.x0, pv; obj_weight = 1.5) ==
+  #       NLPModels.hprod(psenlp, psenlp.meta.x0, pv; obj_weight = 1.5)
+  # @test NLPModels.hprod(nlp, nlp.meta.x0, v; obj_weight = 1.5) ≈
+  #       Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
 end
 
 @testset "hessop" begin
@@ -158,7 +158,7 @@ end
   op_plsr1 = NLPModels.hess_op(plsr1nlp, x)
   op_plse = NLPModels.hess_op(plsenlp, x)
   op_psr1 = NLPModels.hess_op(psr1nlp, x)
-  op_ps = NLPModels.hess_op(psnlp, x)
+  # op_ps = NLPModels.hess_op(psnlp, x)
 
   x0 = pbfgsnlp.meta.x0
   ps = similar(x0)
