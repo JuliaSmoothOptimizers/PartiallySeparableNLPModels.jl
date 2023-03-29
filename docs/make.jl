@@ -11,7 +11,8 @@ using PartiallySeparableNLPModels:
   ModPLSR1NLPModels,
   ModPSENLPModels,
   ModPSNLPModels,
-  ModPSR1NLPModels
+  ModPSR1NLPModels,
+  PartitionedBackends
 
 makedocs(
   modules = [

@@ -1,6 +1,6 @@
 module ModAbstractPSNLPModels
 
-using Printf, Statistics, LinearAlgebra, FastClosures
+using Printf, Statistics, LinearAlgebra
 using ADNLPModels, LinearOperators, NLPModels, NLPModelsJuMP, NLPModelsModifiers
 using ExpressionTreeForge, PartitionedVectors
 
@@ -37,8 +37,6 @@ mutable struct ElementFunction
 end
 
 include("common_methods.jl")
-include("PQNNLPmethods.jl")
-include("PSNLPmethods.jl")
 
 show(psnlp::AbstractPartiallySeparableNLPModel) = show(stdout, psnlp)
 
