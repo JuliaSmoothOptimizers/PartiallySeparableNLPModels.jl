@@ -9,7 +9,7 @@ using ReverseDiff
 export PSNLPModel
 
 """
-    PSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+    PSNLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
 
 Deduct and allocate the partitioned structures of a NLPModel using partitioned hessian-vector product.
 `PSNLPModel` has fields:
@@ -29,8 +29,7 @@ Deduct and allocate the partitioned structures of a NLPModel using partitioned h
 * `name`: the name of partitioned quasi-Newton update performed
 """
 mutable struct PSNLPModel{
-  G,
-  P,
+  G,  
   T,
   S,
   M <: AbstractNLPModel{T, Vector{T}},
@@ -77,7 +76,6 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::B
     fx,
     name,
   ) = partitioned_structure(ex, n; type, name = :phv, merging)
-  P = typeof(pB)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
@@ -85,7 +83,7 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::B
   S = typeof(x)
 
   counters = NLPModels.Counters()
-  pvqnlp = PSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(
+  pvqnlp = PSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta}(
     nlp,
     meta,
     counters,

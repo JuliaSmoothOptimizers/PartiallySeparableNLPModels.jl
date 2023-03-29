@@ -9,7 +9,7 @@ using ReverseDiff
 export PSR1NLPModel
 
 """
-    PSR1NLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+    PSR1NLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
 
 Deduct and allocate the partitioned structures of a NLPModel using partitioned SR1 Hessian approximation.
 `PSR1NLPModel` has fields:
@@ -30,7 +30,6 @@ Deduct and allocate the partitioned structures of a NLPModel using partitioned S
 """
 mutable struct PSR1NLPModel{
   G,
-  P,
   T,
   S,
   M <: AbstractNLPModel{T, Vector{T}},
@@ -53,7 +52,7 @@ mutable struct PSR1NLPModel{
 
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
 
-  op::P # partitioned quasi-Newton approximation
+  op::PartitionedStructures.Elemental_pm{T} # partitioned quasi-Newton approximation
 
   fx::T
   name::Symbol
@@ -77,7 +76,6 @@ function PSR1NLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging:
     fx,
     name,
   ) = partitioned_structure(ex, n; type, name = :psr1, merging)
-  P = typeof(op)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
@@ -85,7 +83,7 @@ function PSR1NLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging:
   S = typeof(x)
 
   counters = NLPModels.Counters()
-  pvqnlp = PSR1NLPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(
+  pvqnlp = PSR1NLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta}(
     nlp,
     meta,
     counters,

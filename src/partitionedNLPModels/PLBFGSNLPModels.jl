@@ -9,7 +9,7 @@ using ReverseDiff
 export PLBFGSNLPModel
 
 """
-    PLBFGSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+    PLBFGSNLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
 
 Deduct and allocate the partitioned structures of a NLPModel using a PLBFGS Hessian approximation.
 `PLBFGSNLPModel` has fields:
@@ -30,7 +30,6 @@ Deduct and allocate the partitioned structures of a NLPModel using a PLBFGS Hess
 """
 mutable struct PLBFGSNLPModel{
   G,
-  P,
   T,
   S,
   M <: AbstractNLPModel{T, Vector{T}},
@@ -53,7 +52,7 @@ mutable struct PLBFGSNLPModel{
 
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
 
-  op::P # partitioned quasi-Newton approximation
+  op::PartitionedStructures.Elemental_plo_bfgs{T} # partitioned quasi-Newton approximation
 
   fx::T
   name::Symbol
@@ -77,7 +76,6 @@ function PLBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, mergin
     fx,
     name,
   ) = partitioned_structure(ex, n; type, name = :plbfgs, merging)
-  P = typeof(op)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
@@ -85,7 +83,7 @@ function PLBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, mergin
   S = typeof(x)
 
   counters = NLPModels.Counters()
-  pvqnlp = PLBFGSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(
+  pvqnlp = PLBFGSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta}(
     nlp,
     meta,
     counters,
