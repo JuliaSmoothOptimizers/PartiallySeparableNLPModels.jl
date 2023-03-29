@@ -3,6 +3,7 @@ module ModPCSNLPModels
 using ..Utils, ..Meta
 using ..ModAbstractPSNLPModels
 using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
+using ..PartitionedBackends
 using NLPModels
 using ReverseDiff
 
@@ -34,6 +35,7 @@ mutable struct PCSNLPModel{
   S,
   M <: AbstractNLPModel{T, Vector{T}},
   Meta <: AbstractNLPModelMeta{T, S},
+  OB <: AbstractObjectiveBackend{T},
 } <: AbstractPQNNLPModel{T, S}
   model::M
   meta::Meta
@@ -50,6 +52,7 @@ mutable struct PCSNLPModel{
   element_expr_tree_table::Vector{Vector{Int}} # length(element_expr_tree_table) == M
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
+  objective_backend::OB
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
 
   op::PartitionedStructures.Elemental_pm{T} # partitioned quasi-Newton approximation
@@ -58,7 +61,7 @@ mutable struct PCSNLPModel{
   name::Symbol
 end
 
-function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::Bool = true)
+function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
@@ -70,20 +73,22 @@ function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::
     vec_elt_complete_expr_tree,
     element_expr_tree_table,
     index_element_tree,
+    objective_backend,
     vec_compiled_element_gradients,
     x,
     op,
     fx,
     name,
-  ) = partitioned_structure(ex, n; type, name = :pcs, merging)
+  ) = partitioned_structure(nlp, ex, n; type, name = :pcs, merging)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
   Model = typeof(nlp)
   S = typeof(x)
+  OB = typeof(objective_backend)
 
   counters = NLPModels.Counters()
-  pvqnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta}(
+  pvqnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta, OB}(
     nlp,
     meta,
     counters,
@@ -94,6 +99,7 @@ function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::
     vec_elt_complete_expr_tree,
     element_expr_tree_table,
     index_element_tree,
+    objective_backend,
     vec_compiled_element_gradients,
     op,
     fx,

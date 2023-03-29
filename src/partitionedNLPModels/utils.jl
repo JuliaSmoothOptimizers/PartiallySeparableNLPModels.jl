@@ -4,7 +4,7 @@ using ReverseDiff, LinearAlgebra
 using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
 using ExpressionTreeForge.M_implementation_convexity_type
 
-using ..ModAbstractPSNLPModels
+using ..ModAbstractPSNLPModels, ..PartitionedBackends
 
 export distinct_element_expr_tree, compiled_grad_element_function
 export partitioned_structure
@@ -175,6 +175,11 @@ function merge_element_heuristic(
   return (vec_element_function, element_variables, N)
 end
 
+function select_objective_backend(nlp; kwargs...)
+  objective_backend = NLPObjectiveBackend(nlp; kwargs...)
+  return objective_backend
+end
+
 """
     partitioned_structure = build_PartitionedDataTRPQN(expr_tree, n)
 
@@ -184,6 +189,7 @@ Then it allocates the partitioned structures required.
 To define properly the sparse matrix of the partitioned matrix we need the size of the problem: `n`.
 """
 function partitioned_structure(
+  nlp::SupportedNLPModel,
   tree::G,
   n::Int;
   type::DataType = Float64,
@@ -275,6 +281,8 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
+  objective_backend = select_objective_backend(nlp; type, kwargs...)
+
   vec_compiled_element_gradients = map(
     element_tree -> compiled_grad_element_function(element_tree; type = type),
     vec_typed_complete_element_tree,
@@ -311,6 +319,7 @@ function partitioned_structure(
     vec_typed_complete_element_tree,
     element_expr_tree_table,
     index_element_tree,
+    objective_backend,
     vec_compiled_element_gradients,
     x,
     pB,

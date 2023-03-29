@@ -1,3 +1,8 @@
+using FastClosures
+using LinearOperators, NLPModels, ReverseDiff, ForwardDiff
+
+using ..ModAbstractPSNLPModels, ..PartitionedBackends
+
 """
     f = obj(nlp, x)
 
@@ -8,8 +13,7 @@ function NLPModels.obj(
   x::S, # PartitionedVector
 ) where {T, S <: AbstractVector{T}}
   increment!(pqnnlp, :neval_obj)
-  PartitionedVectors.build!(x)
-  NLPModels.obj(pqnnlp.model, x.epv.v)
+  objective(pqnnlp.objective_backend, x)
 end
 
 """

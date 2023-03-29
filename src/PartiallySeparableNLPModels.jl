@@ -4,6 +4,9 @@ using ExpressionTreeForge
 using PartitionedStructures
 
 include("AbstractPNLPModels.jl")
+include("backends/PartitionedBackends.jl")
+include("PQNNLPmethods.jl")
+include("PSNLPmethods.jl")
 include("partitionedNLPModels/_include.jl")
 include("trunk.jl")
 
