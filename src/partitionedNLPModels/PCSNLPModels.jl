@@ -9,7 +9,7 @@ using ReverseDiff
 export PCSNLPModel
 
 """
-    PCSNLPModel{G, P, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
+    PCSNLPModel{G, T, S, M <: AbstractNLPModel{T, S}, Meta <: AbstractNLPModelMeta{T, S},} <: AbstractPQNNLPModel{T,S}
 
 Deduct and allocate the partitioned structures of a NLPModel using a PCS Hessian approximation.
 `PCSNLPModel` has fields:
@@ -30,7 +30,6 @@ Deduct and allocate the partitioned structures of a NLPModel using a PCS Hessian
 """
 mutable struct PCSNLPModel{
   G,
-  P,
   T,
   S,
   M <: AbstractNLPModel{T, Vector{T}},
@@ -53,7 +52,7 @@ mutable struct PCSNLPModel{
 
   vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
 
-  op::P # partitioned quasi-Newton approximation
+  op::PartitionedStructures.Elemental_pm{T} # partitioned quasi-Newton approximation
 
   fx::T
   name::Symbol
@@ -77,7 +76,6 @@ function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::
     fx,
     name,
   ) = partitioned_structure(ex, n; type, name = :pcs, merging)
-  P = typeof(op)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
@@ -85,7 +83,7 @@ function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = Float64, merging::
   S = typeof(x)
 
   counters = NLPModels.Counters()
-  pvqnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, P, type, S, Model, Meta}(
+  pvqnlp = PCSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta}(
     nlp,
     meta,
     counters,
