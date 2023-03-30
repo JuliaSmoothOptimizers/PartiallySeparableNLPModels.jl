@@ -36,6 +36,7 @@ mutable struct PBFGSNLPModel{
   M <: AbstractNLPModel{T, Vector{T}},
   Meta <: AbstractNLPModelMeta{T, S},
   OB <: AbstractObjectiveBackend{T},
+  GB <: AbstractGradientBackend{T},
 } <: AbstractPQNNLPModel{T, S}
   model::M
   meta::Meta
@@ -53,7 +54,7 @@ mutable struct PBFGSNLPModel{
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
   objective_backend::OB
-  gradient_backend::ElementReverseDiffGradient{T}
+  gradient_backend::GB
 
   op::PartitionedStructures.Elemental_pm{T} # partitioned quasi-Newton approximation
 
@@ -86,9 +87,10 @@ function PBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.
   Model = typeof(nlp)
   S = typeof(x)
   OB = typeof(objective_backend)
+  GB = typeof(gradient_backend)
 
   counters = NLPModels.Counters()
-  pvqnlp = PBFGSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta, OB}(
+  pvqnlp = PBFGSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta, OB, GB}(
     nlp,
     meta,
     counters,

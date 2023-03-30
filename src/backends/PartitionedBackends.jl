@@ -16,9 +16,10 @@ abstract type AbstractHprodBackend{T} <: PartitionedBackend{T} end
 
 objective(backend::AbstractObjectiveBackend{T}, x::AbstractVector{T}) where T = @error "Objective interface not properly set: $(typeof(backend))"
 partitioned_gradient(backend::AbstractObjectiveBackend{T}, x::AbstractVector{T}, g::AbstractVector{T}) where T = @error "Gradient interface not properly set: $(typeof(backend))"
-partitioned_hessian_prod!(backend::AbstractObjectiveBackend{T}, x::AbstractVector{T}) where T = @error "Hessian-product interface not properly set: $(typeof(backend))"
+partitioned_hessian_prod!(backend::AbstractObjectiveBackend{T}, x::AbstractVector{T}, v::AbstractVector{T}, Hv::AbstractVector{T}) where T = @error "Hessian-product interface not properly set: $(typeof(backend))"
 
 include("ObjectiveBackends/NLPObjectiveBackend.jl")
 include("GradientBackends/ElementReverseDiffGradient.jl")
+include("HprodBackends/ElementReverseForwardHprod.jl")
 
 end
