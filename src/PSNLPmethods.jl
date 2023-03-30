@@ -78,25 +78,7 @@ function NLPModels.hprod!(
   β = 0.0,
 ) where {T, S <: AbstractVector{T}}
   increment!(psnlp, :neval_hprod)
-  epv_x = x.epv
-  epv_v = v.epv
-  epv_Hv = Hv.epv
-
-  index_element_tree = get_index_element_tree(psnlp)
-  N = get_N(psnlp)
-  ∇f(x; f) = ReverseDiff.gradient(f, x)
-  ∇²fv!(x, v, Hv; f) = ForwardDiff.derivative!(Hv, t -> ∇f(x + t * v; f), 0)
-
-  for i = 1:N
-    complete_tree = get_vec_elt_complete_expr_tree(psnlp, index_element_tree[i])
-    elf_fun = ExpressionTreeForge.evaluate_expr_tree(complete_tree)
-
-    Uix = PartitionedStructures.get_eev_value(epv_x, i)
-    Uiv = PartitionedStructures.get_eev_value(epv_v, i)
-    Hvi = PartitionedStructures.get_eev_value(epv_Hv, i)
-    ∇²fv!(Uix, Uiv, Hvi; f = elf_fun)
-  end
-  Hv .*= obj_weight
+  partitioned_hessian_prod!(psnlp.hprod_backend, x, v, Hv; obj_weight)
   return Hv
 end
 

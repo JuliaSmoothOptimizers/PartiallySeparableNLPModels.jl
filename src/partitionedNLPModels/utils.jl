@@ -160,10 +160,14 @@ function select_objective_backend(nlp; kwargs...)
   return objective_backend
 end
 
-
 function select_gradient_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; kwargs...)
   gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; kwargs...)
   return gradient_backend
+end
+
+function select_hprod_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; kwargs...)
+  hprod_backend = ElementReverseForwardHprod(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+  return hprod_backend
 end
 
 """
@@ -290,7 +294,7 @@ function partitioned_structure(
   (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; linear_vector, kwargs...))
   (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv; linear_vector))
   (name == :plse) && (pB = eplo_lose_from_epv(epv; linear_vector, kwargs...))
-  (name == :phv) && (pB = nothing)
+  (name == :phv) && (pB = select_hprod_backend(vec_typed_complete_element_tree, index_element_tree; type))
 
   fx = (type)(-1)
   return (

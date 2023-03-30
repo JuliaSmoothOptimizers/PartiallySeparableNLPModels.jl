@@ -36,6 +36,8 @@ mutable struct PSNLPModel{
   M <: AbstractNLPModel{T, Vector{T}},
   Meta <: AbstractNLPModelMeta{T, S},
   OB <: AbstractObjectiveBackend{T},
+  GB <: AbstractGradientBackend{T},
+  HB <: AbstractHprodBackend{T},
 } <: AbstractPartiallySeparableNLPModel{T, S}
   nlp::M
   meta::Meta
@@ -53,7 +55,8 @@ mutable struct PSNLPModel{
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
   objective_backend::OB
-  gradient_backend::ElementReverseDiffGradient{T}
+  gradient_backend::GB
+  hprod_backend::HB
 
   # g is build directly from pg
   # the result of pB*v will be store and build from pv
@@ -76,7 +79,7 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0)
     objective_backend,
     gradient_backend,
     x,
-    op,
+    hprod_backend,
     fx,
     name,
   ) = partitioned_structure(nlp, ex, n; type, name = :phv, merging)
@@ -86,9 +89,11 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0)
   Model = typeof(nlp)
   S = typeof(x)
   OB = typeof(objective_backend)
+  GB = typeof(gradient_backend)
+  HB = typeof(hprod_backend)
 
   counters = NLPModels.Counters()
-  pvqnlp = PSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta, OB}(
+  pvqnlp = PSNLPModel{ExpressionTreeForge.Complete_expr_tree, type, S, Model, Meta, OB, GB, HB}(
     nlp,
     meta,
     counters,
@@ -101,6 +106,7 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0)
     index_element_tree,
     objective_backend,
     gradient_backend,
+    hprod_backend,
     name,
   )
   return pvqnlp
