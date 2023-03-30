@@ -53,7 +53,7 @@ mutable struct PLSENLPModel{
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
   objective_backend::OB
-  vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
+  gradient_backend::ElementReverseDiffGradient{T}
 
   op::PartitionedStructures.Elemental_plo{T} # partitioned quasi-Newton approximation
 
@@ -74,7 +74,7 @@ function PLSENLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x
     element_expr_tree_table,
     index_element_tree,
     objective_backend,
-    vec_compiled_element_gradients,
+    gradient_backend,
     x,
     op,
     fx,
@@ -100,7 +100,7 @@ function PLSENLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x
     element_expr_tree_table,
     index_element_tree,
     objective_backend,
-    vec_compiled_element_gradients,
+    gradient_backend,
     op,
     fx,
     name,
