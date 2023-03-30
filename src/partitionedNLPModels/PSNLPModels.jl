@@ -53,7 +53,7 @@ mutable struct PSNLPModel{
   index_element_tree::Vector{Int} # length(index_element_tree) == N, index_element_tree[i] ≤ M
 
   objective_backend::OB
-  vec_compiled_element_gradients::Vector{ReverseDiff.CompiledTape}
+  gradient_backend::ElementReverseDiffGradient{T}
 
   # g is build directly from pg
   # the result of pB*v will be store and build from pv
@@ -74,7 +74,7 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0)
     element_expr_tree_table,
     index_element_tree,
     objective_backend,
-    vec_compiled_element_gradients,
+    gradient_backend,
     x,
     op,
     fx,
@@ -100,7 +100,7 @@ function PSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0)
     element_expr_tree_table,
     index_element_tree,
     objective_backend,
-    vec_compiled_element_gradients,
+    gradient_backend,
     name,
   )
   return pvqnlp

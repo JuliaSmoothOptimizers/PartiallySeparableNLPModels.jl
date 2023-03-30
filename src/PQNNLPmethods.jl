@@ -41,16 +41,7 @@ function NLPModels.grad!(
   g::S, # PartitionedVector
 ) where {T, S <: AbstractVector{T}}
   increment!(pqnnlp, :neval_grad)
-  epv_x = x.epv
-  epv_g = g.epv
-  index_element_tree = get_index_element_tree(pqnnlp)
-  N = get_N(pqnnlp)
-  for i = 1:N
-    compiled_tape = get_vec_compiled_element_gradients(pqnnlp, index_element_tree[i])
-    Uix = PartitionedStructures.get_eev_value(epv_x, i)
-    gi = PartitionedStructures.get_eev_value(epv_g, i)
-    ReverseDiff.gradient!(gi, compiled_tape, Uix)
-  end
+  PartitionedBackends.partitioned_gradient!(pqnnlp.gradient_backend, x, g)
   return g
 end
 

@@ -6,7 +6,7 @@ using ExpressionTreeForge.M_implementation_convexity_type
 
 using ..ModAbstractPSNLPModels, ..PartitionedBackends
 
-export distinct_element_expr_tree, compiled_grad_element_function
+export distinct_element_expr_tree
 export partitioned_structure
 
 """
@@ -81,26 +81,6 @@ function distinct_element_expr_tree(
   end
   minimum(indices_element_tree) == -1 && @error("Not every element function is attributed")
   return element_expr_trees, indices_element_tree
-end
-
-find_ni(element_variables::Vector{Int}) =
-  isempty(element_variables) ? 0 : maximum(element_variables)
-
-"""
-    element_gradient_tape = compiled_grad_element_function(element_function::T; ni::Int = length(ExpressionTreeForge.get_elemental_variables(element_function)), type = Float64) where {T}
-
-Return the `elment_gradient_tape::GradientTape` which speed up the gradient computation of `element_function` with `ReverseDiff`.
-"""
-function compiled_grad_element_function(
-  element_function::T;
-  element_variables::Vector{Int} = ExpressionTreeForge.get_elemental_variables(element_function),
-  ni::Int = find_ni(element_variables),
-  type = Float64,
-) where {T}
-  f = ExpressionTreeForge.evaluate_expr_tree(element_function)
-  f_tape = ReverseDiff.GradientTape(f, rand(type, ni))
-  compiled_f_tape = ReverseDiff.compile(f_tape)
-  return compiled_f_tape
 end
 
 """
@@ -178,6 +158,12 @@ end
 function select_objective_backend(nlp; kwargs...)
   objective_backend = NLPObjectiveBackend(nlp; kwargs...)
   return objective_backend
+end
+
+
+function select_gradient_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; kwargs...)
+  gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+  return gradient_backend
 end
 
 """
@@ -282,11 +268,7 @@ function partitioned_structure(
   end
 
   objective_backend = select_objective_backend(nlp; type, kwargs...)
-
-  vec_compiled_element_gradients = map(
-    element_tree -> compiled_grad_element_function(element_tree; type = type),
-    vec_typed_complete_element_tree,
-  )
+  gradient_backend = select_gradient_backend(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 
@@ -320,7 +302,7 @@ function partitioned_structure(
     element_expr_tree_table,
     index_element_tree,
     objective_backend,
-    vec_compiled_element_gradients,
+    gradient_backend,
     x,
     pB,
     fx,
