@@ -159,6 +159,9 @@ end
   op_plse = NLPModels.hess_op(plsenlp, x)
   op_psr1 = NLPModels.hess_op(psr1nlp, x)
   op_ps = NLPModels.hess_op(psnlp, x)
+  
+  Hv = similar(v; simulate_vector=false)
+  mul!(Hv, op_ps, v, 1, 0.)
 
   x0 = pbfgsnlp.meta.x0
   ps = similar(x0)
@@ -232,4 +235,21 @@ end
 
   meta = psnlp.meta
   show(meta)
+end
+
+@testset "Backend errors" begin
+  using PartiallySeparableNLPModels.PartitionedBackends
+  
+  mutable struct FakeBackend{T} <: PartitionedBackend{T}
+  
+  end
+  
+  fb = FakeBackend{Float64}()
+  x = rand(5)
+  g = similar(x)
+  Hv = similar(x)
+
+  @test_throws ErrorException objective(fb, x)
+  @test_throws ErrorException partitioned_gradient!(fb, x, g)
+  @test_throws ErrorException partitioned_hessian_prod!(fb, x, g, Hv)
 end
