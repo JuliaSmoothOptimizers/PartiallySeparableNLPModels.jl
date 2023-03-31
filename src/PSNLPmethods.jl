@@ -41,7 +41,7 @@ function NLPModels.grad!(
   g::S, # PartitionedVector
 ) where {T, S <: AbstractVector{T}}
   increment!(psnlp, :neval_grad)
-  PartitionedBackends.partitioned_gradient!(psnlp.gradient_backend, x, g)
+  partitioned_gradient!(psnlp.gradient_backend, x, g)
   return g
 end
 

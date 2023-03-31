@@ -1,6 +1,6 @@
 export ElementReverseDiffGradient
 
-find_ni(element_variables::Vector{Int}) =
+_ni(element_variables::Vector{Int}) =
   isempty(element_variables) ? 0 : maximum(element_variables)
 
 """
@@ -9,11 +9,11 @@ find_ni(element_variables::Vector{Int}) =
 Return the `elment_gradient_tape::GradientTape` which speed up the gradient computation of `element_function` with `ReverseDiff`.
 """
 function compiled_grad_element_function(
-  element_function::T;
+  element_function::G;
   element_variables::Vector{Int} = ExpressionTreeForge.get_elemental_variables(element_function),
-  ni::Int = find_ni(element_variables),
+  ni::Int = _ni(element_variables),
   type = Float64,
-) where {T}
+) where {G}
   f = ExpressionTreeForge.evaluate_expr_tree(element_function)
   f_tape = ReverseDiff.GradientTape(f, rand(type, ni))
   compiled_f_tape = ReverseDiff.compile(f_tape)
@@ -33,10 +33,18 @@ mutable struct ElementReverseDiffGradient{T} <: AbstractGradientBackend{T}
   index_element_tree::Vector{Int}
 end
 
-function ElementReverseDiffGradient(complete_trees::Vector, index_element_tree::Vector{Int}; type=Float64)
+"""
+    gradient_brackend = ElementReverseDiffGradient(complete_trees::Vector, index_element_tree::Vector{Int}; type=Float64)
+
+Return an `ElementReverseDiffGradient` from a `Vector` of expression trees
+(supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
+`vec_elt_expr_tree` of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
+ to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
+"""
+function ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
   vec_compiled_element_gradients = map(
     element_tree -> compiled_grad_element_function(element_tree; type),
-    complete_trees,
+    vec_elt_expr_tree,
   )
   return ElementReverseDiffGradient{type}(vec_compiled_element_gradients, index_element_tree)
 end
