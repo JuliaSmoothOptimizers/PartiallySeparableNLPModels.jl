@@ -155,12 +155,13 @@ function merge_element_heuristic(
   return (vec_element_function, element_variables, N)
 end
 
-function select_objective_backend(nlp; kwargs...)
-  objective_backend = NLPObjectiveBackend(nlp; kwargs...)
+function select_objective_backend(nlp, expr_tree; type=Float64, objectivebackend=:nlp, kwargs...)
+  (objectivebackend == :nlp) && (objective_backend = NLPObjectiveBackend(nlp; type, kwargs...))
+  (type==Float64) && (objectivebackend == :moiobj) && (objective_backend = MOIObjectiveBackend(expr_tree; type, kwargs...))
   return objective_backend
 end
 
-function select_gradient_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; kwargs...)
+function select_gradient_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; gradientbackend=:reverseelt, kwargs...)
   gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; kwargs...)
   return gradient_backend
 end
@@ -185,15 +186,18 @@ function partitioned_structure(
   type::DataType = Float64,
   name = :plse,
   merging::Bool = true,
+  objectivebackend=:nlp,
+  gradientbackend=:reverseelt,
   kwargs...,
 ) where {G}
 
   # Transform the expression tree of type G into an expression tree of type Type_expr_tree (the standard type used by my algorithms)
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
+
   # Get the element functions
-  vec_element_function = ExpressionTreeForge.extract_element_functions(
+  vec_element_function = copy.(ExpressionTreeForge.extract_element_functions(
     expr_tree,
-  )::Vector{ExpressionTreeForge.Type_expr_tree}
+  ))::Vector{ExpressionTreeForge.Type_expr_tree}
   N = length(vec_element_function)
 
   # merge linear element functions
@@ -232,7 +236,7 @@ function partitioned_structure(
   (element_expr_tree, index_element_tree) =
     distinct_element_expr_tree(vec_element_function, element_variables)
   M = length(element_expr_tree)
-
+  
   # Create a table giving for each distinct element expression tree, every element function using it
   element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M)
 
@@ -271,8 +275,8 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  objective_backend = select_objective_backend(nlp; type, kwargs...)
-  gradient_backend = select_gradient_backend(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+  objective_backend = select_objective_backend(nlp, expr_tree; type, objectivebackend, kwargs...)
+  gradient_backend = select_gradient_backend(vec_typed_complete_element_tree, index_element_tree; type, gradientbackend, kwargs...)
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 
@@ -294,7 +298,7 @@ function partitioned_structure(
   (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; linear_vector, kwargs...))
   (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv; linear_vector))
   (name == :plse) && (pB = eplo_lose_from_epv(epv; linear_vector, kwargs...))
-  (name == :phv) && (pB = select_hprod_backend(vec_typed_complete_element_tree, index_element_tree; type))
+  (name == :phv) && (pB = select_hprod_backend(vec_typed_complete_element_tree, index_element_tree; type, kwargs...))
 
   fx = (type)(-1)
   return (

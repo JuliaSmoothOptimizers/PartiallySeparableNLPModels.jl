@@ -62,7 +62,7 @@ mutable struct PBFGSNLPModel{
   name::Symbol
 end
 
-function PBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true)
+function PBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true, kwargs...)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
@@ -80,7 +80,7 @@ function PBFGSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.
     op,
     fx,
     name,
-  ) = partitioned_structure(nlp, ex, n; type, name = :pbfgs, merging)
+  ) = partitioned_structure(nlp, ex, n; type, name = :pbfgs, merging, kwargs...)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
