@@ -1,12 +1,15 @@
 module PartitionedBackends
 
 using ReverseDiff, ForwardDiff
+using MathOptInterface
 using NLPModels
 using ExpressionTreeForge, PartitionedVectors, PartitionedStructures
 using ..ModAbstractPSNLPModels
 
 export PartitionedBackend, AbstractObjectiveBackend, AbstractGradientBackend, AbstractHprodBackend
 export objective, partitioned_gradient!, partitioned_hessian_prod!
+
+const MOI = MathOptInterface
 
 abstract type PartitionedBackend{T} end
 
@@ -38,7 +41,10 @@ This method is designed for `PartitionedVector{T}<:AbstractVector{T}` (`x`, `v` 
 partitioned_hessian_prod!(backend::PartitionedBackend{T}, x::AbstractVector{T}, v::AbstractVector{T}, Hv::AbstractVector{T}) where T = error("Hessian-product interface not properly set: $(typeof(backend))")
 
 include("ObjectiveBackends/NLPObjectiveBackend.jl")
+include("ObjectiveBackends/MOIObjectiveBackend.jl")
+
 include("GradientBackends/ElementReverseDiffGradient.jl")
+
 include("HprodBackends/ElementReverseForwardHprod.jl")
 
 end

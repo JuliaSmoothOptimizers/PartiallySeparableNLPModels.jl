@@ -62,7 +62,7 @@ mutable struct PLSR1NLPModel{
   name::Symbol
 end
 
-function PLSR1NLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true)
+function PLSR1NLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true, kwargs...)
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
@@ -80,7 +80,7 @@ function PLSR1NLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.
     op,
     fx,
     name,
-  ) = partitioned_structure(nlp, ex, n; type, name = :plsr1, merging)
+  ) = partitioned_structure(nlp, ex, n; type, name = :plsr1, merging, kwargs...)
 
   meta = partitioned_meta(nlp.meta, x)
   Meta = typeof(meta)
