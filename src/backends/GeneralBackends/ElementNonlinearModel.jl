@@ -1,7 +1,7 @@
 export ElementMOIModelBackend
 
 """
-    ElementReverseDiffGradient{T}
+    ElementMOIModelBackend{T}
 
 Composed of:
 - `vec_element_evaluators::Vector{MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}}`, M distinct element function `MOI.Nonlinear.Model`;
@@ -14,9 +14,9 @@ mutable struct ElementMOIModelBackend{T} <: PartitionedBackend{T}
 end
 
 """
-    gradient_brackend = ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
+    gradient_brackend = ElementMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
 
-Return an `ElementReverseDiffGradient` from a `Vector` of expression trees
+Return an `ElementMOIModelBackend` from a `Vector` of expression trees
 (supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
 of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
  to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).

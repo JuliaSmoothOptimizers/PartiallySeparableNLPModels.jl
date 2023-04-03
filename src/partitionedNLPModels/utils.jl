@@ -85,17 +85,17 @@ function distinct_element_expr_tree(
 end
 
 """
-    (vec_element_function, N, linear_vector) = merge_linear_elements(vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree}, N::Int)
+    (vec_element_functions, N, linear_vector) = merge_linear_elements(vec_element_functions::Vector{ExpressionTreeForge.Type_expr_tree}, N::Int)
 
-Merge every linear element function from `vec_element_function` into a single one.
-Return the new adequate `vec_element_function`, `N` and `linear_vector::Vector{Bool}` of size `N` indicating with `true` which element is linear.
+Merge every linear element function from `vec_element_functions` into a single one.
+Return the new adequate `vec_element_functions`, `N` and `linear_vector::Vector{Bool}` of size `N` indicating with `true` which element is linear.
 If the method runs correctly, only `linear_vector[N]` may be set to `true`.
 """
 function merge_linear_elements(
-  vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
+  vec_element_functions::Vector{ExpressionTreeForge.Type_expr_tree},
   N::Int,
 )
-  type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_function)
+  type_element_functions = ExpressionTreeForge.get_type_tree.(vec_element_functions)
   linears =
     (
       elt_fun -> ExpressionTreeForge.is_linear(elt_fun) || ExpressionTreeForge.is_constant(elt_fun)
@@ -103,21 +103,21 @@ function merge_linear_elements(
   indices_linear_elements = filter(i -> linears[i], 1:N)
   if !isempty(indices_linear_elements)
     gathering_linear_elements =
-      ExpressionTreeForge.sum_expr_trees(vec_element_function[indices_linear_elements])
+      ExpressionTreeForge.sum_expr_trees(vec_element_functions[indices_linear_elements])
     indices_nonlinear_elements = filter(i -> !linears[i], 1:N)
-    vec_element_function =
-      vcat(vec_element_function[indices_nonlinear_elements], gathering_linear_elements)
-    N = length(vec_element_function)
+    vec_element_functions =
+      vcat(vec_element_functions[indices_nonlinear_elements], gathering_linear_elements)
+    N = length(vec_element_functions)
     linear_vector = zeros(Bool, N) # every element function except the last one is nonlinear
     linear_vector[N] = true # last element function is the only one linear
   else
     linear_vector = zeros(Bool, N) # every element function is nonlinear
   end
-  return vec_element_function, N, linear_vector
+  return vec_element_functions, N, linear_vector
 end
 
 merge_element_heuristic(
-  vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
+  vec_element_functions::Vector{ExpressionTreeForge.Type_expr_tree},
   element_variables::Vector{Vector{Int}},
   expr_tree::ExpressionTreeForge.Type_expr_tree,
   linear_vector::Vector{Bool},
@@ -128,7 +128,7 @@ merge_element_heuristic(
 ) = ()
 
 function merge_element_heuristic(
-  vec_element_function::Vector{ExpressionTreeForge.Type_expr_tree},
+  vec_element_functions::Vector{ExpressionTreeForge.Type_expr_tree},
   element_variables::Vector{Vector{Int}},
   expr_tree::ExpressionTreeForge.Type_expr_tree,
   linear_vector::Vector{Bool},
@@ -145,22 +145,25 @@ function merge_element_heuristic(
   if (mem_dense_elements > max_authorised_mem) && (name ∈ [:pbfgs, :pse, :psr1, :pcs])
     @warn "mem usage to important, reduction to an unstructured structure"
     N = 1
-    vec_element_function = [expr_tree]
+    vec_element_functions = [expr_tree]
     element_variables = [ExpressionTreeForge.get_elemental_variables(expr_tree)]
   elseif (mem_linear_operator_elements > max_authorised_mem) && (name ∈ [:plbfgs, :plse, :plsr1])
     @warn "mem usage to important, reduction to an unstructured structure"
     N = 1
-    vec_element_function = [expr_tree]
+    vec_element_functions = [expr_tree]
     element_variables = [ExpressionTreeForge.get_elemental_variables(expr_tree)]
   end
-  return (vec_element_function, element_variables, N)
+  return (vec_element_functions, element_variables, N)
 end
 
 
 function select_objective_gradient_backend(nlp,
+  n::Int,
   expr_tree,
+  vec_element_functions,
   vec_typed_complete_element_tree,
-  index_element_tree::Vector{Int};
+  index_element_tree::Vector{Int},
+  elemental_variables::Vector{Vector{Int}};
   type=Float64,
   objectivebackend=:nlp,
   gradientbackend=:reverseelt,
@@ -169,10 +172,13 @@ function select_objective_gradient_backend(nlp,
   # objective backend selection
   if (objectivebackend == :moiobj) && (type==Float64)
     @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model"
-    objective_backend = MOIObjectiveBackend(expr_tree; type, kwargs...)
+    objective_backend = MOIObjectiveBackend(expr_tree, n; elemental_variables, type, kwargs...)
   elseif (objectivebackend == :moielt) && (type==Float64)
-    @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model"
-    objective_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)    
+    @warn "The gradient computes each element contribution from the Evaluator of an MathOptInterface.Nonlinear.Model"
+    objective_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+  elseif (objectivebackend == :modifiedmoiobj) && (type==Float64)
+    @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a modifier obejctive function"
+    objective_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions; kwargs...)
   elseif typeof(nlp) == MathOptNLPModel && (type != Float64)
     @warn "Incompatible backend, MathOptNLPModel can't support type != Float64, both Float64 and $(type) will be consider during the execution"
     objective_backend = NLPObjectiveBackend(nlp; type, kwargs...)
@@ -189,9 +195,12 @@ function select_objective_gradient_backend(nlp,
     if (gradientbackend == :moielt) && (type==Float64)
       @warn "The gradient computes each element contribution from the Evaluator of an MathOptInterface.Nonlinear.Model"
       gradient_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+    elseif (gradientbackend == :modifiedmoiobj) && (type==Float64)
+      @warn "The partitioned gradient is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a modifier obejctive function"
+      gradient_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions, element_variables; kwargs...)
     elseif (type != Float64) && (gradientbackend == :moielt)
       @warn "Incompatible backend, MathOptInterface.Nonlinear.Model can't support type != Float64, by default, gradient_backend = ElementReverseDiffGradient"
-      gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+      gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)    
     else
       @warn "The gradient computes each element contribution from a ReverseDiff.GradientTape"
       gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
@@ -229,24 +238,24 @@ function partitioned_structure(
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
 
   # Get the element functions
-  vec_element_function = copy.(ExpressionTreeForge.extract_element_functions(
+  vec_element_functions = copy.(ExpressionTreeForge.extract_element_functions(
     expr_tree,
   ))::Vector{ExpressionTreeForge.Type_expr_tree}
-  N = length(vec_element_function)
+  N = length(vec_element_functions)
 
   # merge linear element functions
-  (vec_element_function, N, linear_vector) = merge_linear_elements(vec_element_function, N)
+  (vec_element_functions, N, linear_vector) = merge_linear_elements(vec_element_functions, N)
 
   # Retrieve elemental variables
   element_variables = map(
-    (i -> ExpressionTreeForge.get_elemental_variables(vec_element_function[i])),
+    (i -> ExpressionTreeForge.get_elemental_variables(vec_element_functions[i])),
     1:N,
   )::Vector{Vector{Int}}
-
+  
   # Basic heuristic checking the memory requirement of a partitioned structure,
   # if the memory needed is too large, merge every element into a single one.
-  (vec_element_function, element_variables, N) = merge_element_heuristic(
-    vec_element_function,
+  (vec_element_functions, element_variables, N) = merge_element_heuristic(
+    vec_element_functions,
     element_variables,
     expr_tree,
     linear_vector,
@@ -262,13 +271,13 @@ function partitioned_structure(
   # Change the indices of the element-function expression trees.  
   map(
     ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
-    vec_element_function,
+    vec_element_functions,
     element_variables,
   )
 
   # Filter the element expression tree to keep only the distinct expression trees
   (element_expr_tree, index_element_tree) =
-    distinct_element_expr_tree(vec_element_function, element_variables)
+    distinct_element_expr_tree(vec_element_functions, element_variables)
   M = length(element_expr_tree)
   
   # Create a table giving for each distinct element expression tree, every element function using it
@@ -309,7 +318,18 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  (objective_backend, gradient_backend) = select_objective_gradient_backend(nlp, expr_tree, vec_typed_complete_element_tree, index_element_tree; type, objectivebackend, gradientbackend, kwargs...)
+  (objective_backend, gradient_backend) = select_objective_gradient_backend(nlp,
+    n,
+    expr_tree,
+    vec_element_functions,
+    vec_typed_complete_element_tree,
+    index_element_tree,
+    element_variables;
+    type,
+    objectivebackend,
+    gradientbackend,
+    kwargs...
+  )
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 

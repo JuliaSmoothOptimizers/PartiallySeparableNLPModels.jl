@@ -98,13 +98,40 @@ end
   plbfgsnlp = PLBFGSNLPModel(adnlp)
   plsr1nlp = PLSR1NLPModel(adnlp)
   plsenlp = PLSENLPModel(adnlp)
+
+  @testset "Backend tests" begin
+    pbfgsnlp_moiobj = PBFGSNLPModel(adnlp, objectivebackend=:moiobj)
+    @test NLPModels.obj(adnlp, adnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
+
+    pbfgsnlp_moielt = PBFGSNLPModel(adnlp, objectivebackend=:moielt, gradientbackend=:moielt)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+    
+    pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(adnlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+  end
 end
 
 @testset "Methods after merging + x[1] may not appear in the expression tree" begin
   n = 10
   nlp = ADNLPProblems.arglinc(; n)
-  psr1nlp = PSR1NLPModel(nlp)
+  pbfgsnlp = PBFGSNLPModel(nlp)
 
-  @test NLPModels.obj(nlp, nlp.meta.x0) == NLPModels.obj(psr1nlp, psr1nlp.meta.x0)
-  @test NLPModels.grad(nlp, nlp.meta.x0) == Vector(NLPModels.grad(psr1nlp, psr1nlp.meta.x0))
+  @test NLPModels.obj(nlp, nlp.meta.x0) == NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0)
+  @test NLPModels.grad(nlp, nlp.meta.x0) == Vector(NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0))
+
+  @testset "Backend tests" begin
+    pbfgsnlp_moiobj = PBFGSNLPModel(nlp, objectivebackend=:moiobj)
+    @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
+
+    pbfgsnlp_moielt = PBFGSNLPModel(nlp, objectivebackend=:moielt, gradientbackend=:moielt)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+
+    pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(nlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
+
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+  end
 end
