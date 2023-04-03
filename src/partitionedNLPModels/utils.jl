@@ -156,10 +156,23 @@ function merge_element_heuristic(
   return (vec_element_function, element_variables, N)
 end
 
-function select_objective_backend(nlp, expr_tree; type=Float64, objectivebackend=:nlp, kwargs...)  
+
+function select_objective_gradient_backend(nlp,
+  expr_tree,
+  vec_typed_complete_element_tree,
+  index_element_tree::Vector{Int};
+  type=Float64,
+  objectivebackend=:nlp,
+  gradientbackend=:reverseelt,
+  kwargs...)
+
+  # objective backend selection
   if (objectivebackend == :moiobj) && (type==Float64)
     @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model"
     objective_backend = MOIObjectiveBackend(expr_tree; type, kwargs...)
+  elseif (objectivebackend == :moielt) && (type==Float64)
+    @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model"
+    objective_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)    
   elseif typeof(nlp) == MathOptNLPModel && (type != Float64)
     @warn "Incompatible backend, MathOptNLPModel can't support type != Float64, both Float64 and $(type) will be consider during the execution"
     objective_backend = NLPObjectiveBackend(nlp; type, kwargs...)
@@ -167,21 +180,24 @@ function select_objective_backend(nlp, expr_tree; type=Float64, objectivebackend
     @warn "The objective function is computed NLPModels.obj(nlp, x), nlp being the original NLPModel"
     objective_backend = NLPObjectiveBackend(nlp; type, kwargs...)
   end
-  return objective_backend 
-end
 
-function select_gradient_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; type=Float64, gradientbackend=:reverseelt, kwargs...)
-  if (gradientbackend == :moielt) && (type==Float64)
-    @warn "The gradient computes each element contribution from the Evaluator of an MathOptInterface.Nonlinear.Model"
-    gradient_backend = ElementMOIModelGradient(vec_typed_complete_element_tree, index_element_tree; kwargs...)
-  elseif (type != Float64) && (gradientbackend == :moielt)
-    @warn "Incompatible backend, MathOptInterface.Nonlinear.Model can't support type != Float64, by default, gradient_backend = ElementReverseDiffGradient"
-    gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
-  else
-    @warn "The gradient computes each element contribution from a ReverseDiff.GradientTape"
-    gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+  # gradient backend selection
+  if objectivebackend == gradientbackend
+    @warn "Common backend for the objective and the gradient"
+    gradient_backend = objective_backend
+  else 
+    if (gradientbackend == :moielt) && (type==Float64)
+      @warn "The gradient computes each element contribution from the Evaluator of an MathOptInterface.Nonlinear.Model"
+      gradient_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+    elseif (type != Float64) && (gradientbackend == :moielt)
+      @warn "Incompatible backend, MathOptInterface.Nonlinear.Model can't support type != Float64, by default, gradient_backend = ElementReverseDiffGradient"
+      gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+    else
+      @warn "The gradient computes each element contribution from a ReverseDiff.GradientTape"
+      gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+    end
   end
-  return gradient_backend
+  return (objective_backend, gradient_backend)  
 end
 
 function select_hprod_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; kwargs...)
@@ -293,8 +309,7 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  objective_backend = select_objective_backend(nlp, expr_tree; type, objectivebackend, kwargs...)
-  gradient_backend = select_gradient_backend(vec_typed_complete_element_tree, index_element_tree; type, gradientbackend, kwargs...)
+  (objective_backend, gradient_backend) = select_objective_gradient_backend(nlp, expr_tree, vec_typed_complete_element_tree, index_element_tree; type, objectivebackend, gradientbackend, kwargs...)
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
 

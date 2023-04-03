@@ -35,8 +35,8 @@ mutable struct PLSR1NLPModel{
   S,
   M <: AbstractNLPModel{T, Vector{T}},
   Meta <: AbstractNLPModelMeta{T, S},
-  OB <: AbstractObjectiveBackend{T},
-  GB <: AbstractGradientBackend{T},
+  OB <: PartitionedBackend{T},
+  GB <: PartitionedBackend{T},
 } <: AbstractPQNNLPModel{T, S}
   model::M
   meta::Meta

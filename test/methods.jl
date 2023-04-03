@@ -140,6 +140,9 @@ end
 
     pbfgsnlp_moielt = PBFGSNLPModel(nlp, gradientbackend=:moielt)
     @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+
+    pbfgsnlp_moielt = PBFGSNLPModel(nlp, objectivebackend=:moielt, gradientbackend=:moielt)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
   end
     
 end
