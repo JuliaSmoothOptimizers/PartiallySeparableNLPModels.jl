@@ -47,6 +47,7 @@ include("GradientBackends/ElementReverseDiffGradient.jl")
 
 include("GeneralBackends/ElementNonlinearModel.jl")
 include("GeneralBackends/ModifiedNonlinearBackends.jl")
+include("GeneralBackends/SparseJacobianBackend.jl")
 
 include("HprodBackends/ElementReverseForwardHprod.jl")
 

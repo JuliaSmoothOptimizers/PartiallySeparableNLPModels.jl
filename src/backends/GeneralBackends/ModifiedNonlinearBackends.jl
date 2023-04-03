@@ -16,7 +16,7 @@ mutable struct ModifiedObjectiveMOIModelBackend{T} <: PartitionedBackend{Float64
 end
 
 """
-    gradient_brackend = ModifiedObjectiveMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
+    backend = ModifiedObjectiveMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
 
 Return an `ModifiedObjectiveMOIModelBackend` from a `Vector` of expression trees
 (supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
