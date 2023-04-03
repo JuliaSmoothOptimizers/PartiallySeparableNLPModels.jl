@@ -26,7 +26,7 @@ end
 Composed of:
 - `vec_element_gradient_tapes::Vector{ReverseDiff.CompiledTape}`, M distinct element function tapes;
 - `index_element_tree::Vector{Int}`, from which any of the N element function may associate a gradient tape from `vec_element_gradient_tapes`.
-Each `ReverseDiff.CompiledTape` accumlate a element function in a element of a `PartitionedVector`.
+Each `ReverseDiff.CompiledTape` accumulates the element-function's contribution in a element-vector of a `PartitionedVector`.
 """
 mutable struct ElementReverseDiffGradient{T} <: AbstractGradientBackend{T}
   vec_element_gradient_tapes::Vector{ReverseDiff.CompiledTape}
@@ -34,11 +34,11 @@ mutable struct ElementReverseDiffGradient{T} <: AbstractGradientBackend{T}
 end
 
 """
-    gradient_brackend = ElementReverseDiffGradient(complete_trees::Vector, index_element_tree::Vector{Int}; type=Float64)
+    gradient_brackend = ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
 
 Return an `ElementReverseDiffGradient` from a `Vector` of expression trees
 (supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
-`vec_elt_expr_tree` of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
+of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
  to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
 """
 function ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)

@@ -66,7 +66,7 @@
         Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
 end
 
-# @testset "test PartiallySeparableNLPModels (JuMPModel)" begin
+@testset "test PartiallySeparableNLPModels (JuMPModel)" begin
   n = 10
   jump_model = PureJuMP.arwhead(; n)
   nlp = MathOptNLPModel(jump_model)
@@ -79,9 +79,7 @@ end
   psr1nlp = PSR1NLPModel(nlp)
   psenlp = PSENLPModel(nlp)
   psnlp = PSNLPModel(nlp)
-  pbfgsnlp2 = PBFGSNLPModel(nlp, objectivebackend=:moiobj)
-
-  @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp2, pbfgsnlp2.meta.x0)
+  
   @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0)
   @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pcsnlp, pcsnlp.meta.x0)
   @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(plbfgsnlp, plbfgsnlp.meta.x0)
@@ -135,7 +133,16 @@ end
         NLPModels.hprod(psenlp, psenlp.meta.x0, pv; obj_weight = 1.5)
   @test NLPModels.hprod(nlp, nlp.meta.x0, v; obj_weight = 1.5) ≈
         Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
-# end
+
+  @testset "Backend tests" begin
+    pbfgsnlp_moiobj = PBFGSNLPModel(nlp, objectivebackend=:moiobj)
+    @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
+
+    pbfgsnlp_moielt = PBFGSNLPModel(nlp, gradientbackend=:moielt)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+  end
+    
+end
 
 @testset "hessop" begin
   n = 10
