@@ -110,6 +110,23 @@ end
     pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(adnlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
     @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
     @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    
+    pbfgsnlp_spjac = PBFGSNLPModel(adnlp, objectivebackend=:spjacmoi, gradientbackend=:spjacmoi)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+
+    n = length(adnlp.meta.x0)
+    x = rand(n)
+    px = similar(pbfgsnlp.meta.x0)
+    PartitionedVectors.set!(px, x)
+
+    @test NLPModels.obj(adnlp, x) ≈ NLPModels.obj(pbfgsnlp_moiobj, px)
+    @test NLPModels.obj(pbfgsnlp, px) ≈ NLPModels.obj(pbfgsnlp_moielt, px)
+    @test NLPModels.grad(pbfgsnlp, px) ≈ NLPModels.grad(pbfgsnlp_moielt, px)
+    @test NLPModels.obj(pbfgsnlp, px) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, px)
+    @test NLPModels.grad(pbfgsnlp, px) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, px)
+    @test NLPModels.obj(pbfgsnlp, px) ≈ NLPModels.obj(pbfgsnlp_spjac, px)
+    @test NLPModels.grad(pbfgsnlp, px) ≈ NLPModels.grad(pbfgsnlp_spjac, px)
   end
 end
 
@@ -130,8 +147,24 @@ end
     @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
 
     pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(nlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
-
     @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
     @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+
+    pbfgsnlp_spjac = PBFGSNLPModel(nlp, objectivebackend=:spjacmoi, gradientbackend=:spjacmoi)
+    @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+
+    n = length(nlp.meta.x0)
+    x = rand(n)
+    px = similar(pbfgsnlp.meta.x0)
+    PartitionedVectors.set!(px, x)
+
+    @test NLPModels.obj(nlp, x) ≈ NLPModels.obj(pbfgsnlp_moiobj, px)
+    @test NLPModels.obj(pbfgsnlp, px) ≈ NLPModels.obj(pbfgsnlp_moielt, px)
+    @test NLPModels.grad(pbfgsnlp, px) ≈ NLPModels.grad(pbfgsnlp_moielt, px)
+    @test NLPModels.obj(pbfgsnlp, px) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, px)
+    @test NLPModels.grad(pbfgsnlp, px) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, px)
+    @test NLPModels.obj(pbfgsnlp, px) ≈ NLPModels.obj(pbfgsnlp_spjac, px)
+    @test NLPModels.grad(pbfgsnlp, px) ≈ NLPModels.grad(pbfgsnlp_spjac, px)
   end
 end

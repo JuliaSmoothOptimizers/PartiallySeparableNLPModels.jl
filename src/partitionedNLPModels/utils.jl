@@ -161,6 +161,7 @@ function select_objective_gradient_backend(nlp,
   n::Int,
   expr_tree,
   vec_element_functions,
+  unnormalize_element_expr_trees,
   vec_typed_complete_element_tree,
   index_element_tree::Vector{Int},
   elemental_variables::Vector{Vector{Int}};
@@ -179,6 +180,9 @@ function select_objective_gradient_backend(nlp,
   elseif (objectivebackend == :modifiedmoiobj) && (type==Float64)
     @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a modifier obejctive function"
     objective_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions; kwargs...)
+  elseif (objectivebackend == :spjacmoi) && (type==Float64)
+    @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a partially-separable function for which each constraint is an element function"
+    objective_backend = SparseJacobianMoiModelBackend(unnormalize_element_expr_trees, n; elemental_variables, kwargs...)
   elseif typeof(nlp) == MathOptNLPModel && (type != Float64)
     @warn "Incompatible backend, MathOptNLPModel can't support type != Float64, both Float64 and $(type) will be consider during the execution"
     objective_backend = NLPObjectiveBackend(nlp; type, kwargs...)
@@ -197,10 +201,13 @@ function select_objective_gradient_backend(nlp,
       gradient_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
     elseif (gradientbackend == :modifiedmoiobj) && (type==Float64)
       @warn "The partitioned gradient is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a modifier obejctive function"
-      gradient_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions, element_variables; kwargs...)
+      gradient_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions; kwargs...)
     elseif (type != Float64) && (gradientbackend == :moielt)
       @warn "Incompatible backend, MathOptInterface.Nonlinear.Model can't support type != Float64, by default, gradient_backend = ElementReverseDiffGradient"
       gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)    
+    elseif (objectivebackend == :spjacmoi) && (type==Float64)
+      @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a partially-separable function for which each constraint is an element function"
+      gradient_backend = SparseJacobianMoiModelBackend(unnormalize_element_expr_trees, n; elemental_variables, kwargs...)
     else
       @warn "The gradient computes each element contribution from a ReverseDiff.GradientTape"
       gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
@@ -268,6 +275,8 @@ function partitioned_structure(
   # IMPORTANT line, sort the elemental variables. Mandatory for normalize_indices! and the partitioned structures
   sort!.(element_variables)
 
+  unnormalize_element_expr_trees = copy.(vec_element_functions)
+
   # Change the indices of the element-function expression trees.  
   map(
     ((elt_fun, elt_var) -> ExpressionTreeForge.normalize_indices!(elt_fun, elt_var)),
@@ -280,6 +289,7 @@ function partitioned_structure(
     distinct_element_expr_tree(vec_element_functions, element_variables)
   M = length(element_expr_tree)
   
+
   # Create a table giving for each distinct element expression tree, every element function using it
   element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M)
 
@@ -322,6 +332,7 @@ function partitioned_structure(
     n,
     expr_tree,
     vec_element_functions,
+    unnormalize_element_expr_trees,
     vec_typed_complete_element_tree,
     index_element_tree,
     element_variables;

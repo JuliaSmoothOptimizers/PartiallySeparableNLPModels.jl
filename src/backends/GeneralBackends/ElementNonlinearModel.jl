@@ -14,7 +14,7 @@ mutable struct ElementMOIModelBackend{T} <: PartitionedBackend{T}
 end
 
 """
-    gradient_brackend = ElementMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
+    backend = ElementMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
 
 Return an `ElementMOIModelBackend` from a `Vector` of expression trees
 (supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
