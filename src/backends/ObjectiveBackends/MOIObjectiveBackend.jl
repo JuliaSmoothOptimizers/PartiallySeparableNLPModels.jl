@@ -8,6 +8,7 @@ The user has to make sure `nlp` is can evaluate `x::AbstractVector{T}` with a su
 """
 mutable struct MOIObjectiveBackend{T} <: AbstractObjectiveBackend{T}
   evaluator::MathOptInterface.Nonlinear.Evaluator{MathOptInterface.Nonlinear.ReverseAD.NLPEvaluator}
+  translated_x::PartitionedVector{T}
 end
 
 """
@@ -15,14 +16,22 @@ end
 
 Create an objective backend from `nlp`.
 """
-function MOIObjectiveBackend(expr_tree::G; type=Float64, kwargs...) where G
+function MOIObjectiveBackend(expr_tree::G,
+  n::Int;
+  elemental_variables = ExpressionTreeForge.get_elemental_variables(expr_tree),
+  type=Float64,
+  kwargs...) where G
+  _elemental_variables = reduce((x,y)-> unique!(sort!(vcat(x,y))), elemental_variables)
+  translated_x = PartitionedVector([_elemental_variables]; n, simulate_vector=true)
   evaluator = ExpressionTreeForge.non_linear_JuMP_model_evaluator(expr_tree)
-  MOIObjectiveBackend{type}(evaluator) 
+  MOIObjectiveBackend{type}(evaluator, translated_x) 
 end
 
 objective(backend::MOIObjectiveBackend{T}, x::Vector{T}) where {T} = MOI.eval_objective(backend.evaluator, x)
 
 function objective(backend::MOIObjectiveBackend{T}, x::PartitionedVector{T}) where {T}
   PartitionedVectors.build!(x)
-  objective(backend, x.epv.v)
+  PartitionedVectors.set!(backend.translated_x, x.epv.v)
+  real_size_x = backend.translated_x[1].vec
+  objective(backend, real_size_x)
 end

@@ -44,7 +44,9 @@ include("ObjectiveBackends/NLPObjectiveBackend.jl")
 include("ObjectiveBackends/MOIObjectiveBackend.jl")
 
 include("GradientBackends/ElementReverseDiffGradient.jl")
-include("GradientBackends/ElementNonlinearModel.jl")
+
+include("GeneralBackends/ElementNonlinearModel.jl")
+include("GeneralBackends/ModifiedNonlinearBackends.jl")
 
 include("HprodBackends/ElementReverseForwardHprod.jl")
 

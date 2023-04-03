@@ -134,15 +134,18 @@ end
   @test NLPModels.hprod(nlp, nlp.meta.x0, v; obj_weight = 1.5) ≈
         Vector(NLPModels.hprod(psnlp, psnlp.meta.x0, pv; obj_weight = 1.5))
 
-  @testset "Backend tests" begin
+  @testset "Backend general tests" begin
     pbfgsnlp_moiobj = PBFGSNLPModel(nlp, objectivebackend=:moiobj)
     @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
 
-    pbfgsnlp_moielt = PBFGSNLPModel(nlp, gradientbackend=:moielt)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
-
     pbfgsnlp_moielt = PBFGSNLPModel(nlp, objectivebackend=:moielt, gradientbackend=:moielt)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
     @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+
+    pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(nlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
+
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
   end
     
 end
