@@ -19,8 +19,8 @@ Create an objective backend from `nlp`.
 function MOIObjectiveBackend(expr_tree::G,
   n::Int;
   elemental_variables = ExpressionTreeForge.get_elemental_variables(expr_tree),
-  type=Float64,
-  kwargs...) where G
+  type=Type{T},
+  kwargs...) where {T,G}
   _elemental_variables = reduce((x,y)-> unique!(sort!(vcat(x,y))), elemental_variables)
   translated_x = PartitionedVector([_elemental_variables]; n, simulate_vector=true)
   evaluator = ExpressionTreeForge.non_linear_JuMP_model_evaluator(expr_tree)

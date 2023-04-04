@@ -27,8 +27,8 @@ SparseJacobianMoiModelBackend defines a MOI.Nonlinear.Model having f(x) as the o
 function SparseJacobianMoiModelBackend(vec_elt_expr_tree::Vector,
   n::Int;
   elemental_variables = unique!(sort!(vcat(ExpressionTreeForge.get_elemental_variables.(vec_elt_expr_tree)))),
-  type=Float64
-)
+  type::Type{T}=Float64
+) where T
   _elemental_variables = reduce((x,y)-> unique!(sort!(vcat(x,y))), elemental_variables)
   translated_x = PartitionedVector([_elemental_variables]; n, simulate_vector=true)
   evaluator = ExpressionTreeForge.sparse_jacobian_JuMP_model(vec_elt_expr_tree)

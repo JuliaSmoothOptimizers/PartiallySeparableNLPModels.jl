@@ -23,7 +23,7 @@ Return an `ElementReverseForwardHprod` from a `Vector` of expression trees
 """
 function ElementReverseForwardHprod(vec_elt_expr_tree::Vector{G},
   index_element_tree::Vector{Int};
-  type=Float64) where G
+  type::Type{T}=Float64) where {T, G}
   ElementReverseForwardHprod{type,G}(vec_elt_expr_tree, index_element_tree)
 end
 

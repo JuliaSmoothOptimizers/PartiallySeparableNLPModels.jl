@@ -25,7 +25,7 @@ Suppose f(x) = f₁(x) + f₂(x) partially-separable considering the element fun
 ModifiedObjectiveMOIModelBackend defines a MOI.Nonlinear.Model where F(y) = y₁ * y₂ * y₃² + y₄ * y₅ * y₆ and its evaluator.
 Each partial derivative of F corresponds to a partial derivative of a single element function fᵢ.
 """
-function ModifiedObjectiveMOIModelBackend(vec_elt_expr_tree::Vector; type=Float64)
+function ModifiedObjectiveMOIModelBackend(vec_elt_expr_tree::Vector; type::Type{T}=Float64) where T
   element_variables = ExpressionTreeForge.get_elemental_variables.(vec_elt_expr_tree)
   acc = 0
   N = length(element_variables)

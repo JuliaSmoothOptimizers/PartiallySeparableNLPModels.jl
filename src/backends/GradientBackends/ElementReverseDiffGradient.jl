@@ -34,14 +34,14 @@ mutable struct ElementReverseDiffGradient{T} <: AbstractGradientBackend{T}
 end
 
 """
-    gradient_brackend = ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
+    gradient_brackend = ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type::Type{T}=Float64) where {T}
 
 Return an `ElementReverseDiffGradient` from a `Vector` of expression trees
 (supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
 of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
  to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
 """
-function ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
+function ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type::Type{T}=Float64) where {T}
   vec_compiled_element_gradients = map(
     element_tree -> compiled_grad_element_function(element_tree; type),
     vec_elt_expr_tree,
