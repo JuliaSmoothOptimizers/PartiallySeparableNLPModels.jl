@@ -12,8 +12,8 @@ function compiled_grad_element_function(
   element_function::G;
   element_variables::Vector{Int} = ExpressionTreeForge.get_elemental_variables(element_function),
   ni::Int = _ni(element_variables),
-  type = Float64,
-) where {G}
+  type::Type{T} = Float64,
+) where {T,G}
   f = ExpressionTreeForge.evaluate_expr_tree(element_function)
   f_tape = ReverseDiff.GradientTape(f, rand(type, ni))
   compiled_f_tape = ReverseDiff.compile(f_tape)
