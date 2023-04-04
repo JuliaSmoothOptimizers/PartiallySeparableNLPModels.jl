@@ -21,7 +21,7 @@ Return an `ElementMOIModelBackend` from a `Vector` of expression trees
 of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
  to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
 """
-function ElementMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type=Float64)
+function ElementMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type::Type{T}=Float64) where T
   vec_element_evaluators = ExpressionTreeForge.non_linear_JuMP_model_evaluator.(vec_elt_expr_tree)
   ElementMOIModelBackend{type}(vec_element_evaluators, index_element_tree)
 end 

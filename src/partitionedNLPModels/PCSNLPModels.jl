@@ -62,7 +62,7 @@ mutable struct PCSNLPModel{
   name::Symbol
 end
 
-function PCSNLPModel(nlp::SupportedNLPModel; type::DataType = eltype(nlp.meta.x0), merging::Bool = true, kwargs...)
+function PCSNLPModel(nlp::SupportedNLPModel; type::Type{T} = eltype(nlp.meta.x0), merging::Bool = true, kwargs...) where T
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 
