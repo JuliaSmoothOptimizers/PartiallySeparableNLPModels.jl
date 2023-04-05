@@ -16,18 +16,21 @@ end
 
 Create an objective backend from `nlp`.
 """
-function MOIObjectiveBackend(expr_tree::G,
+function MOIObjectiveBackend(
+  expr_tree::G,
   n::Int;
   elemental_variables = ExpressionTreeForge.get_elemental_variables(expr_tree),
-  type=Type{T},
-  kwargs...) where {T,G}
-  _elemental_variables = reduce((x,y)-> unique!(sort!(vcat(x,y))), elemental_variables)
-  translated_x = PartitionedVector([_elemental_variables]; n, simulate_vector=true)
+  type = Type{T},
+  kwargs...,
+) where {T, G}
+  _elemental_variables = reduce((x, y) -> unique!(sort!(vcat(x, y))), elemental_variables)
+  translated_x = PartitionedVector([_elemental_variables]; n, simulate_vector = true)
   evaluator = ExpressionTreeForge.non_linear_JuMP_model_evaluator(expr_tree)
-  MOIObjectiveBackend{type}(evaluator, translated_x) 
+  MOIObjectiveBackend{type}(evaluator, translated_x)
 end
 
-objective(backend::MOIObjectiveBackend{T}, x::Vector{T}) where {T} = MOI.eval_objective(backend.evaluator, x)
+objective(backend::MOIObjectiveBackend{T}, x::Vector{T}) where {T} =
+  MOI.eval_objective(backend.evaluator, x)
 
 function objective(backend::MOIObjectiveBackend{T}, x::PartitionedVector{T}) where {T}
   PartitionedVectors.build!(x)

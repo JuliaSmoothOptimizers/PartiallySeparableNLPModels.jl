@@ -1,7 +1,6 @@
 export ElementReverseDiffGradient
 
-_ni(element_variables::Vector{Int}) =
-  isempty(element_variables) ? 0 : maximum(element_variables)
+_ni(element_variables::Vector{Int}) = isempty(element_variables) ? 0 : maximum(element_variables)
 
 """
     element_gradient_tape = compiled_grad_element_function(element_function::T; ni::Int = length(ExpressionTreeForge.get_elemental_variables(element_function)), type = Float64) where {T}
@@ -13,7 +12,7 @@ function compiled_grad_element_function(
   element_variables::Vector{Int} = ExpressionTreeForge.get_elemental_variables(element_function),
   ni::Int = _ni(element_variables),
   type::Type{T} = Float64,
-) where {T,G}
+) where {T, G}
   f = ExpressionTreeForge.evaluate_expr_tree(element_function)
   f_tape = ReverseDiff.GradientTape(f, rand(type, ni))
   compiled_f_tape = ReverseDiff.compile(f_tape)
@@ -41,18 +40,21 @@ Return an `ElementReverseDiffGradient` from a `Vector` of expression trees
 of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
  to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
 """
-function ElementReverseDiffGradient(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type::Type{T}=Float64) where {T}
-  vec_compiled_element_gradients = map(
-    element_tree -> compiled_grad_element_function(element_tree; type),
-    vec_elt_expr_tree,
-  )
+function ElementReverseDiffGradient(
+  vec_elt_expr_tree::Vector,
+  index_element_tree::Vector{Int};
+  type::Type{T} = Float64,
+) where {T}
+  vec_compiled_element_gradients =
+    map(element_tree -> compiled_grad_element_function(element_tree; type), vec_elt_expr_tree)
   return ElementReverseDiffGradient{type}(vec_compiled_element_gradients, index_element_tree)
 end
 
-function partitioned_gradient!(backend::ElementReverseDiffGradient{T},
+function partitioned_gradient!(
+  backend::ElementReverseDiffGradient{T},
   x::PartitionedVector{T},
-  g::PartitionedVector{T}
-  ) where T
+  g::PartitionedVector{T},
+) where {T}
   epv_x = x.epv
   epv_g = g.epv
   index_element_tree = backend.index_element_tree

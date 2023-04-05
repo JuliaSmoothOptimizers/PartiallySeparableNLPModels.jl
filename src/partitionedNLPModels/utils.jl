@@ -156,8 +156,8 @@ function merge_element_heuristic(
   return (vec_element_functions, element_variables, N)
 end
 
-
-function select_objective_gradient_backend(nlp,
+function select_objective_gradient_backend(
+  nlp,
   n::Int,
   expr_tree,
   vec_element_functions,
@@ -165,24 +165,31 @@ function select_objective_gradient_backend(nlp,
   vec_typed_complete_element_tree,
   index_element_tree::Vector{Int},
   elemental_variables::Vector{Vector{Int}};
-  type=Float64,
-  objectivebackend=:nlp,
-  gradientbackend=:reverseelt,
-  kwargs...)
+  type = Float64,
+  objectivebackend = :nlp,
+  gradientbackend = :reverseelt,
+  kwargs...,
+)
 
   # objective backend selection
-  if (objectivebackend == :moiobj) && (type==Float64)
+  if (objectivebackend == :moiobj) && (type == Float64)
     @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model"
     objective_backend = MOIObjectiveBackend(expr_tree, n; elemental_variables, type, kwargs...)
-  elseif (objectivebackend == :moielt) && (type==Float64)
+  elseif (objectivebackend == :moielt) && (type == Float64)
     @warn "The gradient computes each element contribution from the Evaluator of an MathOptInterface.Nonlinear.Model"
-    objective_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
-  elseif (objectivebackend == :modifiedmoiobj) && (type==Float64)
+    objective_backend =
+      ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+  elseif (objectivebackend == :modifiedmoiobj) && (type == Float64)
     @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a modifier obejctive function"
     objective_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions; kwargs...)
-  elseif (objectivebackend == :spjacmoi) && (type==Float64)
+  elseif (objectivebackend == :spjacmoi) && (type == Float64)
     @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a partially-separable function for which each constraint is an element function"
-    objective_backend = SparseJacobianMoiModelBackend(unnormalize_element_expr_trees, n; elemental_variables, kwargs...)
+    objective_backend = SparseJacobianMoiModelBackend(
+      unnormalize_element_expr_trees,
+      n;
+      elemental_variables,
+      kwargs...,
+    )
   elseif typeof(nlp) == MathOptNLPModel && (type != Float64)
     @warn "Incompatible backend, MathOptNLPModel can't support type != Float64, both Float64 and $(type) will be consider during the execution"
     objective_backend = NLPObjectiveBackend(nlp; type, kwargs...)
@@ -195,29 +202,50 @@ function select_objective_gradient_backend(nlp,
   if objectivebackend == gradientbackend
     @warn "Common backend for the objective and the gradient"
     gradient_backend = objective_backend
-  else 
-    if (gradientbackend == :moielt) && (type==Float64)
+  else
+    if (gradientbackend == :moielt) && (type == Float64)
       @warn "The gradient computes each element contribution from the Evaluator of an MathOptInterface.Nonlinear.Model"
-      gradient_backend = ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
-    elseif (gradientbackend == :modifiedmoiobj) && (type==Float64)
+      gradient_backend =
+        ElementMOIModelBackend(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+    elseif (gradientbackend == :modifiedmoiobj) && (type == Float64)
       @warn "The partitioned gradient is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a modifier obejctive function"
       gradient_backend = ModifiedObjectiveMOIModelBackend(vec_element_functions; kwargs...)
     elseif (type != Float64) && (gradientbackend == :moielt)
       @warn "Incompatible backend, MathOptInterface.Nonlinear.Model can't support type != Float64, by default, gradient_backend = ElementReverseDiffGradient"
-      gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)    
-    elseif (objectivebackend == :spjacmoi) && (type==Float64)
+      gradient_backend = ElementReverseDiffGradient(
+        vec_typed_complete_element_tree,
+        index_element_tree;
+        type,
+        kwargs...,
+      )
+    elseif (objectivebackend == :spjacmoi) && (type == Float64)
       @warn "The objective function is computed by an Evaluator of an MathOptInterface.Nonlinear.Model representing a partially-separable function for which each constraint is an element function"
-      gradient_backend = SparseJacobianMoiModelBackend(unnormalize_element_expr_trees, n; elemental_variables, kwargs...)
+      gradient_backend = SparseJacobianMoiModelBackend(
+        unnormalize_element_expr_trees,
+        n;
+        elemental_variables,
+        kwargs...,
+      )
     else
       @warn "The gradient computes each element contribution from a ReverseDiff.GradientTape"
-      gradient_backend = ElementReverseDiffGradient(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+      gradient_backend = ElementReverseDiffGradient(
+        vec_typed_complete_element_tree,
+        index_element_tree;
+        type,
+        kwargs...,
+      )
     end
   end
-  return (objective_backend, gradient_backend)  
+  return (objective_backend, gradient_backend)
 end
 
-function select_hprod_backend(vec_typed_complete_element_tree, index_element_tree::Vector{Int}; kwargs...)
-  hprod_backend = ElementReverseForwardHprod(vec_typed_complete_element_tree, index_element_tree; kwargs...)
+function select_hprod_backend(
+  vec_typed_complete_element_tree,
+  index_element_tree::Vector{Int};
+  kwargs...,
+)
+  hprod_backend =
+    ElementReverseForwardHprod(vec_typed_complete_element_tree, index_element_tree; kwargs...)
   return hprod_backend
 end
 
@@ -236,8 +264,8 @@ function partitioned_structure(
   type::DataType = Float64,
   name = :plse,
   merging::Bool = true,
-  objectivebackend=:nlp,
-  gradientbackend=:reverseelt,
+  objectivebackend = :nlp,
+  gradientbackend = :reverseelt,
   kwargs...,
 ) where {G}
 
@@ -245,9 +273,9 @@ function partitioned_structure(
   expr_tree = ExpressionTreeForge.transform_to_expr_tree(tree)::ExpressionTreeForge.Type_expr_tree
 
   # Get the element functions
-  vec_element_functions = copy.(ExpressionTreeForge.extract_element_functions(
-    expr_tree,
-  ))::Vector{ExpressionTreeForge.Type_expr_tree}
+  vec_element_functions = copy.(
+    ExpressionTreeForge.extract_element_functions(expr_tree)
+  )::Vector{ExpressionTreeForge.Type_expr_tree}
   N = length(vec_element_functions)
 
   # merge linear element functions
@@ -258,7 +286,7 @@ function partitioned_structure(
     (i -> ExpressionTreeForge.get_elemental_variables(vec_element_functions[i])),
     1:N,
   )::Vector{Vector{Int}}
-  
+
   # Basic heuristic checking the memory requirement of a partitioned structure,
   # if the memory needed is too large, merge every element into a single one.
   (vec_element_functions, element_variables, N) = merge_element_heuristic(
@@ -288,7 +316,6 @@ function partitioned_structure(
   (element_expr_tree, index_element_tree) =
     distinct_element_expr_tree(vec_element_functions, element_variables)
   M = length(element_expr_tree)
-  
 
   # Create a table giving for each distinct element expression tree, every element function using it
   element_expr_tree_table = map((i -> findall((x -> x == i), index_element_tree)), 1:M)
@@ -328,7 +355,8 @@ function partitioned_structure(
     vec_elt_fun[i] = elt_fun
   end
 
-  (objective_backend, gradient_backend) = select_objective_gradient_backend(nlp,
+  (objective_backend, gradient_backend) = select_objective_gradient_backend(
+    nlp,
     n,
     expr_tree,
     vec_element_functions,
@@ -339,7 +367,7 @@ function partitioned_structure(
     type,
     objectivebackend,
     gradientbackend,
-    kwargs...
+    kwargs...,
   )
 
   x = PartitionedVector(element_variables; T = type, n, simulate_vector = true)
@@ -362,7 +390,10 @@ function partitioned_structure(
   (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; linear_vector, kwargs...))
   (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv; linear_vector))
   (name == :plse) && (pB = eplo_lose_from_epv(epv; linear_vector, kwargs...))
-  (name == :phv) && (pB = select_hprod_backend(vec_typed_complete_element_tree, index_element_tree; type, kwargs...))
+  (name == :phv) && (
+    pB =
+      select_hprod_backend(vec_typed_complete_element_tree, index_element_tree; type, kwargs...)
+  )
 
   fx = (type)(-1)
   return (

@@ -30,7 +30,7 @@ Deduct and allocate the partitioned structures of a NLPModel using partitioned h
 * `name`: the name of partitioned quasi-Newton update performed
 """
 mutable struct PSNLPModel{
-  G,  
+  G,
   T,
   S,
   M <: AbstractNLPModel{T, Vector{T}},
@@ -64,7 +64,12 @@ mutable struct PSNLPModel{
   name::Symbol
 end
 
-function PSNLPModel(nlp::SupportedNLPModel; type::Type{T} = eltype(nlp.meta.x0), merging::Bool = true, kwargs...) where T
+function PSNLPModel(
+  nlp::SupportedNLPModel;
+  type::Type{T} = eltype(nlp.meta.x0),
+  merging::Bool = true,
+  kwargs...,
+) where {T}
   n = nlp.meta.nvar
   ex = get_expression_tree(nlp)
 

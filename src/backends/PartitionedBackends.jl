@@ -22,7 +22,8 @@ abstract type AbstractHprodBackend{T} <: PartitionedBackend{T} end
 
 Compute the objective value from `backend` at the point `x`.
 """
-objective(backend::PartitionedBackend{T}, x::AbstractVector{T}) where T = error("Objective interface not properly set: $(typeof(backend))")
+objective(backend::PartitionedBackend{T}, x::AbstractVector{T}) where {T} =
+  error("Objective interface not properly set: $(typeof(backend))")
 
 """
     partitioned_gradient!(backend::AbstractObjectiveBackend{T}, x::AbstractVector{T}, g::AbstractVector{T})
@@ -30,7 +31,11 @@ objective(backend::PartitionedBackend{T}, x::AbstractVector{T}) where T = error(
 Compute the partitioned gradient from `backend` at the point `x` in place of `g`.
 This method is designed for `PartitionedVector{T}<:AbstractVector{T}` (for now, both `x` and `g`).
 """
-partitioned_gradient!(backend::PartitionedBackend{T}, x::AbstractVector{T}, g::AbstractVector{T}) where T = error("Gradient interface not properly set: $(typeof(backend))")
+partitioned_gradient!(
+  backend::PartitionedBackend{T},
+  x::AbstractVector{T},
+  g::AbstractVector{T},
+) where {T} = error("Gradient interface not properly set: $(typeof(backend))")
 
 """
     partitioned_hessian_prod!(backend::AbstractHprodBackend{T}, x::AbstractVector{T}, v::AbstractVector{T}, Hv::AbstractVector{T})
@@ -38,7 +43,12 @@ partitioned_gradient!(backend::PartitionedBackend{T}, x::AbstractVector{T}, g::A
 Compute the partitioned Hessian-vector product ∇² f(x) v from `backend` in place of `Hv`.
 This method is designed for `PartitionedVector{T}<:AbstractVector{T}` (`x`, `v` and `Hv`).
 """
-partitioned_hessian_prod!(backend::PartitionedBackend{T}, x::AbstractVector{T}, v::AbstractVector{T}, Hv::AbstractVector{T}) where T = error("Hessian-product interface not properly set: $(typeof(backend))")
+partitioned_hessian_prod!(
+  backend::PartitionedBackend{T},
+  x::AbstractVector{T},
+  v::AbstractVector{T},
+  Hv::AbstractVector{T},
+) where {T} = error("Hessian-product interface not properly set: $(typeof(backend))")
 
 include("ObjectiveBackends/NLPObjectiveBackend.jl")
 include("ObjectiveBackends/MOIObjectiveBackend.jl")

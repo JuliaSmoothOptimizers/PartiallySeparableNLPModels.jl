@@ -100,20 +100,28 @@ end
   plsenlp = PLSENLPModel(adnlp)
 
   @testset "Backend tests" begin
-    pbfgsnlp_moiobj = PBFGSNLPModel(adnlp, objectivebackend=:moiobj)
-    @test NLPModels.obj(adnlp, adnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
+    pbfgsnlp_moiobj = PBFGSNLPModel(adnlp, objectivebackend = :moiobj)
+    @test NLPModels.obj(adnlp, adnlp.meta.x0) ≈
+          NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
 
-    pbfgsnlp_moielt = PBFGSNLPModel(adnlp, objectivebackend=:moielt, gradientbackend=:moielt)
-    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
-    
-    pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(adnlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
-    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
-    
-    pbfgsnlp_spjac = PBFGSNLPModel(adnlp, objectivebackend=:spjacmoi, gradientbackend=:spjacmoi)
-    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+    pbfgsnlp_moielt = PBFGSNLPModel(adnlp, objectivebackend = :moielt, gradientbackend = :moielt)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+
+    pbfgsnlp_modifiedmoiobj =
+      PBFGSNLPModel(adnlp, objectivebackend = :modifiedmoiobj, gradientbackend = :modifiedmoiobj)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+
+    pbfgsnlp_spjac = PBFGSNLPModel(adnlp, objectivebackend = :spjacmoi, gradientbackend = :spjacmoi)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.obj(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.grad(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
 
     n = length(adnlp.meta.x0)
     x = rand(n)
@@ -139,20 +147,26 @@ end
   @test NLPModels.grad(nlp, nlp.meta.x0) == Vector(NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0))
 
   @testset "Backend tests" begin
-    pbfgsnlp_moiobj = PBFGSNLPModel(nlp, objectivebackend=:moiobj)
+    pbfgsnlp_moiobj = PBFGSNLPModel(nlp, objectivebackend = :moiobj)
     @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moiobj, pbfgsnlp_moiobj.meta.x0)
 
-    pbfgsnlp_moielt = PBFGSNLPModel(nlp, objectivebackend=:moielt, gradientbackend=:moielt)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
-    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+    pbfgsnlp_moielt = PBFGSNLPModel(nlp, objectivebackend = :moielt, gradientbackend = :moielt)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.grad(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.obj(pbfgsnlp_moielt, pbfgsnlp_moielt.meta.x0)
 
-    pbfgsnlp_modifiedmoiobj = PBFGSNLPModel(nlp, objectivebackend=:modifiedmoiobj, gradientbackend=:modifiedmoiobj)
-    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    pbfgsnlp_modifiedmoiobj =
+      PBFGSNLPModel(nlp, objectivebackend = :modifiedmoiobj, gradientbackend = :modifiedmoiobj)
+    @test NLPModels.obj(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.obj(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.grad(pbfgsnlp_modifiedmoiobj, pbfgsnlp_modifiedmoiobj.meta.x0)
 
-    pbfgsnlp_spjac = PBFGSNLPModel(nlp, objectivebackend=:spjacmoi, gradientbackend=:spjacmoi)
+    pbfgsnlp_spjac = PBFGSNLPModel(nlp, objectivebackend = :spjacmoi, gradientbackend = :spjacmoi)
     @test NLPModels.obj(nlp, nlp.meta.x0) ≈ NLPModels.obj(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
-    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈ NLPModels.grad(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
+    @test NLPModels.grad(pbfgsnlp, pbfgsnlp.meta.x0) ≈
+          NLPModels.grad(pbfgsnlp_spjac, pbfgsnlp_spjac.meta.x0)
 
     n = length(nlp.meta.x0)
     x = rand(n)
