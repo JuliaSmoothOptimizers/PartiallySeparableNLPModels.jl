@@ -21,15 +21,20 @@ Return an `ElementMOIModelBackend` from a `Vector` of expression trees
 of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
  to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
 """
-function ElementMOIModelBackend(vec_elt_expr_tree::Vector, index_element_tree::Vector{Int}; type::Type{T}=Float64) where T
+function ElementMOIModelBackend(
+  vec_elt_expr_tree::Vector,
+  index_element_tree::Vector{Int};
+  type::Type{T} = Float64,
+) where {T}
   vec_element_evaluators = ExpressionTreeForge.non_linear_JuMP_model_evaluator.(vec_elt_expr_tree)
   ElementMOIModelBackend{type}(vec_element_evaluators, index_element_tree)
-end 
+end
 
-function partitioned_gradient!(backend::ElementMOIModelBackend{T},
+function partitioned_gradient!(
+  backend::ElementMOIModelBackend{T},
   x::PartitionedVector{T},
-  g::PartitionedVector{T}
-  ) where T
+  g::PartitionedVector{T},
+) where {T}
   epv_x = x.epv
   epv_g = g.epv
   index_element_tree = backend.index_element_tree
@@ -43,10 +48,8 @@ function partitioned_gradient!(backend::ElementMOIModelBackend{T},
   return g
 end
 
-function objective(backend::ElementMOIModelBackend{T},
-  x::PartitionedVector{T},
-  ) where T
-  epv_x = x.epv  
+function objective(backend::ElementMOIModelBackend{T}, x::PartitionedVector{T}) where {T}
+  epv_x = x.epv
   index_element_tree = backend.index_element_tree
   N = length(index_element_tree)
   f = (T)(0)

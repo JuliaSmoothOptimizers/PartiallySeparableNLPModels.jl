@@ -25,51 +25,55 @@ Suppose f(x) = f₁(x) + f₂(x) partially-separable considering the element fun
 ModifiedObjectiveMOIModelBackend defines a MOI.Nonlinear.Model where F(y) = y₁ * y₂ * y₃² + y₄ * y₅ * y₆ and its evaluator.
 Each partial derivative of F corresponds to a partial derivative of a single element function fᵢ.
 """
-function ModifiedObjectiveMOIModelBackend(vec_elt_expr_tree::Vector; type::Type{T}=Float64) where T
+function ModifiedObjectiveMOIModelBackend(
+  vec_elt_expr_tree::Vector;
+  type::Type{T} = Float64,
+) where {T}
   element_variables = ExpressionTreeForge.get_elemental_variables.(vec_elt_expr_tree)
   acc = 0
   N = length(element_variables)
-  for i in 1:N
+  for i = 1:N
     elt_fun = vec_elt_expr_tree[i]
     elt_var = element_variables[i]
-    ExpressionTreeForge.normalize_indices!(elt_fun, elt_var; initial_index=acc)
+    ExpressionTreeForge.normalize_indices!(elt_fun, elt_var; initial_index = acc)
     acc += length(elt_var)
   end
   modified_expr_tree = ExpressionTreeForge.sum_expr_trees(vec_elt_expr_tree)
   evaluator = ExpressionTreeForge.non_linear_JuMP_model_evaluator(modified_expr_tree)
-  
+
   sum_nie = mapreduce(elt_var -> length(elt_var), +, element_variables)
   x_modified = Vector{type}(undef, sum_nie)
   v_modified = similar(x_modified)
   return ModifiedObjectiveMOIModelBackend{type}(evaluator, x_modified, v_modified)
-end 
+end
 
-function set_vector_from_pv!(v::Vector{T}, pv::PartitionedVector{T}) where T
+function set_vector_from_pv!(v::Vector{T}, pv::PartitionedVector{T}) where {T}
   cpt = 1
-  for i in 1:size(pv,1)    
+  for i = 1:size(pv, 1)
     nie = pv[i].nie
-    range = cpt:cpt+nie-1
+    range = cpt:(cpt + nie - 1)
     view(v, range) .= pv[i].vec
     cpt += nie
   end
   return v
 end
 
-function set_pv_from_vector!(pv::PartitionedVector{T}, v::Vector{T}) where T
+function set_pv_from_vector!(pv::PartitionedVector{T}, v::Vector{T}) where {T}
   cpt = 1
-  for i in 1:size(pv,1)    
+  for i = 1:size(pv, 1)
     nie = pv[i].nie
-    range = cpt:cpt+nie-1
+    range = cpt:(cpt + nie - 1)
     pv[i].vec .= view(v, range)
     cpt += nie
   end
   return pv
 end
 
-function partitioned_gradient!(backend::ModifiedObjectiveMOIModelBackend{T},
+function partitioned_gradient!(
+  backend::ModifiedObjectiveMOIModelBackend{T},
   x::PartitionedVector{T},
-  g::PartitionedVector{T}
-  ) where T
+  g::PartitionedVector{T},
+) where {T}
   x_modified = backend.x_modified
   v_modified = backend.v_modified
   set_vector_from_pv!(x_modified, x)
@@ -79,11 +83,9 @@ function partitioned_gradient!(backend::ModifiedObjectiveMOIModelBackend{T},
   return g
 end
 
-function objective(backend::ModifiedObjectiveMOIModelBackend{T},
-  x::PartitionedVector{T},
-  ) where T
+function objective(backend::ModifiedObjectiveMOIModelBackend{T}, x::PartitionedVector{T}) where {T}
   x_modified = backend.x_modified
   set_vector_from_pv!(x_modified, x)
   evaluator = backend.evaluator
-  return MathOptInterface.eval_objective(evaluator, x_modified)    
+  return MathOptInterface.eval_objective(evaluator, x_modified)
 end

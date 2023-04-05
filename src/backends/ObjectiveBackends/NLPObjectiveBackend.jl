@@ -15,9 +15,14 @@ end
 
 Create an objective backend from `nlp`.
 """
-NLPObjectiveBackend(nlp::SupportedNLPModel; type::Type{T}=eltype(nlp.meta.x0), kwargs...) where T = NLPObjectiveBackend{type, typeof(nlp)}(nlp) 
+NLPObjectiveBackend(
+  nlp::SupportedNLPModel;
+  type::Type{T} = eltype(nlp.meta.x0),
+  kwargs...,
+) where {T} = NLPObjectiveBackend{type, typeof(nlp)}(nlp)
 
-objective(backend::NLPObjectiveBackend{T, Model}, x::Vector{T}) where {T, Model} = NLPModels.obj(backend.nlp, x)
+objective(backend::NLPObjectiveBackend{T, Model}, x::Vector{T}) where {T, Model} =
+  NLPModels.obj(backend.nlp, x)
 
 function objective(backend::NLPObjectiveBackend{T, Model}, x::PartitionedVector{T}) where {T, Model}
   PartitionedVectors.build!(x)
