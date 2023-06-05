@@ -52,4 +52,4 @@ OptimizationProblems = "5049e819-d29b-5fba-b941-0eee7e64c1c6"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ADNLPModels", "LinearAlgebra", "OptimizationProblems", "NLPModels", "NLPModelsJuMP", "Test"]
+test = ["ADNLPModels", "Krylov", "LinearAlgebra", "OptimizationProblems", "NLPModels", "NLPModelsJuMP", "Test"]
