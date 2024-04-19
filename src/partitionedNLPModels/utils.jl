@@ -13,10 +13,10 @@ export partitioned_structure
 """
     (element_expr_trees, indices_element_tree) = distinct_element_expr_tree(vec_element_expr_tree::Vector{T}, vec_element_variables::Vector{Vector{Int}}; N::Int = length(vec_element_expr_tree)) where {T}
 
-In practice, there may have several element functions having the same expression tree.
-`distinct_element_expr_tree` filters the vector `vec_element_expr_tree` to return `element_expr_trees` the distincts element functions.
+`distinct_element_expr_tree` filters the vector `vec_element_expr_tree` to return `element_expr_trees` the distincts element function expression trees.
 `length(element_expr_trees) == M < N == length(vec_element_expr_tree)`.
-In addition it returns `indices_element_tree`, who records the index (1 <= i <= M) related ot the expression tree of each element function.
+In addition it returns `indices_element_tree`, who records the index (1 <= i <= M) related to the expression tree of each original element function (`length(indices_element_tree) == N`).
+This method is motivated by practical cases, where several element functions may have the same expression tree.
 """
 function distinct_element_expr_tree(
   vec_element_expr_tree::Vector{T},
@@ -89,7 +89,7 @@ end
 
 Merge every linear element function from `vec_element_functions` into a single one.
 Return the new adequate `vec_element_functions`, `N` and `linear_vector::Vector{Bool}` of size `N` indicating with `true` which element is linear.
-If the method runs correctly, only `linear_vector[N]` may be set to `true`.
+If the method runs properly, only `linear_vector[N]` can be set to `true`.
 """
 function merge_linear_elements(
   vec_element_functions::Vector{ExpressionTreeForge.Type_expr_tree},

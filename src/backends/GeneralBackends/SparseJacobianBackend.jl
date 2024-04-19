@@ -4,10 +4,11 @@ export set_pv_from_sparse_jacobian!
 """
     SparseJacobianMoiModelBackend{T}
 
+Compute the partitioned derivatives from the sparse Jacobian of the constraints.
 Composed of:
-- `evaluator::MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}`, an evaluator of a `MOI.Nonlinear.Model` constrained by every element functions;
-- `sparse_jacobian::Vector{T}`, mandatory to store in place the sparse Jacobianwith MathOptInterface;
-- `translated_x::PartitionedVector{T}`, to handle variables translations, especially when the model doesn't depend on every variable.
+- `evaluator::MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}`: an evaluator of a `MOI.Nonlinear.Model` with a partially-separable objective and `N` constraits (=0) each parametrized by an element functions;
+- `sparse_jacobian::Vector{T}`: mandatory to store in place the sparse Jacobianwith MathOptInterface;
+- `translated_x::PartitionedVector{T}`: handle the partial derivative translations, usefull when the model doesn't depend on every variable.
 """
 mutable struct SparseJacobianMoiModelBackend{T} <: PartitionedBackend{Float64}
   evaluator::MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}
