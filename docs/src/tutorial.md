@@ -10,6 +10,7 @@ as a sum of element functions $f_i$.
 PartiallySeparableNLPModels.jl relies on [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl) to detect the partially-separable structure. Then, it defines suitable partitioned structures using [PartitionedStructures.jl](https://github.com/JuliaSmoothOptimizers/PartitionedStructures.jl) and [PartitionedVectors.jl](https://github.com/paraynaud/PartitionedVectors.jl).
 Any `NLPModels` from PartiallySeparableNLPModels.jl rely on `PartitionedVector <: AbstractVector` instead of `Vector`.
 Any model from PartiallySeparableNLPModels.jl may be defined either from a `ADNLPModel` or a `MathOptNLPModel`.
+
 Let starts with an example using an `ADNLPModel` (`MathOptNLPModel` will follow):
 ```@example PSNLP
 using PartiallySeparableNLPModels, ADNLPModels
@@ -44,20 +45,18 @@ fx = NLPModels.obj(psnlp, x) # compute the objective function
 
 ```@example PSNLP
 gx = NLPModels.grad(psnlp, x) # compute the gradient
+Vector(gx) # compute and return the value of the vector that gx::PartitionedVector represents
 ```
 
 ```@example PSNLP
 v = similar(x)
-v .= 1
+v .= 2
 hv = NLPModels.hprod(psnlp, x, v)
+Vector(hv)
 ```
 `fx`, `gx` and `hv` accumulate contributions from element functions, either its evaluation $f_i(U_ix)$, its gradient $\nabla f_i(U_ix)$ or its element Hessian-vector $\nabla^2 f_i(U_i x) U_i v$.
-You can get the `Vector` value of `gx` and `hv` with 
-```@example PSNLP
-Vector(hv)
-Vector(gx)
-```
-and you can find more detail about `PartitionedVector`s in [PartitionedVectors.jl tutorial](https://paraynaud.github.io/PartitionedVectors.jl/stable/).
+You can get the `Vector` value of `gx` and `hv` with `Vector(hv), Vector(gx)`.
+You can find more detail about `PartitionedVector`s in [PartitionedVectors.jl tutorial](https://paraynaud.github.io/PartitionedVectors.jl/stable/).
 
 The same procedure can be applied to `MathOptNLPModel`s:
 ```@example PSNLP
@@ -81,6 +80,7 @@ psnlp = PSNLPModel(jumpnlp)
 
 fx = NLPModels.obj(psnlp, x) # compute the objective function
 gx = NLPModels.grad(psnlp, x) # compute the gradient
+Vector(gx)
 ```
 
 ## Partitioned quasi-Newton `NLPModel`s
@@ -158,10 +158,10 @@ using JSOSolvers
 
 trunk_solver = TrunkSolver(pbfgsnlp)
 ```
-which define properly the PartitionedVectors mandatory for running `trunk`
-`turnk_solver` can be `solve` afterward with:
+which define properly the PartitionedVectors mandatory for running `trunk`.
+`trunk_solver` can be `solve` afterward with:
 ```@example PSNLP
 solve!(trunk_solver, pbfgsnlp)
 ```
 
-For now, `TrunkSolver` is the sole `Solver` defined for `PartiallySeparableNLPModel`s, if you want to add another `Solver`, you should define it similarly to `TrunkSolver` in `src/trunk.jl`.
+For now, `TrunkSolver` is the sole `Solver` from `Krylov.jl` that support the `PartiallySeparableNLPModel`s, if you want to add another Krylov `Solver`, you should proceed similarly to `TrunkSolver` defined in `src/trunk.jl`.

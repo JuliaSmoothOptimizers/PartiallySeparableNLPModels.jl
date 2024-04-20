@@ -131,7 +131,7 @@ function NLPModels.reset_data!(pqnnlp::AbstractPQNNLPModel; name = pqnnlp.name, 
   (name == :psr1) && (op = epm_from_epv(epv))
   (name == :pse) && (op = epm_from_epv(epv))
   (name == :plbfgs) && (op = eplo_lbfgs_from_epv(epv; kwargs...))
-  (name == :plsr1) && (op = eplo_lsr1_from_epv(epv))
+  (name == :plsr1) && (op = eplo_lsr1_from_epv(epv; kwargs...))
   (name == :plse) && (op = eplo_lose_from_epv(epv; kwargs...))
   if name == :pcs
     convex_vector = map(eem -> PartitionedStructures.get_convex(eem), pqnnlp.op.eem_set)

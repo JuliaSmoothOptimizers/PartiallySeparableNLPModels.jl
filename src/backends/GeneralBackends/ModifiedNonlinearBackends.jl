@@ -5,9 +5,10 @@ export set_vector_from_pv!, set_pv_from_vector!
     ModifiedObjectiveMOIModelBackend{T}
 
 Composed of:
-- `vec_element_evaluators::Vector{MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}}`, M distinct element function `MOI.Nonlinear.Model`;
-- `index_element_tree::Vector{Int}`, from which any of the N element function may associate a gradient tape from `vec_element_gradient_tapes`.
-Each `MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}` accumulates the element-function's contribution in a element-vector of a `PartitionedVector`.
+- `evaluator`: the `Evaluator` of a modified partially-separable objective function : f(x) = ∑ᵢ fᵢ(x), where x ∈ ℜⁿ where n = ∑ᵢ nᵢ;
+- `x_modified`: a vector x ∈ ℜⁿ where n = ∑ᵢ nᵢ;
+- `v_modified`: a vector v ∈ ℜⁿ where n = ∑ᵢ nᵢ;
+Each partial derivative of f corresponds to a partial derivative of an element function fᵢ.
 """
 mutable struct ModifiedObjectiveMOIModelBackend{T} <: PartitionedBackend{Float64}
   evaluator::MOI.Nonlinear.Evaluator{MOI.Nonlinear.ReverseAD.NLPEvaluator}
