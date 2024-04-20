@@ -388,7 +388,7 @@ function partitioned_structure(
   (name == :pse) && (pB = epm_from_epv(epv; linear_vector))
   (name == :pcs) && (pB = epm_from_epv(epv; convex_vector, linear_vector))
   (name == :plbfgs) && (pB = eplo_lbfgs_from_epv(epv; linear_vector, kwargs...))
-  (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv; linear_vector))
+  (name == :plsr1) && (pB = eplo_lsr1_from_epv(epv; linear_vector, kwargs...))
   (name == :plse) && (pB = eplo_lose_from_epv(epv; linear_vector, kwargs...))
   (name == :phv) && (
     pB =
