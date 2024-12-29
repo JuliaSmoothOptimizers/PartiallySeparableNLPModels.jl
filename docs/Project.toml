@@ -10,4 +10,4 @@ NLPModelsJuMP = "792afdf1-32c1-5681-94e0-d7bf7a5df49e"
 PartiallySeparableNLPModels = "7f79d04d-aed5-44bf-a878-92b5ccf934e0"
 
 [compat]
-Documenter = "~0.25"
+Documenter = "~0.27"
