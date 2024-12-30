@@ -276,8 +276,7 @@ end
 @testset "Backend errors" begin
   using PartiallySeparableNLPModels.PartitionedBackends
 
-  mutable struct FakeBackend{T} <: PartitionedBackend{T}
-  end
+  mutable struct FakeBackend{T} <: PartitionedBackend{T} end
 
   fb = FakeBackend{Float64}()
   x = rand(5)
