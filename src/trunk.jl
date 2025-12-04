@@ -6,7 +6,7 @@ using ..ModAbstractPSNLPModels
 
 function JSOSolvers.TrunkSolver(
   nlp::AbstractPartiallySeparableNLPModel{T, S};
-  subsolver_type::Type{<:KrylovSolver} = CgSolver,
+  subsolver_type::Type{<:KrylovWorkspace} = CgWorkspace,
 ) where {T, S <: AbstractVector{T}}
   nvar = nlp.meta.nvar
   x = similar(nlp.meta.x0)
@@ -32,7 +32,7 @@ end
 
 function JSOSolvers.TrunkSolver(
   nlp::AbstractPQNNLPModel{T, S};
-  subsolver_type::Type{<:KrylovSolver} = CgSolver,
+  subsolver_type::Type{<:KrylovWorkspace} = CgWorkspace,
 ) where {T, S <: AbstractVector{T}}
   nvar = nlp.meta.nvar
   x = similar(nlp.meta.x0)
