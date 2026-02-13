@@ -5,8 +5,8 @@ export ElementReverseForwardHprod
 
 Compute the partitioned Hessian-product with `partitioned_hessian_prod!` by applying successively ReverseDiff and ForwardDiff.
 It is composed of:
-- `vec_elt_complete_expr_tree::Vector{G}`, the expression trees of the distinct element functions (of size M);
-- `index_element_tree::Vector{Int}`, reffering to index in `vec_elt_complete_expr_tree` of any of the N element function;
+- `vec_elt_complete_expr_tree::Vector{G}`: the expression trees of the distinct element functions (of size M);
+- `index_element_tree::Vector{Int}`: store for each one of the N element functions its corresponding index in `vec_elt_complete_expr_tree`;
 """
 mutable struct ElementReverseForwardHprod{T, G} <: AbstractHprodBackend{T}
   vec_elt_complete_expr_tree::Vector{G} # of size M
@@ -17,9 +17,9 @@ end
     hprod_backend = ElementReverseForwardHprod(complete_trees::Vector, index_element_tree::Vector{Int}; type=Float64)
 
 Return an `ElementReverseForwardHprod` from a `Vector` of expression trees
-(supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
-`vec_elt_expr_tree` of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
- to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
+(supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl)).
+`vec_elt_expr_tree` is of size `M` and `index_element_tree` redirects any element function `i`
+ to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, ∀ 1 ≤ i ≤ N).
 """
 function ElementReverseForwardHprod(
   vec_elt_expr_tree::Vector{G},

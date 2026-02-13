@@ -3,8 +3,8 @@ export MOIObjectiveBackend
 """
     MOIObjectiveBackend{T, Model}
 
-Composed of `nlp::Model`, it evaluates the objective function from `NLPModels.obj(nlp, x::AbstractVector{T})`.
-The user has to make sure `nlp` is can evaluate `x::AbstractVector{T}` with a suitable type `T`.
+Evaluate the objective function from `NLPModels.obj(nlp, x::AbstractVector{T})`.
+The user has to make sure `nlp` can evaluate `x::AbstractVector{T}` with a suitable type `T`.
 """
 mutable struct MOIObjectiveBackend{T} <: AbstractObjectiveBackend{T}
   evaluator::MathOptInterface.Nonlinear.Evaluator{MathOptInterface.Nonlinear.ReverseAD.NLPEvaluator}

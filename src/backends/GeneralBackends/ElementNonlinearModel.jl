@@ -19,7 +19,7 @@ end
 Return an `ElementMOIModelBackend` from a `Vector` of expression trees
 (supported by [ExpressionTreeForge.jl](https://github.com/JuliaSmoothOptimizers/ExpressionTreeForge.jl))
 of size `length(vec_elt_expr_tree)=M` and `index_element_tree` which redirects each element function `i`
- to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, 1 ≤ i ≤ N).
+ to its corresponding expression tree (1 ≤ `index_element_tree[i]` ≤ M, ∀ 1 ≤ i ≤ N).
 """
 function ElementMOIModelBackend(
   vec_elt_expr_tree::Vector,

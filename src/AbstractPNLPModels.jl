@@ -13,20 +13,24 @@ export update_nlp, hess_approx, update_nlp!
 abstract type AbstractPartiallySeparableNLPModel{T, S} <: AbstractNLPModel{T, S} end
 abstract type AbstractPQNNLPModel{T, S} <: QuasiNewtonModel{T, S} end
 
-""" Accumulate the supported NLPModels. """
+""" 
+    SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
+
+Union Type accumulating the NLPModels supported.
+"""
 SupportedNLPModel = Union{ADNLPModel, MathOptNLPModel}
 
 """
     ElementFunction
 
-A type that gathers the information indentifying an element function in a `PartiallySeparableNLPModel`, and its properties.
+Type gathering the information to indentify an element function in a `PartiallySeparableNLPModel`; also inform some of its properties.
 `ElementFunction` has fields:
 
 * `i`: the index of the element function;
-* `index_element_tree`: the index occupied in the element-function vector after the deletion of redundant element functions;
+* `index_element_tree`: the effective index in the vector gathering the element-function expression trees after the deletion of redundant element functions;
 * `variable_indices`: list of elemental variables of `ElementFunction`;
-* `type`: `constant`, `linear`, `quadratic`, `cubic` or `general`;
-* `convexity_status`: `constant`, `linear`, `convex`, `concave` or `unknown`.
+* `type`: either `constant`, `linear`, `quadratic`, `cubic` or `general`;
+* `convexity_status`: either `constant`, `linear`, `convex`, `concave` or `unknown`.
 """
 mutable struct ElementFunction
   i::Int # the index of the function 1 ≤ i ≤ N
