@@ -175,9 +175,8 @@ function NLPModels.jac_coord!(
     PartitionedVectors.set!(cons_j.local_x, xvec)
     g = similar(cons_j.local_x; simulate_vector = false)
     partitioned_gradient!(cons_j.gradient_backend, cons_j.local_x, g)
-    gvec = Vector(g)
     for k in cons_j.variable_indices
-      vals[cpt] = gvec[k]
+      vals[cpt] = g[k]
       cpt += 1
     end
   end

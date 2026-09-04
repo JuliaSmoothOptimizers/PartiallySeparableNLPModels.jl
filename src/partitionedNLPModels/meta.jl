@@ -24,7 +24,7 @@ function partitioned_meta(
   lvar = similar(x0)
   uvar = similar(x0)
 
-  ncon = meta.ncon
+  ncon = jac_available ? meta.ncon : 0
   constraint_partition = [collect(1:ncon)]
   cons_pv = PartitionedVector(constraint_partition; T = T, simulate_vector = true)
   y0 = similar(cons_pv)
