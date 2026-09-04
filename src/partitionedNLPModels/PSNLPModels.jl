@@ -58,6 +58,8 @@ mutable struct PSNLPModel{
   gradient_backend::GB
   hprod_backend::HB
 
+  vec_cons::Vector{PartitionedConstraint} # length(vec_cons) == meta.ncon
+
   # g is build directly from pg
   # the result of pB*v will be store and build from pv
   # name is the name of the partitioned quasi-Newton applied on pB
@@ -89,7 +91,10 @@ function PSNLPModel(
     name,
   ) = partitioned_structure(nlp, ex, n; type, name = :phv, merging, kwargs...)
 
-  meta = partitioned_meta(nlp.meta, x)
+  vec_cons = partitioned_constraints_structure(nlp, n; type, merging, kwargs...)
+  nnzj = sum(cons_j -> length(cons_j.variable_indices), vec_cons; init = 0)
+
+  meta = partitioned_meta(nlp.meta, x; nnzj, jac_available = nlp.meta.ncon > 0)
   Meta = typeof(meta)
   Model = typeof(nlp)
   S = typeof(x)
@@ -112,6 +117,7 @@ function PSNLPModel(
     objective_backend,
     gradient_backend,
     hprod_backend,
+    vec_cons,
     name,
   )
   return pvqnlp
