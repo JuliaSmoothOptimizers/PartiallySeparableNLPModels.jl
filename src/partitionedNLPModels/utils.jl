@@ -1,7 +1,8 @@
 module Utils
 
 using ReverseDiff, LinearAlgebra
-using NLPModelsJuMP
+using ADNLPModels, NLPModelsJuMP, MathOptInterface
+using Symbolics
 using ExpressionTreeForge, PartitionedStructures, PartitionedVectors
 using ExpressionTreeForge.M_implementation_convexity_type
 
@@ -9,6 +10,7 @@ using ..ModAbstractPSNLPModels, ..PartitionedBackends
 
 export distinct_element_expr_tree
 export partitioned_structure
+export get_constraint_expression_trees, partitioned_constraints_structure, PartitionedConstraint
 
 """
     (element_expr_trees, indices_element_tree) = distinct_element_expr_tree(vec_element_expr_tree::Vector{T}, vec_element_variables::Vector{Vector{Int}}; N::Int = length(vec_element_expr_tree)) where {T}
@@ -412,5 +414,7 @@ function partitioned_structure(
     name,
   )
 end
+
+include("constraints.jl")
 
 end
